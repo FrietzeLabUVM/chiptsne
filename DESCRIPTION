@@ -1,0 +1,16 @@
+Package: seqtsne
+Type: Package
+Title: What the Package Does (Title Case)
+Version: 0.1.0
+Author: Who wrote it
+Maintainer: The package maintainer <yourself@somewhere.net>
+Description: More about what it does (maybe more than one line)
+    Use four spaces when indenting paragraphs within the Description.
+License: What license is it under?
+Encoding: UTF-8
+LazyData: true
+Depnds: R (>= 3.5), data.table, ggplot2
+Imports: 
+    GenomicRanges,
+    seqsetvis
+RoxygenNote: 6.1.0

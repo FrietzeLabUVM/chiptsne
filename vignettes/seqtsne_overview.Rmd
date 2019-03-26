@@ -1,0 +1,114 @@
+---
+title: "The **seqtsne** package"
+author: "Joseph R Boyd"
+output:
+  BiocStyle::html_document:
+    toc_float: true
+vignette: >
+    %\VignetteIndexEntry{Overview and Use Cases}
+    %\VignetteEngine{knitr::rmarkdown}
+    %\VignetteEncoding{UTF-8}
+---
+
+<style type = "text/css"> em { font-weight: bold; } </style>
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+    collapse = TRUE,
+    dpi=60
+)
+```
+
+# Synopsis
+seq - tee - snee
+
+`r Githubpkg("jrboyd/seqtsne")` enables the visualization and analysis of 
+multiple genomic datasets. Although seqtsne was designed for the comparison 
+of mulitple ChIP-seq datasets, this package is domain-agnostic and allows the 
+processing of multiple genomic coordinate files (bed-like files) and signal 
+files (bigwig files).
+
+*seqtsne* is ideal for the following tasks:
+
+1.	Feature assessment and comparison.
+2.	Differential enrichment or expression results assessment.
+3.	Replicate comparison and reproducibility analysis.
+4.	Chromatin state inspection.
+5.	Clustering of histone modification and/or transcription factor enrichment 
+at features such as promoters or enhancers.
+
+*seqtsne* accepts and outputs the Bioconductor standard GRanges object while 
+leveraging the power and speed of the *data.table* package (an enhancement of 
+data.frame) with the flexibility of *ggplot2* to provide users with 
+visualizations that are simultaneously publication ready while still being 
+highly customizable. By default, *data.table* is used entirely internally so 
+users unfamiliar with its use can safely ignore it. That said, fans of 
+*data.table* can use seqtsne in a *data.table* exclusive mode if they wish.
+
+
+# Features
+
+* Mostly it "just works" with minimal assumed knowledge of R or other 
+Bioconductor packages.
+* All plots produced are `r CRANpkg("ggplot2")` objects. 
+    + easily customized according to user preferences by appending *ggplot2* 
+functions.
+    + powerful plot arrangement with with `r CRANpkg("cowplot")`, 
+`r CRANpkg("gridExtra")`, etc.
+* Although various plots are implemented, the underlying data are simple in 
+structure and easily accessible so **you** can do what **you** want with them.
+    + membership table for feature overlaps is just a logical matrix.
+    + signal data is stored in a tidy formatted `r CRANpkg("data.table")`, ideal 
+    for `r CRANpkg("ggplot2")` visualization.
+
+Although initially designed to focus on peak call sets, *seqtsne* accepts any
+data in *GRanges* format and is therefore flexible enough to 
+work dowstream of many genomics tools and packages.  Indeed, set comparison 
+visualizations are genomics agnostic and also accept generic data types defining 
+sets.  
+
+# Functions
+
+* `ssv*` - most primary user facing functions are prefixed by ssv
+    + `ssvOverlapIntervalSets` - derives sets from a list of GRanges
+    + `ssvMakeMembTable` - coerces various ways of defining sets to a membership 
+table
+    + `ssvFactorizeMembTable` - converts a multi column membership table into
+    a single factor.
+    + `ssvFetch*` - retrieves properly formatted data from .bigwig and .bam 
+    files
+    + `ssvFeature*` - visualizations of set counts and overlaps
+    + `ssvSignal*` - visualizations of signal mapped to genomic coordinates in 
+    sets context
+* utility functions
+    + `easyLoad_*` - loads files into a list of GRanges for input into `ssv*` 
+functions
+    + miscellaneous functions such as wrappers for 
+    data.table functions.
+
+
+
+# Installation and Loading
+
+## From github
+
+```{r bioc install, eval=FALSE}
+## try http:// if https:// URLs are not supported
+# if (!requireNamespace("BiocManager", quietly=TRUE))
+#     install.packages("BiocManager")
+# BiocManager::install("seqtsne")
+devtools::install_github("jrboyd/seqtsne")
+```
+
+## Load the library
+```{r load seqtsne, message=FALSE}
+library(seqtsne)
+```
+
+## Load optional useful libraries
+```{r load optional libs, message = FALSE}
+library(GenomicRanges)
+library(data.table)
+library(cowplot)
+theme_set(cowplot::theme_cowplot())
+```
