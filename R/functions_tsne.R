@@ -140,7 +140,7 @@ fetch_tsne_mat = function(qdt,
 #'
 #' @return
 #' @export
-#'
+#' @import Rtsne
 #' @examples
 run_tsne = function(tsne_mat, perplexity = 100,
                     n_cores = getOption("mc.cores", 1),
@@ -227,6 +227,8 @@ calc_delta = function(tsne_res, cell_a, cell_b, n_points){
 #' @param as_facet
 #'
 #' @return
+#' @import ggplot2
+#' @importFrom cowplot plot_grid
 #' @export
 #'
 #' @examples
@@ -283,7 +285,9 @@ make_tss_plot = function(qcell, as_facet = TRUE){
 #' @export
 #'
 #' @examples
-plot_profiles_selected = function(data_dt, qgr, qcells, tss_ids){
+plot_profiles_selected = function(data_dt, qgr, qcells, tss_ids,
+                                  color_mapping = c("H3K27me3" = "firebrick",
+                                                    "H3K4me3" = "forestgreen")){
     # qcells = c("H7", "CD34", "Kasumi1", "mm1s", "Nalm6")
     # tss_ids = subset(qgr, gene_name == "RUNX1")$id[1]
     stopifnot(qcells %in% unique(data_dt$cell))
@@ -312,8 +316,8 @@ plot_profiles_selected = function(data_dt, qgr, qcells, tss_ids){
         theme(strip.background = element_blank(), strip.placement = "outside",
               strip.text.y = element_text(angle = 180)) +
         labs(x = "", y = "") +
-        scale_color_manual(values = c("H3K27me3" = "firebrick", "H3K4me3" = "forestgreen")) +
-        scale_fill_manual(values = c("H3K27me3" = "firebrick", "H3K4me3" = "forestgreen"))
+        scale_color_manual(values = color_mapping) +
+        scale_fill_manual(values = color_mapping)
     p
 }
 

@@ -1,11 +1,30 @@
 #these methods are slight alteration of ggimage::geom_image
 
+# grid::grobName
+grobName = function (grob = NULL, prefix = "GRID")
+{
+    if (is.null(grob))
+        grobAutoName(prefix)
+    else {
+        if (!is.grob(grob))
+            stop("invalid 'grob' argument")
+        else grobAutoName(prefix, class(grob)[1L])
+    }
+}
+# grid::grobAutoName
+grobAutoName = function (prefix = "GRID", suffix = "GROB")
+{
+    index <<- index + 1
+    paste(prefix, suffix, index, sep = ".")
+}
+
+
 # library(magick)
 # library(grid)
 # ggname = ggimage:::ggname
 ggname = function (prefix, grob)
 {
-    grob$name <- grobName(grob, prefix)
+    grob$name <- grid::grobName(grob, prefix)
     grob
 }
 # color_image = ggimage:::color_image

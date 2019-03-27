@@ -36,6 +36,11 @@ make_tsne_img = function(profiles_dt, position_dt, n_points,
                          n_cores = getOption("mc.cores", 1),
                          line_colors = c("H3K4me3" = "forestgreen",
                                          "H3K27me3" = "firebrick1")){
+    if(!all(unique(profiles_dt$mark) %in% names(line_colors))){
+        missing_colors = setdiff(unique(profiles_dt$mark), names(line_colors))
+        stop("line_colors is missing assignments for: ", paste(missing_colors, collapse = ", "))
+    }
+    stopifnot()
     # stopifnot(is.list(view_rect))
     # if(is.null(view_rect$xmin))
     position_dt = copy(position_dt)
@@ -265,7 +270,7 @@ plot_tsne_img_byCell = function(images_dt,
                                 N_floor = 0,
                                 N_ceiling = NULL,
                                 min_size = .3,
-                                show_plot = TRUE
+                                show_plot = FALSE
 ){
     cell = bx = by = NULL;
     # tsne_dt$bx = mybin(tsne_dt$tx, n_points, xrng)
@@ -288,8 +293,7 @@ plot_tsne_img_byCell = function(images_dt,
                             image = png_file)) +#, color = rgb(0,0,1,.2)) +
         geom_rect(data = simg_dt,
                   aes(xmin = xmin, xmax = xmax,
-                      ymin = ymin, ymax = ymax,
-                      image = png_file),
+                      ymin = ymin, ymax = ymax),
                   fill = NA, color = "black") +
         coord_cartesian(xlim = xrng, ylim = yrng) +
         facet_wrap("cell", drop = FALSE)

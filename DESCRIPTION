@@ -12,5 +12,7 @@ LazyData: true
 Depnds: R (>= 3.5), data.table, ggplot2
 Imports: 
     GenomicRanges,
-    seqsetvis
+    magick,
+    seqsetvis,
+    Rtsne
 RoxygenNote: 6.1.0

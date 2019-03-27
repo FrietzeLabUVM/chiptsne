@@ -3,3 +3,5 @@
 .RData
 .Ruserdata
 seqtsne.Rproj
+vignettes/tsne_images
+tsne_images

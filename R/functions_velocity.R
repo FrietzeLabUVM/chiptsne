@@ -36,6 +36,7 @@ xy2dist = function(x1, y1, x2, y2){
 plot_velocity_arrows_binned = function(tsne_res,
                                        cell_a, cell_b,
                                        n_points,
+                                       points_as_background = TRUE,
                                        p = NULL,
                                        min_N = 0,
                                        id_to_plot = NULL
@@ -47,24 +48,26 @@ plot_velocity_arrows_binned = function(tsne_res,
     }
 
     av_dt = calc_delta(tsne_res.tp, cell_a, cell_b, n_points)$agg_velocity_dt
-
-    p_velocity = ggplot() +
-        # geom_density2d(data = tsne_res, aes(x = tsne_res$tx, y = tsne_res$ty, color = "lightgray") +
-        # geom_density2d(data = tsne_res, aes(x = tx, y = ty), color = "lightgray") +
-        stat_density_2d(data = tsne_res, aes(x = tx, y = ty, fill = stat(level)), geom = "polygon", bins = 7) +
-        # geom_point(data = tsne_res.tp[cell %in% c(cell_a, cell_b)][id %in% sampleCap(id, 500)], aes(x = tx, y = ty, color = cell)) +
-        geom_point(data = tsne_res.tp[cell %in% c(cell_a, cell_b)], aes(x = tx, y = ty, color = cell)) +
-        geom_segment(data = av_dt[N >= min_N],
-                     aes(x = tx_cell_a, xend = tx_cell_b,
-                         y = ty_cell_a, yend = ty_cell_b,
-                         size = N), arrow = arrow()) +
+    if(is.null(p)) p = ggplot()
+    if(points_as_background){
+        p = p + geom_point(data = tsne_res.tp[cell %in% c(cell_a, cell_b)], aes(x = tx, y = ty, color = cell))
+    }
+    p = p + geom_segment(data = av_dt[N >= min_N],
+                         aes(x = tx_cell_a, xend = tx_cell_b,
+                             y = ty_cell_a, yend = ty_cell_b,
+                             size = N), arrow = arrow()) +
         coord_cartesian(xlim = range(tsne_res$tx), ylim = range(tsne_res$ty)) +
         scale_fill_gradient2(low = "gray", high = "black") +
         labs(x = "x", y = "y", fill = "density") +
         scale_size_continuous(range = c(.5, 2),
                               breaks = range(av_dt$N)) +
         theme_classic()
-    p_velocity
+    # p_velocity = ggplot() +
+    # geom_density2d(data = tsne_res, aes(x = tsne_res$tx, y = tsne_res$ty, color = "lightgray") +
+    # geom_density2d(data = tsne_res, aes(x = tx, y = ty), color = "lightgray") +
+    # stat_density_2d(data = tsne_res, aes(x = tx, y = ty, fill = stat(level)), geom = "polygon", bins = 7) +
+    # geom_point(data = tsne_res.tp[cell %in% c(cell_a, cell_b)][id %in% sampleCap(id, 500)], aes(x = tx, y = ty, color = cell)) +
+    p
 }
 
 
