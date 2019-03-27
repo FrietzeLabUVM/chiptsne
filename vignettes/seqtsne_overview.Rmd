@@ -24,13 +24,18 @@ seq - tee - snee
 
 `r Githubpkg("jrboyd/seqtsne")` 
 
+This package is in active development.  *Expect changes in function and
+parameter names!*
+
 # Features
 
 * tsne on ChIP-seq data
 
 # Functions
 
-* `ssv*` - most primary user facing functions are prefixed by ssv
+*Eventually*
+
+* `sts*` - most primary user facing functions are prefixed by sts
 
 
 
@@ -60,15 +65,36 @@ library(seqsetvis)
 theme_set(cowplot::theme_cowplot())
 ```
 
-```{r}
-files = c(
+# Running t-sne
+
+## Set parameters
+
+These parameters will determine how multiple functions behave
+
+```{r parameters}
+n_points = 6
+color_mapping = c("H3K4ME3" = "forestgreen",
+                  "H3K27ME3" = "firebrick1", 
+                  "H3K4AC" = "blue", 
+                  "H3K27AC" = "purple")
+options("mc.cores" = 20)
+```
+
+The two critical inputs are:
+
+1. data.table containing bigWig files and
+cell and mark metadata.
+2. GRanges of regions to retrieve data for and perform t-sne on.
+
+```{r setup files and configure}
+input_dirs = c(
     dir("/slipstream/galaxy/uploads/working/qc_framework/output/", 
         pattern = "K4.+_pooled$", full.names = TRUE),
     dir("/slipstream/galaxy/uploads/working/qc_framework/output/", 
         pattern = "K27.+_pooled$", full.names = TRUE)
 )
 #assemble peak calls and sample
-peaks = dir(files, pattern = "pooled_peaks.narrowPeak", full.names = TRUE)
+peaks = dir(input_dirs, pattern = "pooled_peaks.narrowPeak", full.names = TRUE)
 olaps = ssvOverlapIntervalSets(easyLoad_narrowPeak(peaks))
 olaps = olaps[rowSums(as.data.frame(mcols(olaps))) > 3] 
 length(olaps)
@@ -77,18 +103,33 @@ query_gr = sample(olaps, 100)
 query_gr = resize(query_gr, 5000, fix = "center")
 query_gr$id = names(query_gr)
 #create config from bws
-bws = dir(files, pattern = "pooled_FE.bw", full.names = TRUE)
-qdt = data.table(file = bws)
-qdt[, c("cell", "mark") := tstrsplit(basename(file), "_", keep = 1:2)]
-options("mc.cores" = 20)
-tsne_input = fetch_tsne_mat(qdt, query_gr)
-tsne_res = run_tsne(tsne_input$tsne_mat, perplexity = 10)
-n_points = 6
-color_mapping = c("H3K4ME3" = "forestgreen",
-                  "H3K27ME3" = "firebrick1", 
-                  "H3K4AC" = "blue", 
-                  "H3K27AC" = "purple")
+bws = dir(input_dirs, pattern = "pooled_FE.bw", full.names = TRUE)
+cfg_dt = data.table(file = bws)
+cfg_dt[, c("cell", "mark") := tstrsplit(basename(file), "_", keep = 1:2)]
 ```
+
+t-sne requires a wide-matrix view where each row is a point (observation) and 
+each column is a dimension (attribute) of the data.
+
+```{r prepare input}
+tsne_input = fetch_tsne_mat(cfg_dt, query_gr)
+```
+
+There's a bit of art to running t-sne, see this 
+[hands-on explanation](https://distill.pub/2016/misread-tsne/) to get oriented.
+
+Be sure to set `mc.cores` using `options()` or provide the `n_cores` 
+parameter to speed up processing time.
+
+```{r run tsne}
+tsne_res = run_tsne(tsne_input$tsne_mat, perplexity = 10)
+```
+
+# Plotting
+
+## Describing the space
+
+A basic plot facetted by the 3 cell lines.
 
 ```{r basic plot, fig.width=13, fig.height=4}
 ggplot(tsne_res, aes(x = tx, y = ty, color = cell)) + 
@@ -96,12 +137,22 @@ ggplot(tsne_res, aes(x = tx, y = ty, color = cell)) +
     facet_wrap("cell")
 ```
 
+Interpreting the t-sne landscape can be difficult but it is critical for
+effectiveness of the visualization.  We can plot representative profiles in
+the t-sne landscape.  
+
+The resolution of these images is controlled by `n_points`.  Use `xrng` and
+`yrng` to specify a region to view in detail.  A strength of t-sne is that
+it maps both broad trends and finer relationships effectively.
+
 ```{r, fig.width=5, fig.height=5}
 img = make_tsne_img(tsne_input$bw_dt, tsne_res, n_points = n_points, 
                     line_colors = color_mapping)
 img_res = plot_tsne_img(img$images_dt, n_points = n_points, min_size = 0)
 img_res$plot
 ```
+
+The same idea as before but now facetted by cell.
 
 ```{r, fig.width=7.5, fig.height=3}
 img_byCell = make_tsne_img(tsne_input$bw_dt, tsne_res, n_points = n_points, 
@@ -115,20 +166,37 @@ img_byCell_res$plot
 
 ```
 
+## Velocity
+
+Arrows identity how regions behave between two groups.  Each arrow is drawn 
+from the postion in `cell_a` to position in `cell_b` with color mapped to 
+angle to aid in pattern detection.
+
 ```{r, fig.width=8, fig.height=4}
 vel_res = plot_velocity_arrows(tsne_res = tsne_res, cell_a = "MCF10A", cell_b = "MCF7")
 plot_grid(plotlist = vel_res)
 ```
 
+Individual arrows can be overwhelming, we can also employ a binning strategy
+to summarize the average destination in t-sne space for groups of points.
+Each arrow here is drawn to the average desination (`cell_b`) for all nearby 
+points (`cell_a`).
+
 ```{r, fig.width=4, fig.height=3}
 plot_velocity_arrows_binned(tsne_res, cell_a = "MCF10A", cell_b = "MCF7", n_points = n_points)
 ```
+
+We can also layer the binned arrows on top of the binned profiles.
 
 ```{r, fig.width=4, fig.height=3}
 plot_velocity_arrows_binned(tsne_res, points_as_background = FALSE,
                             cell_a = "MCF10A", cell_b = "MCF7", 
                             n_points = n_points, p = img_res$plot)
 ```
+
+## Other
+
+Individual profiles can also be viewed.
 
 ```{r, fig.width=6, fig.height=3}
 plot_profiles_selected(tsne_input$bw_dt, 
