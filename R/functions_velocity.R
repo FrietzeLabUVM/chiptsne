@@ -92,6 +92,7 @@ plot_velocity_arrows = function(tsne_res, cell_a, cell_b,
                                 p = NULL,
                                 id_to_plot = NULL,
                                 max_plotted = 500,
+                                return_data = FALSE,
                                 delta.min = 0,
                                 delta.max = Inf,
                                 angle.min = 0,
@@ -127,13 +128,21 @@ plot_velocity_arrows = function(tsne_res, cell_a, cell_b,
     bg = v_dt.tp[foreground == FALSE & distance >= delta.min]
     # v_dt.tp[, grp1 := tx_cell_a > tx_cell_b]
     # v_dt.tp[, grp2 := ty_cell_a > ty_cell_b]
+    if(return_data){
+        return(v_dt.tp)
+    }
     if(is.null(p)) p = ggplot()
     p_arrows = p +
-        labs(title = paste("from", cell_a, "to", cell_b), subtitle = "color mapped to angle") +
-        annotate("segment", x = bg$tx_cell_a, xend = bg$tx_cell_b, y = bg$ty_cell_a, yend = bg$ty_cell_b, color = "lightgray") +
-        geom_segment(data = v_dt.tp[foreground == TRUE], aes(x = tx_cell_a, xend = tx_cell_b,
-                                                             y = ty_cell_a, yend = ty_cell_b,
-                                                             color = angle),
+        labs(title = paste("from", cell_a, "to", cell_b),
+             subtitle = "color mapped to angle") +
+        annotate("segment",
+                 x = bg$tx_cell_a, xend = bg$tx_cell_b,
+                 y = bg$ty_cell_a, yend = bg$ty_cell_b,
+                 color = "lightgray") +
+        geom_segment(data = v_dt.tp[foreground == TRUE],
+                     aes(x = tx_cell_a, xend = tx_cell_b,
+                         y = ty_cell_a, yend = ty_cell_b,
+                         color = angle, frame = angle_bin),
                      arrow = arrow(length = unit(0.1,"cm"))) +
 
         scale_color_gradientn(colours = c("orange", "red", "purple", "blue",

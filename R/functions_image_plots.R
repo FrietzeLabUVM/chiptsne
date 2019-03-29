@@ -35,7 +35,8 @@ make_tsne_img = function(profiles_dt, position_dt, n_points,
                          ma_size = 2,
                          n_cores = getOption("mc.cores", 1),
                          line_colors = c("H3K4me3" = "forestgreen",
-                                         "H3K27me3" = "firebrick1")){
+                                         "H3K27me3" = "firebrick1"),
+                         group_mapping = NULL){
     if(!all(unique(profiles_dt$mark) %in% names(line_colors))){
         missing_colors = setdiff(unique(profiles_dt$mark), names(line_colors))
         stop("line_colors is missing assignments for: ", paste(missing_colors, collapse = ", "))
@@ -70,7 +71,7 @@ make_tsne_img = function(profiles_dt, position_dt, n_points,
         colnames(img_dt)[4] = facet_by
         img_dt[, png_file := file.path(odir, paste0(get(facet_by), "_", plot_id, ".png"))]
     }
-
+    img_dt[, png_file := normalizePath(png_file)]
     xs = mybin_centers(tsne_res$tx, n_points, xrng = xrng)
     ys = mybin_centers(tsne_res$ty, n_points, xrng = yrng)
 
@@ -101,6 +102,17 @@ make_tsne_img = function(profiles_dt, position_dt, n_points,
         img_dt = merge(img_dt, tmp_dt)
     }
 
+    if(is.null(group_mapping)){
+        mdt$group = 1
+    }else{
+        if(!all(unique(mdt$mark) %in% names(group_mapping))){
+            missing_colors = setdiff(unique(mdt$mark), names(group_mapping))
+            stop("group_mapping is missing assignments for: ", paste(missing_colors, collapse = ", "))
+        }
+        mdt$group = group_mapping[mdt$mark]
+    }
+
+
     if(any(!file.exists(img_dt$png_file))){
         plot_info = lapply(which(!file.exists(img_dt$png_file)), function(i){
             # hidden = parallel::mclapply(which(!file.exists(img_dt$png_file)), function(i){}, mc.cores = n_cores)
@@ -123,6 +135,7 @@ make_tsne_img = function(profiles_dt, position_dt, n_points,
             fpath = x[[2]]
             pdt = x[[1]]
             # pdt[, ysm := seqsetvis:::movingAverage(y, n = 8), by = list(mark)]
+
             p = ggplot(pdt, aes(x = x, y = ysm, ymin = 0, ymax = ysm, color = mark, fill = mark)) +
                 geom_ribbon(alpha = .3) +
                 geom_path(size = .6, alpha = 1) +
@@ -130,6 +143,8 @@ make_tsne_img = function(profiles_dt, position_dt, n_points,
                 scale_fill_manual(values = line_colors) +
                 theme_void() + guides(color = "none", fill =
                                           'none') +
+                facet_wrap("group", ncol = 1) +
+                theme(strip.background = element_blank(), strip.text = element_blank()) +
                 coord_cartesian(ylim = ylim, xlim = c(-.5, .5), expand = FALSE)
             ggsave(fpath, p, width = 2, height = 2, units = "cm")
             # p

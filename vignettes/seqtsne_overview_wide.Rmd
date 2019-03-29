@@ -77,6 +77,8 @@ color_mapping = c("H3K4ME3" = "forestgreen",
                   "H3K27ME3" = "firebrick1", 
                   "H3K4AC" = "blue", 
                   "H3K27AC" = "purple")
+
+
 options("mc.cores" = 20)
 perplexity = 500
 ```
@@ -108,6 +110,17 @@ query_gr$id = names(query_gr)
 bws = dir(input_dirs, pattern = "pooled_FE.bw", full.names = TRUE)
 cfg_dt = data.table(file = bws)
 cfg_dt[, c("cell", "mark") := tstrsplit(basename(file), "_", keep = 1:2)]
+```
+
+```{r make_wide}
+cfg_dt[, mark := paste(cell, mark, sep = "_")]
+cfg_dt$cell = "combined"
+color_mapping = rep(color_mapping, 3)
+names(color_mapping) = paste(rep(c("MCF10A", "MCF7", "MDA231"), each = 4), names(color_mapping), sep = "_")
+
+group_mapping = sub("_.+", "", names(color_mapping))
+names(group_mapping) = names(color_mapping)
+
 ```
 
 t-sne requires a wide-matrix view where each row is a point (observation) and 
@@ -150,20 +163,21 @@ it maps both broad trends and finer relationships effectively.
 
 ```{r, fig.width=5, fig.height=5}
 img = make_tsne_img(tsne_input$bw_dt, tsne_res, n_points = n_points, 
-                    line_colors = color_mapping)
+                    line_colors = color_mapping, 
+                    group_mapping = group_mapping, 
+                    force_rewrite = F)
 img_res = plot_tsne_img(img$images_dt, n_points = n_points, min_size = 0)
 img_res$plot
 ```
 
 The same idea as before but now facetted by cell.
 
-```{r, fig.width=7.5, fig.height=3}
+This makes no sense because we've combined all the cells!
+
+```{r, fig.width=5, fig.height=5}
 img_byCell = make_tsne_img(tsne_input$bw_dt, tsne_res, n_points = n_points, 
-                    line_colors = c("H3K4ME3" = "forestgreen",
-                                    "H3K27ME3" = "firebrick1", 
-                                    "H3K4AC" = "blue", 
-                                    "H3K27AC" = "purple"), 
-                    facet_by = "cell")
+                    line_colors = color_mapping, group_mapping = group_mapping, 
+                    facet_by = "cell", force_rewrite = F)
 img_byCell_res = plot_tsne_img_byCell(img_byCell$images_dt, img_byCell$tsne_dt, n_points = n_points)
 img_byCell_res$plot
 
@@ -171,42 +185,22 @@ img_byCell_res$plot
 
 ## Velocity
 
-Arrows identity how regions behave between two groups.  Each arrow is drawn 
-from the postion in `cell_a` to position in `cell_b` with color mapped to 
-angle to aid in pattern detection.
-
-```{r, fig.width=8, fig.height=4}
-vel_res = plot_velocity_arrows(tsne_res = tsne_res, cell_a = "MCF10A", cell_b = "MCF7")
-plot_grid(plotlist = vel_res)
-```
-
-Individual arrows can be overwhelming, we can also employ a binning strategy
-to summarize the average destination in t-sne space for groups of points.
-Each arrow here is drawn to the average desination (`cell_b`) for all nearby 
-points (`cell_a`).
-
-```{r, fig.width=4, fig.height=3}
-plot_velocity_arrows_binned(tsne_res, cell_a = "MCF10A", cell_b = "MCF7", n_points = n_points)
-```
-
-We can also layer the binned arrows on top of the binned profiles.
-
-```{r, fig.width=4, fig.height=3}
-plot_velocity_arrows_binned(tsne_res, points_as_background = FALSE,
-                            cell_a = "MCF10A", cell_b = "MCF7", 
-                            n_points = n_points, p = img_res$plot)
-```
+Velocity is not applicable when combinding cell data in this way.
 
 ## Other
 
 Individual profiles can also be viewed.
 
 ```{r, fig.width=6, fig.height=3}
-plot_profiles_selected(tsne_input$bw_dt, 
+indi_dt = copy(tsne_input$bw_dt)
+indi_dt[, c("cell", "mark") := tstrsplit(mark, "_")]
+indi_col = color_mapping[1:4]
+names(indi_col) = sub(".+_", "", names(indi_col))
+plot_profiles_selected(indi_dt, 
                        qgr = query_gr[1], 
-                       qcells = c("MCF10A", "MCF7"), 
+                       qcells = c("MCF10A", "MCF7", "MDA231"), 
                        tss_ids = names(query_gr)[1], 
-                       color_mapping = color_mapping)
+                       color_mapping = indi_col)
 ```
 
 

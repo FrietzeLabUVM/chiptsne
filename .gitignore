@@ -5,3 +5,7 @@
 seqtsne.Rproj
 vignettes/tsne_images
 tsne_images
+*.pdf
+tmp*
+*save
+dev_animate.R

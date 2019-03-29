@@ -90,9 +90,9 @@ cell and mark metadata.
 ```{r setup files and configure}
 input_dirs = c(
     dir("/slipstream/galaxy/uploads/working/qc_framework/output/", 
-        pattern = "K4.+_pooled$", full.names = TRUE),
-    dir("/slipstream/galaxy/uploads/working/qc_framework/output/", 
-        pattern = "K27.+_pooled$", full.names = TRUE)
+        pattern = "K4.+_pooled$", full.names = TRUE)#,
+    # dir("/slipstream/galaxy/uploads/working/qc_framework/output/", 
+    #     pattern = "K27.+_pooled$", full.names = TRUE)
 )
 #assemble peak calls and sample
 peaks = dir(input_dirs, pattern = "pooled_peaks.narrowPeak", full.names = TRUE)
@@ -192,9 +192,38 @@ plot_velocity_arrows_binned(tsne_res, cell_a = "MCF10A", cell_b = "MCF7", n_poin
 We can also layer the binned arrows on top of the binned profiles.
 
 ```{r, fig.width=4, fig.height=3}
-plot_velocity_arrows_binned(tsne_res, points_as_background = FALSE,
+plot_velocity_arrows_binned(tsne_res, points_as_background = FALSE, 
                             cell_a = "MCF10A", cell_b = "MCF7", 
                             n_points = n_points, p = img_res$plot)
+```
+
+Or
+
+```{r, fig.width=8, fig.height=5}
+vel_res = plot_velocity_arrows(tsne_res = tsne_res, 
+                               cell_a = "MCF10A", cell_b = "MCF7", 
+                               p = img_res$plot, max_plotted = 500)
+vel_res[[2]] = vel_res[[2]] + guides(fill = "none")
+plot_grid(plotlist = vel_res, rel_widths = c(2, 1))
+```
+
+```{r anim}
+dt_anim = plot_velocity_arrows(tsne_res = tsne_res, return_data = TRUE,
+                               cell_a = "MCF10A", cell_b = "MCF7", 
+                               p = img_res$plot, max_plotted = Inf)
+dt_anim[, angle_bin := round(angle / 360)]
+p_anim = ggplot(dt_anim, 
+                aes(x = tx_cell_a, xend = tx_cell_b, 
+                    y = ty_cell_a, yend = ty_cell_b, 
+                    color = angle, frame = angle_bin)) + 
+    geom_segment() +
+    scale_color_gradientn(colours = c("orange", "red", 
+                                      "purple", "blue",
+                                      "green", "orange"), 
+                          limits = c(0, 360), breaks = 0:4*90)
+p_anim + transition_states(angle_bin) 
+
+
 ```
 
 ## Other
