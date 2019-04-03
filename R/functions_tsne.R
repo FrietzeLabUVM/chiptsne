@@ -50,6 +50,7 @@ annotate_rects = function(p, rects){
 #'
 #' @return
 #' @export
+#' @importFrom seqsetvis ssvFetchBigwig
 #'
 #' @examples
 fetch_tsne_mat = function(qdt,
@@ -75,7 +76,7 @@ fetch_tsne_mat = function(qdt,
     }
 
     bw_fetch = function(){
-        ssvFetchBigwig(qdt[, 1:3], qgr,
+        seqsetvis::ssvFetchBigwig(qdt[, 1:3], qgr,
                        return_data.table = TRUE,
                        win_method = qmet,
                        win_size = qwin, n_cores = n_cores)
@@ -296,9 +297,9 @@ plot_profiles_selected = function(data_dt, qgr, qcells, tss_ids,
         if(length(tmp) > 1){
             tss_ids = tmp[1]
             tmp = as.numeric(tmp[-1])
-            tss_ids = subset(qgr, gene_name == tss_ids)$id[tmp]
+            tss_ids = subset(qgr, gene_name %in% tss_ids)$id[tmp]
         }else{
-            tss_ids = subset(qgr, gene_name == tss_ids)$id
+            tss_ids = subset(qgr, gene_name %in% tss_ids)$id
         }
 
     }

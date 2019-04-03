@@ -17,6 +17,7 @@
 #'
 #' @return
 #' @export
+#' @importFrom seqsetvis applySpline
 #'
 #' @examples
 make_tsne_img = function(profiles_dt, position_dt, n_points,
@@ -71,7 +72,7 @@ make_tsne_img = function(profiles_dt, position_dt, n_points,
         colnames(img_dt)[4] = facet_by
         img_dt[, png_file := file.path(odir, paste0(get(facet_by), "_", plot_id, ".png"))]
     }
-    img_dt[, png_file := normalizePath(png_file)]
+
     xs = mybin_centers(tsne_res$tx, n_points, xrng = xrng)
     ys = mybin_centers(tsne_res$ty, n_points, xrng = yrng)
 
@@ -124,9 +125,10 @@ make_tsne_img = function(profiles_dt, position_dt, n_points,
                 pdt = mdt[plot_id == p_id & get(facet_by) == img_dt[[facet_by]][i]]
             }
 
-            # pdt[, ysm := seqsetvis:::movingAverage(y, n = 8), by = list(mark)]
-            pdt[, ysm := seqsetvis:::movingAverage(ynorm, n = ma_size), by = list(mark)]
-            pdt = applySpline(pdt, n = 10, by_ = "mark", y_ = "ysm")
+            # pdt[, ysm := seqsetvis:::movingAverage(ynorm, n = ma_size), by = list(mark)]
+            pdt[, ysm := movingAverage(ynorm, n = ma_size), by = list(mark)]
+
+            pdt = seqsetvis::applySpline(pdt, n = 10, by_ = "mark", y_ = "ysm")
             list(pdt, fpath)
         })
         # hidden = lapply(plot_info, function(x){
@@ -152,6 +154,8 @@ make_tsne_img = function(profiles_dt, position_dt, n_points,
             # })
         }, mc.cores = n_cores)
     }
+
+    img_dt[, png_file := normalizePath(png_file)]
 
     if(is.factor(position_dt$cell)){
         if(!is.null(img_dt$cell)){

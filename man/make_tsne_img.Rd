@@ -11,7 +11,7 @@ make_tsne_img(profiles_dt, position_dt, n_points,
   odir = file.path("tsne_images/", rname), force_rewrite = FALSE,
   apply_norm = TRUE, ylim = c(0, 1), facet_by = NULL, ma_size = 2,
   n_cores = getOption("mc.cores", 1), line_colors = c(H3K4me3 =
-  "forestgreen", H3K27me3 = "firebrick1"))
+  "forestgreen", H3K27me3 = "firebrick1"), group_mapping = NULL)
 }
 \arguments{
 \item{line_colors}{}

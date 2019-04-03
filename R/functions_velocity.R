@@ -142,7 +142,7 @@ plot_velocity_arrows = function(tsne_res, cell_a, cell_b,
         geom_segment(data = v_dt.tp[foreground == TRUE],
                      aes(x = tx_cell_a, xend = tx_cell_b,
                          y = ty_cell_a, yend = ty_cell_b,
-                         color = angle, frame = angle_bin),
+                         color = angle),
                      arrow = arrow(length = unit(0.1,"cm"))) +
 
         scale_color_gradientn(colours = c("orange", "red", "purple", "blue",

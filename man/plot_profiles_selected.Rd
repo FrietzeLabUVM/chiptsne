@@ -4,7 +4,8 @@
 \alias{plot_profiles_selected}
 \title{Title}
 \usage{
-plot_profiles_selected(data_dt, qgr, qcells, tss_ids)
+plot_profiles_selected(data_dt, qgr, qcells, tss_ids,
+  color_mapping = c(H3K27me3 = "firebrick", H3K4me3 = "forestgreen"))
 }
 \arguments{
 \item{tss_ids}{}

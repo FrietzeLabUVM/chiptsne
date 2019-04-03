@@ -4,8 +4,9 @@
 \alias{plot_velocity_arrows_binned}
 \title{Title}
 \usage{
-plot_velocity_arrows_binned(tsne_res, cell_a, cell_b, n_points, p = NULL,
-  min_N = 0, id_to_plot = NULL)
+plot_velocity_arrows_binned(tsne_res, cell_a, cell_b, n_points,
+  points_as_background = TRUE, p = NULL, min_N = 0,
+  id_to_plot = NULL)
 }
 \arguments{
 \item{id_to_plot}{}

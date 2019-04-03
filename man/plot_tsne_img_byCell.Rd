@@ -6,7 +6,7 @@
 \usage{
 plot_tsne_img_byCell(images_dt, tsne_dt, n_points, p = NULL,
   xrng = c(-0.5, 0.5), yrng = c(-0.5, 0.5), N_floor = 0,
-  N_ceiling = NULL, min_size = 0.3, show_plot = TRUE)
+  N_ceiling = NULL, min_size = 0.3, show_plot = FALSE)
 }
 \arguments{
 \item{show_plot}{}

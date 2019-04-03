@@ -73,10 +73,10 @@ These parameters will determine how multiple functions behave
 
 ```{r parameters}
 n_points = 6
-color_mapping = c("H3K4ME3" = "forestgreen",
-                  "H3K27ME3" = "firebrick1", 
-                  "H3K4AC" = "blue", 
-                  "H3K27AC" = "purple")
+color_mapping = c("H3K4me3" = "forestgreen",
+                  "H3K27me3" = "firebrick1")#, 
+                  # "H3K4AC" = "blue", 
+                  # "H3K27AC" = "purple")
 options("mc.cores" = 20)
 perplexity = 500
 ```
@@ -89,10 +89,10 @@ cell and mark metadata.
 
 ```{r setup files and configure}
 input_dirs = c(
-    dir("/slipstream/galaxy/uploads/working/qc_framework/output/", 
-        pattern = "K4.+_pooled$", full.names = TRUE)#,
-    # dir("/slipstream/galaxy/uploads/working/qc_framework/output/", 
-    #     pattern = "K27.+_pooled$", full.names = TRUE)
+    dir("/slipstream/galaxy/uploads/working/qc_framework/output_hESC_court/", 
+        pattern = "K4.+_pooled$", full.names = TRUE),
+    dir("/slipstream/galaxy/uploads/working/qc_framework/output_hESC_court/", 
+        pattern = "K27.+_pooled$", full.names = TRUE)
 )
 #assemble peak calls and sample
 peaks = dir(input_dirs, pattern = "pooled_peaks.narrowPeak", full.names = TRUE)
@@ -133,7 +133,7 @@ tsne_res = run_tsne(tsne_input$tsne_mat, perplexity = perplexity)
 
 A basic plot facetted by the 3 cell lines.
 
-```{r basic plot, fig.width=13, fig.height=4}
+```{r basic plot, fig.width=13, fig.height=8}
 ggplot(tsne_res, aes(x = tx, y = ty, color = cell)) + 
     geom_point() +
     facet_wrap("cell")
@@ -157,12 +157,9 @@ img_res$plot
 
 The same idea as before but now facetted by cell.
 
-```{r, fig.width=7.5, fig.height=3}
+```{r, fig.width=7.5, fig.height=6}
 img_byCell = make_tsne_img(tsne_input$bw_dt, tsne_res, n_points = n_points, 
-                    line_colors = c("H3K4ME3" = "forestgreen",
-                                    "H3K27ME3" = "firebrick1", 
-                                    "H3K4AC" = "blue", 
-                                    "H3K27AC" = "purple"), 
+                    line_colors = color_mapping, 
                     facet_by = "cell")
 img_byCell_res = plot_tsne_img_byCell(img_byCell$images_dt, img_byCell$tsne_dt, n_points = n_points)
 img_byCell_res$plot
@@ -176,7 +173,9 @@ from the postion in `cell_a` to position in `cell_b` with color mapped to
 angle to aid in pattern detection.
 
 ```{r, fig.width=8, fig.height=4}
-vel_res = plot_velocity_arrows(tsne_res = tsne_res, cell_a = "MCF10A", cell_b = "MCF7")
+vel_res = plot_velocity_arrows(tsne_res = tsne_res, 
+                               cell_a = unique(cfg_dt$cell)[1], 
+                               cell_b = unique(cfg_dt$cell)[3])
 plot_grid(plotlist = vel_res)
 ```
 
@@ -186,36 +185,29 @@ Each arrow here is drawn to the average desination (`cell_b`) for all nearby
 points (`cell_a`).
 
 ```{r, fig.width=4, fig.height=3}
-plot_velocity_arrows_binned(tsne_res, cell_a = "MCF10A", cell_b = "MCF7", n_points = n_points)
+plot_velocity_arrows_binned(tsne_res, 
+                            cell_a = unique(cfg_dt$cell)[1], 
+                               cell_b = unique(cfg_dt$cell)[3], n_points = n_points)
 ```
 
 We can also layer the binned arrows on top of the binned profiles.
 
 ```{r, fig.width=4, fig.height=3}
-plot_velocity_arrows_binned(tsne_res, points_as_background = FALSE, 
-                            cell_a = "MCF10A", cell_b = "MCF7", 
+plot_velocity_arrows_binned(tsne_res, points_as_background = FALSE,
+                            cell_a = unique(cfg_dt$cell)[1], 
+                               cell_b = unique(cfg_dt$cell)[3], 
                             n_points = n_points, p = img_res$plot)
-```
-
-Or
-
-```{r, fig.width=8, fig.height=5}
-vel_res = plot_velocity_arrows(tsne_res = tsne_res, 
-                               cell_a = "MCF10A", cell_b = "MCF7", 
-                               p = img_res$plot, max_plotted = 500)
-vel_res[[2]] = vel_res[[2]] + guides(fill = "none")
-plot_grid(plotlist = vel_res, rel_widths = c(2, 1))
 ```
 
 ## Other
 
 Individual profiles can also be viewed.
 
-```{r, fig.width=6, fig.height=3}
+```{r, fig.width=8, fig.height=3}
 plot_profiles_selected(tsne_input$bw_dt, 
-                       qgr = query_gr[1], 
-                       qcells = c("MCF10A", "MCF7"), 
-                       tss_ids = names(query_gr)[1], 
+                       qgr = query_gr, 
+                       qcells = unique(cfg_dt$cell), 
+                       tss_ids = names(query_gr)[c(2,20:25)], 
                        color_mapping = color_mapping)
 ```
 
