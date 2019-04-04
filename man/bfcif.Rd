@@ -2,13 +2,46 @@
 % Please edit documentation in R/functions_util.R
 \name{bfcif}
 \alias{bfcif}
-\title{Title}
+\title{bfcif}
 \usage{
-bfcif(bfc, rname, FUN, force_overwrite = FALSE, check_only = FALSE)
+bfcif(bfc, rname, FUN, force_overwrite = FALSE,
+  return_path_only = FALSE, verbose = FALSE)
 }
 \arguments{
-\item{check_only}{}
+\item{bfc}{a BiocFileCache object, as from running \code{BiocFileCache::BiocFileCache()}}
+
+\item{rname}{character rname to save/load from cache.  \code{digest::digest(list(YOUR_ARGS))} works.}
+
+\item{FUN}{function with no args to run.}
+
+\item{force_overwrite}{if TRUE, FUN will be run and cached results replaced if present.}
+
+\item{return_path_only}{if TRUE, FUN will never be run but path to file will be returned.  Particularly useful if you need to predetermined caching and paths for parallel execution.}
+
+\item{verbose}{if TRUE, a series of status messages are output.  Default is FALSE.}
+}
+\value{
+the result of running FUN or loading cached results.
 }
 \description{
-Title
+conditionally run a function or load cached results based on rname.
+}
+\examples{
+library(BiocFileCache)
+val = 1
+my_fun1 = function(){message(val); val}
+bfc = BiocFileCache()
+#basic usage
+bfcif(bfc, "fun_results_1", my_fun1, verbose = TRUE)
+#note how function scoping works
+#be sure to update rname!
+val = 2
+bfcif(bfc, "fun_results_2", my_fun1, verbose = TRUE)
+#but cached results haven't changed
+bfcif(bfc, "fun_results_1", my_fun1, verbose = TRUE)
+
+#alternatively, we could just get the filepath
+bfcif(bfc, "fun_results_1", my_fun1, verbose = TRUE, return_path_only = TRUE)
+#this is true if results aren't yet cached
+bfcif(bfc, "fun_results_3", my_fun1, verbose = TRUE, return_path_only = TRUE)
 }

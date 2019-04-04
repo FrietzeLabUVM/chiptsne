@@ -16,3 +16,4 @@ vignettes/seqtsne_overview_full.Rmd
 vignettes/seqtsne_overview_hesc.Rmd
 vignettes/seqtsne_overview_k4.Rmd
 vignettes/seqtsne_overview_wide.Rmd
+inst/extdata/*bai

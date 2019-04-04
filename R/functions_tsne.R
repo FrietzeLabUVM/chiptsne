@@ -228,8 +228,8 @@ stsRunTsne = function(tsne_mat, perplexity = 100,
     tdt[, c("id", "cell") := tstrsplit(rn, " ", keep = 1:2)]
 
     if(norm1){
-        tdt$tx = norm1(tdt$tx)-.5
-        tdt$ty = norm1(tdt$ty)-.5
+        tdt$tx = rescale_capped(tdt$tx)-.5
+        tdt$ty = rescale_capped(tdt$ty)-.5
     }
 
 

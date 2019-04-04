@@ -1,83 +1,60 @@
-#' Title
+#' bfcif
 #'
-#' @param bfc
-#' @param rname
-#' @param FUN
-#' @param force_overwrite
-#' @param check_only
+#' conditionally run a function or load cached results based on rname.
 #'
-#' @return
+#' @param bfc a BiocFileCache object, as from running \code{BiocFileCache::BiocFileCache()}
+#' @param rname character rname to save/load from cache.  \code{digest::digest(list(YOUR_ARGS))} works.
+#' @param FUN function with no args to run.
+#' @param force_overwrite if TRUE, FUN will be run and cached results replaced if present.
+#' @param return_path_only if TRUE, FUN will never be run but path to file will be returned.  Particularly useful if you need to predetermined caching and paths for parallel execution.
+#' @param verbose if TRUE, a series of status messages are output.  Default is FALSE.
+#' @return the result of running FUN or loading cached results.
 #' @export
 #'
 #' @examples
-bfcif = function(bfc, rname, FUN, force_overwrite = FALSE, check_only = FALSE){
+#' library(BiocFileCache)
+#' val = 1
+#' my_fun1 = function(){message(val); val}
+#' bfc = BiocFileCache()
+#' #basic usage
+#' bfcif(bfc, "fun_results_1", my_fun1, verbose = TRUE)
+#' #note how function scoping works
+#' #be sure to update rname!
+#' val = 2
+#' bfcif(bfc, "fun_results_2", my_fun1, verbose = TRUE)
+#' #but cached results haven't changed
+#' bfcif(bfc, "fun_results_1", my_fun1, verbose = TRUE)
+#'
+#' #alternatively, we could just get the filepath
+#' bfcif(bfc, "fun_results_1", my_fun1, verbose = TRUE, return_path_only = TRUE)
+#' #this is true if results aren't yet cached
+#' bfcif(bfc, "fun_results_3", my_fun1, verbose = TRUE, return_path_only = TRUE)
+bfcif = function(bfc, rname, FUN, force_overwrite = FALSE, return_path_only = FALSE, verbose = FALSE){
     # is rname in cache?
     if(nrow(BiocFileCache::bfcquery(bfc, query = rname, field = "rname")) == 0){
+        if(verbose) message("results not in cache. ", appendLF = FALSE)
         cache_path = BiocFileCache::bfcnew(bfc, rname = rname)
 
     }else{
+        if(verbose) message("previous cache results found. ", appendLF = FALSE)
         cache_path = BiocFileCache::bfcrpath(bfc, rname)
+    }
+    if(return_path_only){
+        if(verbose) message("returning cache path.")
+        return(cache_path)
     }
     # does cached file exist?
     if(file.exists(cache_path) && !force_overwrite){
-        message("results do exist.")
-        if(check_only){
-            return(TRUE)
-        }
-        message("loading results.")
+        if(verbose) message("loading previous cache results...")
         load(BiocFileCache::bfcrpath(bfc, rname))
     }else{
-        if(!file.exists(cache_path)){
-            message("results do not exists.")
-        }else{
-            message("results being overwritten.")
-        }
-        if(check_only){
-            return(FALSE)
-        }
-        message("executing function...")
+        if(verbose) message("running function...", appendLF = FALSE)
         res = FUN()
+        if(verbose) message("caching results...")
         save(res, file = cache_path)
     }
     # return either new results or cached results
     res
-}
-
-#' Title
-#'
-#' @param gr
-#' @param ref_gr
-#' @param gr_size
-#'
-#' @return
-#' @export
-#'
-#' @examples
-my_annotate = function(gr,
-                       ref_gr = rtracklayer::import.gff("~/gencode.v28.annotation.gtf.gz",
-                                                        feature.type = "transcript", format = "gtf"),
-                       gr_size = 2000){
-    max_dist = 5e3
-    dists = distanceToNearest(ref_gr, resize(gr, gr_size, fix = "center"))
-    dists = subset(dists, distance <= max_dist)
-    anno_dt = cbind(as.data.table(ref_gr[queryHits(dists)])[, .(gene_name, gene_id, transcript_id)],
-                    as.data.table(gr[subjectHits(dists)]), distance = mcols(dists)[[1]])
-    anno_dt
-}
-
-#' Title
-#'
-#' @param x
-#'
-#' @return
-#' @export
-#'
-#' @examples
-symbol2uniprot = function(x){
-    bres = bitr(x, fromType = "SYMBOL",
-                toType = c("UNIPROT"),
-                OrgDb = org.Hs.eg.db)
-    bres[!duplicated(bres$SYMBOL),]$UNIPROT
 }
 
 #' Title
@@ -96,18 +73,27 @@ sampleCap = function(x, n = 500){
     out
 }
 
-#' Title
+#' wraps scales::rescale to enforce range of \code{to} on output
 #'
-#' @param x
-#' @param xrng
+#' @param x continuous vector of values to manipulate.
+#' @param to output range (numeric vector of length two)
+#' @param from input range (vector of length two). If not given, is calculated from the range of x
 #'
-#' @return
-#' @export
+#' @return x rescaled from \code{from} domain to \code{to} domain, within bounds of \code{to}
 #'
 #' @examples
-norm1 = function(x, xrng = range(x)){
-    stopifnot(length(xrng) == 2)
-    (x - min(xrng)) / (max(xrng) - min(xrng))
+#' #behaves identically to scales::rescale when x is within 'from' domain
+#' rescale_capped(0:10, to = c(0, 1), c(0, 10))
+#' scales::rescale(0:10, to = c(0, 1), c(0, 10))
+#' #when x exceeds 'from' domain, results are still within 'to' domain
+#' rescale_capped(0:10, to = c(0,1), c(0,5))
+#' #not true for scales::rescale
+#' scales::rescale(0:10, to = c(0,1), c(0,5))
+rescale_capped = function(x, to = c(0,1), from = range(x, na.rm = TRUE, finite = TRUE)){
+    y = scales::rescale(x, to, from)
+    y[y > max(to)] = max(to)
+    y[y < min(to)] = min(to)
+    y
 }
 
 #' Title
@@ -122,7 +108,7 @@ norm1 = function(x, xrng = range(x)){
 #' @examples
 mybin = function(x, n_points, xrng = range(x)){
     stopifnot(length(xrng) == 2)
-    floor(norm1(x, xrng) * (n_points-.00001))+1
+    floor(rescale_capped(x, xrng) * (n_points-.00001))+1
 }
 
 #' Title
