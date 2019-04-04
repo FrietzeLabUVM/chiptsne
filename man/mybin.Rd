@@ -9,6 +9,9 @@ mybin(x, n_points, xrng = range(x))
 \arguments{
 \item{xrng}{}
 }
+\value{
+
+}
 \description{
 Title
 }

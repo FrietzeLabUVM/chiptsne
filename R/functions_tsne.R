@@ -5,8 +5,6 @@ fetch_bam_dt = function(qdt,
                         qwin = 50,
                         qmet = "summary",
                         agg_FUN = sum,
-                        cap_value = 20,
-                        high_on_right = TRUE,
                         bfc = BiocFileCache::BiocFileCache(),
                         n_cores = getOption("mc.cores", 1),
                         rname = digest::digest(list(qgr, qdt[, 1:3], qwin, qmet)),
@@ -40,8 +38,6 @@ fetch_bw_dt = function(qdt,
                        qwin = 50,
                        qmet = "summary",
                        agg_FUN = mean,
-                       cap_value = 20,
-                       high_on_right = TRUE,
                        bfc = BiocFileCache::BiocFileCache(),
                        n_cores = getOption("mc.cores", 1),
                        rname = digest::digest(list(qgr, qdt[, 1:3], qwin, qmet)),
@@ -68,15 +64,109 @@ fetch_bw_dt = function(qdt,
     bw_dt
 }
 
-prep_profile_dt = function(prof_dt, norm_dt, qgr,
-                           cap_value = 20,
+
+#' prepares query_gr GRanges for using in fetch functions
+#'
+#' fixed widths are recommended but not required
+#'
+#' metadata column id must be set and all ids must be unique
+#'
+#' @param query_gr GRanges of regions to be fetched
+#' @param region_size numeric fixed width to apply to query_gr. if NULL, width
+#'   is not enforced.
+#' @param id_prefix character prefix to use for ids. 'region' is default and
+#'   will yield ids such as region_1, region_2, region_3 ...
+#'
+#' @return GRanges ready for fetching
+#' @export
+#' @examples
+#' library(GRanges)
+#' qgr = GRanges("chr1", IRanges(1:10+100, 1:10+150))
+#' prep_query_gr(qgr)
+#' #region_size and id_prefix can be customized
+#' prep_query_gr(qgr, region_size = 70, id_prefix = "peak")
+#' names(qgr) = LETTERS[seq_along(qgr)]
+#' prep_query_gr(qgr)
+#' qgr$name = letters[seq_along(qgr)]
+#' prep_query_gr(qgr)
+#' #invalid - i.e. duplicated ids will be overwritten
+#' qgr$id = rep("a", length(qgr))
+#' prep_query_gr(qgr)
+prep_query_gr = function(query_gr,
+                         region_size = NULL,
+                         id_prefix = "region"){
+    if(!is.null(region_size)){
+        query_gr = resize(query_gr, region_size, fix = "center")
+    }
+    #successively check $id, $name, and names()
+    if(!is.null(query_gr$id)){
+        if(!any(duplicated(query_gr$id))){
+            message("using existing id")
+            names(query_gr) = NULL
+            query_gr$name = NULL
+            return(query_gr)
+        }
+        message("ignoring id attribute with invalid duplicates")
+    }
+    if(!is.null(query_gr$name)){
+        if(!any(duplicated(query_gr$name))){
+            message("using existing name as id")
+            query_gr$id = query_gr$name
+            names(query_gr) = NULL
+            query_gr$name = NULL
+            return(query_gr)
+        }
+        message("ignoring name attribute with invalid duplicates")
+    }
+    if(!is.null(names(query_gr))){
+        if(!any(duplicated(names(query_gr)))){
+            message("using existing name as id")
+            query_gr$id = names(query_gr)
+            names(query_gr) = NULL
+            query_gr$name = NULL
+            return(query_gr)
+        }
+        message("ignoring names() with invalid duplicates")
+    }
+    message("generating unique ids")
+    names(query_gr) = NULL
+    query_gr$name = NULL
+    query_gr$id = paste(id_prefix, seq(length(query_gr)), sep = "_")
+    query_gr
+}
+
+#' applies normalizations and transformations to prof_dt, a tidy data.table of
+#' profiles.
+#'
+#' @param prof_dt data.table of ChIP-seq signal profiles.
+#' @param norm_dt data.table containing norm_factor values for cell/mark combinations.
+#' @param qgr GRanges
+#' @param cap_value numeric, ChIP-seq data is prone to outliers, which will
+#' wash out weaker signal if not properly capped.  Default is Inf, i.e. no capping.
+#' @param high_on_right boolean, should profiles be flipped when most signal is
+#'   on the left? Default is TRUE.  This is appropriate when there is no
+#'   biological significance to the orientation of a signal, i.e. mirror image
+#'   profiles are equivalent.
+#'
+#' @return prepared version of prof_dt
+#' @export
+#'
+#' @examples
+#'
+prep_profile_dt = function(prof_dt,
+                           norm_dt,
+                           qgr,
+                           cap_value = Inf,
                            high_on_right = TRUE){
     if(!all(norm_dt$norm_factor == 1)){
         prof_dt = merge(prof_dt, norm_dt)
         prof_dt[, y := y * norm_factor]
         prof_dt$norm_factor = NULL
     }
-    prof_dt[y > cap_value, y := cap_value]
+    if(is.finite(cap_vale)){
+        prof_dt[y > cap_value, y := cap_value]
+    }
+
 
     if(high_on_right){
         balance_dt = prof_dt[, list(right_sum = sum(y[x > 0]), left_sum = sum(y[x < 0])), by = list(cell, id)]
@@ -126,11 +216,12 @@ dt2mat = function(prof_dt, marks){
 #'
 #' @return
 #' @export
-#' @importFrom seqsetvis ssvFetchBigwig
+#' @importFrom seqsetvis ssvFetchBigwig ssvFetchBam
 #'
 #' @examples
 stsFetchTsneInput = function(qdt,
                              qgr,
+                             region_size = NULL,
                              file_format = NULL,
                              qwin = 50,
                              qmet = "summary",
@@ -142,6 +233,8 @@ stsFetchTsneInput = function(qdt,
                              rname = digest::digest(list(qgr, qdt[, 1:3], qwin, qmet)),
                              force_overwrite = FALSE){
     stopifnot(is.data.frame(qdt))
+    qgr = prep_query_gr(qgr, region_size)
+
     qdt = as.data.table(qdt)
     if(is.null(qdt$norm_factor)){
         qdt$norm_factor = 1
@@ -174,7 +267,8 @@ stsFetchTsneInput = function(qdt,
     fetch_FUN = switch(file_format,
                        bam = fetch_bam_dt,
                        bw = fetch_bw_dt)
-    bw_dt = fetch_FUN(qdt, qgr, qwin, qmet, agg_FUN, cap_value, high_on_right, bfc)
+    # fetch tidy data
+    bw_dt = fetch_FUN(qdt, qgr, qwin, qmet, agg_FUN, bfc)
     # apply transforms and thresholds
     bw_dt = prep_profile_dt(bw_dt,
                             unique(qdt[, list(cell, mark, norm_factor)]),

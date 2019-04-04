@@ -80,7 +80,7 @@ sampleCap = function(x, n = 500){
 #' @param from input range (vector of length two). If not given, is calculated from the range of x
 #'
 #' @return x rescaled from \code{from} domain to \code{to} domain, within bounds of \code{to}
-#'
+#' @importFrom scales rescale
 #' @examples
 #' #behaves identically to scales::rescale when x is within 'from' domain
 #' rescale_capped(0:10, to = c(0, 1), c(0, 10))
@@ -103,7 +103,6 @@ rescale_capped = function(x, to = c(0,1), from = range(x, na.rm = TRUE, finite =
 #' @param xrng
 #'
 #' @return
-#' @export
 #'
 #' @examples
 mybin = function(x, n_points, xrng = range(x)){
@@ -118,7 +117,6 @@ mybin = function(x, n_points, xrng = range(x)){
 #' @param xrng
 #'
 #' @return
-#' @export
 #'
 #' @examples
 mybin_centers = function(x, n_points, xrng = range(x)){
@@ -129,6 +127,11 @@ mybin_centers = function(x, n_points, xrng = range(x)){
     xs
 }
 
+# x: the vector n: the number of samples centered: if FALSE, then average
+# current sample and previous (n-1) samples if TRUE, then average
+# symmetrically in past and
+# future. (If n is even, use one more sample from future.)
+# from http://www.cookbook-r.com/Manipulating_data/Calculating_a_moving_average/
 movingAverage = function(x, n = 1, centered = TRUE) {
 
     if (centered) {
@@ -181,16 +184,15 @@ movingAverage = function(x, n = 1, centered = TRUE) {
     s/count
 }
 
-#' Title
-#'
-#' @param p
-#' @param rects
-#'
-#' @return
-#' @export
-#'
-#' @examples
-annotate_rects = function(p, rects){
+# adds a seriees of rectangles to ggplot p
+# rects is matrix, 1 rectangle per row, columns of xmin, xmax, ymin, ymax
+annotate_rects = function(p,
+                          rects,
+                          rect_fill = NA,
+                          rect_color = "black",
+                          text_color = "black",
+                          text_position = c("topleft", "center", "none")
+){
     anns = matrix(unlist(rects), ncol = 4, byrow = TRUE)
     p_alpha = .1
 
@@ -200,17 +202,37 @@ annotate_rects = function(p, rects){
                      xmin = anns[i, 1],
                      xmax = anns[i, 2],
                      ymin = anns[i, 3],
-                     ymax = anns[i, 4], color = "black", fill = NA) +
-            annotate("label",
-                     # x = (anns[i, 1] + anns[i, 2])/2,
-                     # y = (anns[i, 3] + anns[i, 4])/2,
-                     x = anns[i, 1],
-                     y = anns[i, 4],
-                     hjust = 1,
-                     vjust = 1,
-                     label = i)
-
-
+                     ymax = anns[i, 4],
+                     color = rect_color,
+                     fill = rect_fill)
+        if(!is.null(text_color)){
+            switch(text_position,
+                   topleft = {
+                       p = p +
+                           annotate("label",
+                                    # x = (anns[i, 1] + anns[i, 2])/2,
+                                    # y = (anns[i, 3] + anns[i, 4])/2,
+                                    x = anns[i, 1],
+                                    y = anns[i, 4],
+                                    hjust = 1,
+                                    vjust = 1,
+                                    label = i,
+                                    color = text_color)
+                   },
+                   center = {
+                       p = p +
+                           annotate("label",
+                                    # x = (anns[i, 1] + anns[i, 2])/2,
+                                    # y = (anns[i, 3] + anns[i, 4])/2,
+                                    x = (anns[i, 1]+anns[i, 2])/2,
+                                    y = (anns[i, 3]+anns[i, 4])/2,
+                                    hjust = .5,
+                                    vjust = .5,
+                                    label = i,
+                                    color = text_color)
+                   }
+            )
+        }
     }
     p
 }

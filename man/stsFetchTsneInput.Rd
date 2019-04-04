@@ -4,8 +4,8 @@
 \alias{stsFetchTsneInput}
 \title{Title}
 \usage{
-stsFetchTsneInput(qdt, qgr, file_format = NULL, qwin = 50,
-  qmet = "summary", cap_value = 20, agg_FUN = NULL,
+stsFetchTsneInput(qdt, qgr, region_size = NULL, file_format = NULL,
+  qwin = 50, qmet = "summary", cap_value = 20, agg_FUN = NULL,
   high_on_right = TRUE, bfc = BiocFileCache::BiocFileCache(),
   n_cores = getOption("mc.cores", 1), rname = digest::digest(list(qgr,
   qdt[, 1:3], qwin, qmet)), force_overwrite = FALSE)
