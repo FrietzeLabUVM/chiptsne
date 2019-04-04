@@ -9,7 +9,7 @@ Description: More about what it does (maybe more than one line)
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
-Depnds: R (>= 3.5), data.table, ggplot2
+Depends: R (>= 3.5), data.table, ggplot2
 Imports: 
     GenomicRanges,
     magick,

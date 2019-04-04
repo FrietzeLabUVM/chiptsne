@@ -114,7 +114,7 @@ t-sne requires a wide-matrix view where each row is a point (observation) and
 each column is a dimension (attribute) of the data.
 
 ```{r prepare input}
-tsne_input = fetch_tsne_mat(cfg_dt, query_gr)
+tsne_input = stsFetchTsneInput(cfg_dt, query_gr)
 ```
 
 There's a bit of art to running t-sne, see this 
@@ -124,7 +124,7 @@ Be sure to set `mc.cores` using `options()` or provide the `n_cores`
 parameter to speed up processing time.
 
 ```{r run tsne}
-tsne_res = run_tsne(tsne_input$tsne_mat, perplexity = perplexity)
+tsne_res = stsRunTsne(tsne_input$tsne_mat, perplexity = perplexity)
 ```
 
 # Plotting

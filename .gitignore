@@ -9,3 +9,10 @@ tsne_images
 tmp*
 *save
 dev_animate.R
+*.gif
+vignettes/*html
+run_cov.R
+vignettes/seqtsne_overview_full.Rmd
+vignettes/seqtsne_overview_hesc.Rmd
+vignettes/seqtsne_overview_k4.Rmd
+vignettes/seqtsne_overview_wide.Rmd

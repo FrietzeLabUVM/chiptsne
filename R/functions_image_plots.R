@@ -320,149 +320,149 @@ plot_tsne_img_byCell = function(images_dt,
     invisible(list(plot = p, plot_data = simg_dt))
 }
 
-#' Title
+#' #' Title
+#' #'
+#' #' @param img_results
+#' #' @param qcell
+#' #' @param xrng
+#' #' @param yrng
+#' #' @param N_floor
+#' #' @param N_ceiling
+#' #' @param min_size
+#' #' @param facet_by
+#' #'
+#' #' @return
+#' #' @export
+#' #'
+#' #' @examples
+#' make_img_plots_facet = function(img_results, qcell = NULL,
+#'                                 xrng = c(-.5, .5),
+#'                                 yrng = c(-.5, .5),
+#'                                 N_floor = 0,
+#'                                 N_ceiling = NULL,
+#'                                 min_size = .3,
+#'                                 facet_by = "cell"){
+#'     return_list = TRUE
+#'     if(all(c("images_dt", "summary_profiles_dt", "tsne_dt") %in% names(img_results))){
+#'         img_results = list(img_results)
+#'         return_list = FALSE
+#'     }
+#'     stopifnot(is.list(img_results))
+#'     # stopifnot(is.list(img_results$img_res))
 #'
-#' @param img_results
-#' @param qcell
-#' @param xrng
-#' @param yrng
-#' @param N_floor
-#' @param N_ceiling
-#' @param min_size
-#' @param facet_by
+#'     if(is.null(qcell))
+#'         qcell =
+#'         as.character(unique(
+#'             img_results[[1]]$tsne_dt$cell
+#'         ))
 #'
-#' @return
-#' @export
+#'     plots = lapply(img_results, function(x){
+#'         img_dt = copy(x$images_dt)
+#'         # img_dt$N = NULL
+#'         # tdt = x$tsne_dt[cell %in% qcell, list(.N), list(bx, by)]
+#'         # img_dt = merge(img_dt, tdt, by = c("bx", "by"))
+#'         plot_tsne_img(img_dt,
+#'                       n_points = x$n_points,
+#'                       N_floor = N_floor,
+#'                       N_ceiling = N_ceiling,
+#'                       min_size = min_size,
+#'                       show_plot = FALSE,
+#'                       xrng = xrng,
+#'                       yrng = yrng)$plot +
+#'             coord_cartesian(xlim = xrng, ylim = yrng) +
+#'             facet_wrap(facet_by, drop = FALSE)
+#'     })
 #'
-#' @examples
-make_img_plots_facet = function(img_results, qcell = NULL,
-                                xrng = c(-.5, .5),
-                                yrng = c(-.5, .5),
-                                N_floor = 0,
-                                N_ceiling = NULL,
-                                min_size = .3,
-                                facet_by = "cell"){
-    return_list = TRUE
-    if(all(c("images_dt", "summary_profiles_dt", "tsne_dt") %in% names(img_results))){
-        img_results = list(img_results)
-        return_list = FALSE
-    }
-    stopifnot(is.list(img_results))
-    # stopifnot(is.list(img_results$img_res))
-
-    if(is.null(qcell))
-        qcell =
-        as.character(unique(
-            img_results[[1]]$tsne_dt$cell
-        ))
-
-    plots = lapply(img_results, function(x){
-        img_dt = copy(x$images_dt)
-        # img_dt$N = NULL
-        # tdt = x$tsne_dt[cell %in% qcell, list(.N), list(bx, by)]
-        # img_dt = merge(img_dt, tdt, by = c("bx", "by"))
-        plot_tsne_img(img_dt,
-                      n_points = x$n_points,
-                      N_floor = N_floor,
-                      N_ceiling = N_ceiling,
-                      min_size = min_size,
-                      show_plot = FALSE,
-                      xrng = xrng,
-                      yrng = yrng)$plot +
-            coord_cartesian(xlim = xrng, ylim = yrng) +
-            facet_wrap(facet_by, drop = FALSE)
-    })
-
-
-    # pg = cowplot::plot_grid(plotlist = plots, nrow = length(plots))
-    # pg
-    if(return_list){
-        plots
-    }else{
-        plots[[1]]
-    }
-
-}
-
-#' Title
 #'
-#' @param img_results
-#' @param qcell
-#' @param xrng
-#' @param yrng
-#' @param N_floor
-#' @param N_ceiling
-#' @param min_size
-#' @param as_facet
+#'     # pg = cowplot::plot_grid(plotlist = plots, nrow = length(plots))
+#'     # pg
+#'     if(return_list){
+#'         plots
+#'     }else{
+#'         plots[[1]]
+#'     }
 #'
-#' @return
-#' @export
+#' }
+
+#' #' Title
+#' #'
+#' #' @param img_results
+#' #' @param qcell
+#' #' @param xrng
+#' #' @param yrng
+#' #' @param N_floor
+#' #' @param N_ceiling
+#' #' @param min_size
+#' #' @param as_facet
+#' #'
+#' #' @return
+#' #' @export
+#' #'
+#' #' @examples
+#' make_img_plots = function(img_results, qcell = NULL,
+#'                           xrng = c(-.5, .5),
+#'                           yrng = c(-.5, .5),
+#'                           N_floor = 0,
+#'                           N_ceiling = NULL,
+#'                           min_size = .3,
+#'                           as_facet = TRUE){
+#'     return_list = TRUE
+#'     if(all(c("images_dt", "summary_profiles_dt", "tsne_dt") %in% names(img_results))){
+#'         img_results = list(img_results)
+#'         return_list = FALSE
+#'     }
+#'     stopifnot(is.list(img_results))
 #'
-#' @examples
-make_img_plots = function(img_results, qcell = NULL,
-                          xrng = c(-.5, .5),
-                          yrng = c(-.5, .5),
-                          N_floor = 0,
-                          N_ceiling = NULL,
-                          min_size = .3,
-                          as_facet = TRUE){
-    return_list = TRUE
-    if(all(c("images_dt", "summary_profiles_dt", "tsne_dt") %in% names(img_results))){
-        img_results = list(img_results)
-        return_list = FALSE
-    }
-    stopifnot(is.list(img_results))
-
-    # img_results = lapply(img_results, function(x){
-    #     if(is.null(x$cell)){
-    #         x$cell = factor("cell")
-    #     }
-    #     x
-    # })
-    if(is.null(qcell))
-        qcell =
-        levels(img_results[[1]]$tsne_dt$cell)
-
-
-    if(as_facet){
-        plots = lapply(img_results, function(x){
-            pdt = x$tsne_dt[cell %in% qcell]
-            pdt$cell = factor(pdt$cell, levels = qcell)
-            plot_tsne_img_byCell(x$images_dt,
-                                 pdt,
-                                 n_points = x$n_points,
-                                 N_floor = N_floor,
-                                 N_ceiling = N_ceiling,
-                                 min_size = min_size,
-                                 show_plot = FALSE,
-                                 xrng = xrng, yrng =
-                                     yrng)$plot +
-                coord_cartesian(xlim = xrng, ylim = yrng)
-        })
-    }else{
-        plots = lapply(img_results, function(x){
-            img_dt = copy(x$images_dt)
-            img_dt$N = NULL
-            tdt = x$tsne_dt[cell %in% qcell, list(.N), list(bx, by)]
-            img_dt = merge(img_dt, tdt)
-            plot_tsne_img(img_dt,
-                          n_points = x$n_points,
-                          N_floor = N_floor,
-                          N_ceiling = N_ceiling,
-                          min_size = min_size,
-                          show_plot = FALSE,
-                          xrng = xrng,
-                          yrng = yrng)$plot +
-                coord_cartesian(xlim = xrng, ylim = yrng)
-        })
-    }
-
-
-    # pg = cowplot::plot_grid(plotlist = plots, nrow = length(plots))
-    # pg
-    if(return_list){
-        plots
-    }else{
-        plots[[1]]
-    }
-}
+#'     # img_results = lapply(img_results, function(x){
+#'     #     if(is.null(x$cell)){
+#'     #         x$cell = factor("cell")
+#'     #     }
+#'     #     x
+#'     # })
+#'     if(is.null(qcell))
+#'         qcell =
+#'         levels(img_results[[1]]$tsne_dt$cell)
+#'
+#'
+#'     if(as_facet){
+#'         plots = lapply(img_results, function(x){
+#'             pdt = x$tsne_dt[cell %in% qcell]
+#'             pdt$cell = factor(pdt$cell, levels = qcell)
+#'             plot_tsne_img_byCell(x$images_dt,
+#'                                  pdt,
+#'                                  n_points = x$n_points,
+#'                                  N_floor = N_floor,
+#'                                  N_ceiling = N_ceiling,
+#'                                  min_size = min_size,
+#'                                  show_plot = FALSE,
+#'                                  xrng = xrng, yrng =
+#'                                      yrng)$plot +
+#'                 coord_cartesian(xlim = xrng, ylim = yrng)
+#'         })
+#'     }else{
+#'         plots = lapply(img_results, function(x){
+#'             img_dt = copy(x$images_dt)
+#'             img_dt$N = NULL
+#'             tdt = x$tsne_dt[cell %in% qcell, list(.N), list(bx, by)]
+#'             img_dt = merge(img_dt, tdt)
+#'             plot_tsne_img(img_dt,
+#'                           n_points = x$n_points,
+#'                           N_floor = N_floor,
+#'                           N_ceiling = N_ceiling,
+#'                           min_size = min_size,
+#'                           show_plot = FALSE,
+#'                           xrng = xrng,
+#'                           yrng = yrng)$plot +
+#'                 coord_cartesian(xlim = xrng, ylim = yrng)
+#'         })
+#'     }
+#'
+#'
+#'     # pg = cowplot::plot_grid(plotlist = plots, nrow = length(plots))
+#'     # pg
+#'     if(return_list){
+#'         plots
+#'     }else{
+#'         plots[[1]]
+#'     }
+#' }

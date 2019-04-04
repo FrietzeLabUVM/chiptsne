@@ -154,7 +154,7 @@ geom_image.rect <- function(mapping=NULL, data=NULL, stat="identity",
 ##' @importFrom ggplot2 draw_key_blank
 ##' @importFrom grid gTree
 ##' @importFrom grid gList
-GeomImage.rect <- ggproto("GeomImage.rect", Geom,
+GeomImage.rect <- ggplot2::ggproto("GeomImage.rect", Geom,
                           setup_data = function(data, params) {
                               if (is.null(data$subset))
                                   return(data)
