@@ -64,3 +64,11 @@ data.table with variables
 Prepares images summarizing profiles in t-sne regions and returns ggimage
 compatible data.frame for plotting.
 }
+\examples{
+data("profile_dt")
+data("tsne_dt")
+img_res = prep_images(profile_dt, tsne_dt, 4)
+#zoom on top-right quadrant
+img_res.zoom = prep_images(profile_dt, tsne_dt, 4, xrng = c(0, .5), yrng = c(0, .5))
+#use results with plot_tsne_img() to make plots
+}

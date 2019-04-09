@@ -2,13 +2,26 @@
 % Please edit documentation in R/functions_util.R
 \name{sampleCap}
 \alias{sampleCap}
-\title{Title}
+\title{sampleCap}
 \usage{
 sampleCap(x, n = 500)
 }
 \arguments{
-\item{n}{}
+\item{x}{vector to sample from}
+
+\item{n}{number of items to sample.  automatically reduced to length of x if
+too high.}
+}
+\value{
+x sampled down to n items.
 }
 \description{
-Title
+Handy wrapper to sample() that avoid having to check against exceeding size
+of x.
+}
+\examples{
+x = seq(10)
+sampleCap(x, 5)
+#avoid having to check number of items being sampled
+sampleCap(x, 15)
 }

@@ -2,15 +2,56 @@
 % Please edit documentation in R/functions_image_plots.R
 \name{plot_tsne_img}
 \alias{plot_tsne_img}
-\title{Title}
+\title{plot_tsne_img}
 \usage{
-plot_tsne_img(image_dt, n_points, p = NULL, xrng = c(-0.5, 0.5),
-  yrng = c(-0.5, 0.5), N_floor = 0, N_ceiling = NULL,
-  min_size = 0.3, show_plot = FALSE)
+plot_tsne_img(image_dt, x_points, y_points = x_points, xrng = c(-0.5,
+  0.5), yrng = c(-0.5, 0.5), p = NULL, N_floor = 0,
+  N_ceiling = NULL, min_size = 0.3, return_data = FALSE)
 }
 \arguments{
-\item{show_plot}{}
+\item{image_dt}{$image_dt of result from prep_images()}
+
+\item{x_points}{numeric.  number of grid points to use in x dimension.}
+
+\item{y_points}{numeric.  number of grid points to use in y dimension.}
+
+\item{xrng}{view domain in x dimension.}
+
+\item{yrng}{view domain in y dimension.}
+
+\item{p}{an existing ggplot to overlay images onto.  Default of NULL starts a
+new plot.}
+
+\item{N_floor}{The value of N to consider 0.  bins with N values <= N_floor
+will be ignored.}
+
+\item{N_ceiling}{The value of N to consider 1.  bins with N values >=
+N_ceiling will have images drawn at full size.}
+
+\item{min_size}{Numeric (0, 1]. The minimum size images to draw.  The default
+of .3 draws images for all bins with N values >= 30% of the way from
+N_floor to N_ceiling.}
+
+\item{return_data}{if TRUE, data.table that would have been used to create
+ggplot is returned instead.}
+}
+\value{
+ggplot containing images summarizing t-sne regions.  if return_data
+  is TRUE, instead the data.table containing plot info is returned.
 }
 \description{
-Title
+plot_tsne_img
+}
+\examples{
+data("profile_dt")
+data("tsne_dt")
+img_res = prep_images(profile_dt, tsne_dt, 4)
+#zoom on top-right quadrant
+img_res.zoom = prep_images(profile_dt, tsne_dt, 4, xrng = c(0, .5), yrng = c(0, .5))
+plot_tsne_img(img_res$image_dt,
+              x_points = img_res$x_points)
+plot_tsne_img(img_res.zoom$image_dt,
+              x_points = img_res.zoom$x_points,
+              xrng = img_res.zoom$xrng,
+              yrng = img_res.zoom$yrng)
 }

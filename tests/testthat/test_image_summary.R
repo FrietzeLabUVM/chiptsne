@@ -38,4 +38,10 @@ test_that("stsPrepImages parameter passthrough", {
     expect_equal(img_res$yrng, c(-.45, .35))
 })
 
-# plot_tsne_img(img_res)
+img_rect = set_image_rects(img_res$image_dt,
+                x_points = img_res$x_points, y_points = img_res$y_points,
+                xrng = img_res$xrng, yrng = img_res$yrng)
+
+p = plot_tsne_img(img_res$image_dt,
+              x_points = img_res$x_points, y_points = img_res$y_points,
+              xrng = img_res$xrng, yrng = img_res$yrng)

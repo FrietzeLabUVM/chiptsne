@@ -58,15 +58,23 @@ bfcif = function(bfc, rname, FUN, force_overwrite = FALSE, return_path_only = FA
     res
 }
 
-#' Title
+#' sampleCap
 #'
-#' @param x
-#' @param n
+#' Handy wrapper to sample() that avoid having to check against exceeding size
+#' of x.
 #'
-#' @return
+#' @param x vector to sample from
+#' @param n number of items to sample.  automatically reduced to length of x if
+#'   too high.
+#'
+#' @return x sampled down to n items.
 #' @export
 #'
 #' @examples
+#' x = seq(10)
+#' sampleCap(x, 5)
+#' #avoid having to check number of items being sampled
+#' sampleCap(x, 15)
 sampleCap = function(x, n = 500){
     n = min(n, length(unique(x)))
     out = sample(unique(x), n)
@@ -97,7 +105,7 @@ rescale_capped = function(x, to = c(0,1), from = range(x, na.rm = TRUE, finite =
     y
 }
 
-#' Title
+#'
 #'
 #' @param x
 #' @param n_points
@@ -266,60 +274,6 @@ calc_delta = function(tsne_res, cell_a, cell_b, n_points){
     av_dt$tx_cell_a = xs[av_dt$bx_cell_a]
     av_dt$ty_cell_a = ys[av_dt$by_cell_a]
     return(list(velocity_dt = v_dt, agg_velocity_dt = av_dt))
-}
-
-
-#' Title
-#'
-#' @param qcell
-#' @param as_facet
-#'
-#' @return
-#' @import ggplot2
-#' @importFrom cowplot plot_grid
-#' @export
-#'
-#' @examples
-make_tss_plot = function(qcell, as_facet = TRUE){
-    xrng = range(tsne_res$tx)
-    yrng = range(tsne_res$ty)
-
-    pr_img_res = make_tsne_img(
-        profiles_dt = pr_dt,
-        position_dt = tsne_res[cell %in% qcell],
-        apply_norm = FALSE,
-        #force_rewrite = TRUE,
-        xrng = xrng,
-        yrng = yrng,
-        n_points = n_points, line_colors = c("signal" = "black")
-    )
-    if(as_facet){
-        p_pr_density = plot_tsne_img_byCell(pr_img_res$images_dt,
-                                            pr_img_res$tsne_dt[cell %in% qcell],
-                                            n_points = n_points, N_ceiling = NULL)$plot +
-            coord_cartesian(xlim = xrng, ylim = yrng)
-        p_h7_density = plot_tsne_img_byCell(img_res$images_dt,
-                                            img_res$tsne_dt[cell %in% qcell],
-                                            n_points = n_points, N_ceiling = NULL)$plot +
-            coord_cartesian(xlim = xrng, ylim = yrng)
-    }else{
-        p_pr_density = plot_tsne_img(pr_img_res$images_dt,
-                                     # pr_img_res$tsne_dt[cell %in% qcell],
-                                     n_points = n_points, N_ceiling = NULL)$plot +
-            coord_cartesian(xlim = xrng, ylim = yrng)
-        p_h7_density = plot_tsne_img(img_res$images_dt,
-                                     # img_res$tsne_dt[cell %in% qcell],
-                                     n_points = n_points, N_ceiling = NULL)$plot +
-            coord_cartesian(xlim = xrng, ylim = yrng)
-    }
-
-
-    pg = cowplot::plot_grid(p_h7_density + labs(title = paste(paste(qcell, collapse = ", "), ": k4me3+k27me3")),
-                            p_pr_density + labs(title = paste(paste(qcell, collapse = ", "), ": tss frequency")))
-    # ggsave(paste0("tmp_", qcell, "_tss.pdf"), plot = pg, width = 8, height = 4)
-    pg
-    # head(pr_img_res$tsne_dt[cell == cell, .N, by = list(bx, by)][order(N, decreasing = TRUE)])
-    # head(img_res$tsne_dt[cell == cell, .N, by = list(bx, by)][order(N, decreasing = TRUE)])
 }
 
 #' Title

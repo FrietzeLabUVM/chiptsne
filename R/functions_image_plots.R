@@ -35,8 +35,8 @@ stsPlotSummaryProfiles = function(
     ## sizing and level of detail
     N_floor = 0,
     N_ceiling = NULL,
-    min_size = .3,
-    show_plot = FALSE){
+    min_size = .3
+){
     #prepare images
     prep_images()
     plot_tsne_img()
@@ -81,6 +81,12 @@ stsPlotSummaryProfiles = function(
 #' @importFrom seqsetvis applySpline
 #'
 #' @examples
+#' data("profile_dt")
+#' data("tsne_dt")
+#' img_res = prep_images(profile_dt, tsne_dt, 4)
+#' #zoom on top-right quadrant
+#' img_res.zoom = prep_images(profile_dt, tsne_dt, 4, xrng = c(0, .5), yrng = c(0, .5))
+#' #use results with plot_tsne_img() to make plots
 prep_images = function(profile_dt,
                        position_dt,
                        x_points,
@@ -243,22 +249,44 @@ prep_images = function(profile_dt,
                 xrng = xrng, yrng = yrng))
 }
 
-#' Title
+#' set_image_rects
 #'
-#' @param simg_dt
-#' @param n_points
-#' @param xrng
-#' @param yrng
-#' @param N_floor
-#' @param N_ceiling
-#' @param min_size
+#' configures result of prep_images by setting rectangle parameters
 #'
-#' @return
+#' @param image_dt $image_dt of result from prep_images()
+#' @param x_points numeric.  number of grid points to use in x dimension.
+#' @param y_points numeric.  number of grid points to use in y dimension.
+#' @param xrng view domain in x dimension.
+#' @param yrng view domain in y dimension.
+#' @param N_floor The value of N to consider 0.  bins with N values <= N_floor
+#'   will be ignored.
+#' @param N_ceiling The value of N to consider 1.  bins with N values >=
+#'   N_ceiling will have images drawn at full size.
+#' @param min_size Numeric (0, 1]. The minimum size images to draw.  The default
+#'   of .3 draws images for all bins with N values >= 30% of the way from
+#'   N_floor to N_ceiling.
+#'
+#' @return image_dt with rect aesthetics (xmin, xmax, ymin, and ymax) added.
 #' @export
 #'
 #' @examples
-set_image_rects = function(simg_dt,
-                           n_points,
+#' library(ggplot2)
+#' data("profile_dt")
+#' data("tsne_dt")
+#'
+#' img_res = prep_images(profile_dt,
+#'                       tsne_dt,
+#'                       x_points = 4)
+#' img_rect = set_image_rects(img_res$image_dt,
+#'                            x_points = img_res$x_points,
+#'                            y_points = img_res$y_points,
+#'                            xrng = img_res$xrng,
+#'                            yrng = img_res$yrng)
+#' ggplot(img_rect, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax)) + geom_rect()
+#' ggplot(img_rect, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, image = png_file)) + geom_image.rect()
+set_image_rects = function(image_dt,
+                           x_points,
+                           y_points,
                            xrng,
                            yrng,
                            N_floor = 0,
@@ -266,277 +294,172 @@ set_image_rects = function(simg_dt,
                            min_size = .3
 ){
     if(is.null(N_ceiling)){
-        N_ceiling = max(simg_dt$N)
+        N_ceiling = max(image_dt$N)
     }
-    simg_dt[, img_size := N]
-    simg_dt[img_size > N_ceiling, img_size := N_ceiling]
-    simg_dt[img_size < N_floor, img_size := N_floor]
+    image_dt[, img_size := N]
+    image_dt[img_size > N_ceiling, img_size := N_ceiling]
+    image_dt[img_size < N_floor, img_size := N_floor]
 
-    simg_dt[, img_size := img_size - N_floor]
-    simg_dt[, img_size := img_size / N_ceiling]
-    simg_dt[, img_size := img_size]
-    simg_dt = simg_dt[img_size >= min_size]
+    image_dt[, img_size := img_size - N_floor]
+    image_dt[, img_size := img_size / N_ceiling]
+    image_dt[, img_size := img_size]
+    image_dt = image_dt[img_size >= min_size]
 
-    xspc = diff(xrng)/n_points/2
-    yspc = diff(yrng)/n_points/2
+    xspc = diff(xrng)/x_points/2
+    yspc = diff(yrng)/y_points/2
 
-    simg_dt[, xmin := tx - xspc * img_size]
-    simg_dt[, xmax := tx + xspc * img_size]
-    simg_dt[, ymin := ty - yspc * img_size]
-    simg_dt[, ymax := ty + yspc * img_size]
-    simg_dt
+    image_dt[, xmin := tx - xspc * img_size]
+    image_dt[, xmax := tx + xspc * img_size]
+    image_dt[, ymin := ty - yspc * img_size]
+    image_dt[, ymax := ty + yspc * img_size]
+    image_dt
 }
 
-#' Title
+#' plot_tsne_img
 #'
-#' @param image_dt
-#' @param n_points
-#' @param p
-#' @param xrng
-#' @param yrng
-#' @param N_floor
-#' @param N_ceiling
-#' @param min_size
-#' @param show_plot
+#' @param image_dt $image_dt of result from prep_images()
+#' @param x_points numeric.  number of grid points to use in x dimension.
+#' @param y_points numeric.  number of grid points to use in y dimension.
+#' @param xrng view domain in x dimension.
+#' @param yrng view domain in y dimension.
+#' @param p an existing ggplot to overlay images onto.  Default of NULL starts a
+#'   new plot.
+#' @param N_floor The value of N to consider 0.  bins with N values <= N_floor
+#'   will be ignored.
+#' @param N_ceiling The value of N to consider 1.  bins with N values >=
+#'   N_ceiling will have images drawn at full size.
+#' @param min_size Numeric (0, 1]. The minimum size images to draw.  The default
+#'   of .3 draws images for all bins with N values >= 30% of the way from
+#'   N_floor to N_ceiling.
+#' @param return_data if TRUE, data.table that would have been used to create
+#'   ggplot is returned instead.
 #'
-#' @return
+#' @return ggplot containing images summarizing t-sne regions.  if return_data
+#'   is TRUE, instead the data.table containing plot info is returned.
 #' @export
 #'
 #' @examples
+#' data("profile_dt")
+#' data("tsne_dt")
+#' img_res = prep_images(profile_dt, tsne_dt, 4)
+#' #zoom on top-right quadrant
+#' img_res.zoom = prep_images(profile_dt, tsne_dt, 4, xrng = c(0, .5), yrng = c(0, .5))
+#' plot_tsne_img(img_res$image_dt,
+#'               x_points = img_res$x_points)
+#' plot_tsne_img(img_res.zoom$image_dt,
+#'               x_points = img_res.zoom$x_points,
+#'               xrng = img_res.zoom$xrng,
+#'               yrng = img_res.zoom$yrng)
 plot_tsne_img = function(image_dt,
-                         n_points,
-                         p = NULL,
+                         x_points,
+                         y_points = x_points,
                          xrng = c(-.5, .5),
                          yrng = c(-.5, .5),
+                         p = NULL,
+
                          N_floor = 0,
                          N_ceiling = NULL,
                          min_size = .3,
-                         show_plot = FALSE
+                         return_data = FALSE
 ){
-    simg_dt = copy(image_dt)
-    simg_dt = set_image_rects(simg_dt,
-                              n_points = n_points,
-                              xrng = xrng,
-                              yrng = yrng,
-                              N_floor = N_floor,
-                              N_ceiling = N_ceiling,
-                              min_size = min_size
+    image_dt = copy(image_dt)
+    image_dt = set_image_rects(image_dt,
+                               x_points = x_points,
+                               y_points = y_points,
+                               xrng = xrng,
+                               yrng = yrng,
+                               N_floor = N_floor,
+                               N_ceiling = N_ceiling,
+                               min_size = min_size
     )
+    if(return_data){
+        return(image_dt)
+    }
     if(is.null(p)) p = ggplot()
     p = p +
-        geom_image.rect(data = simg_dt,
+        geom_image.rect(data = image_dt,
                         aes(xmin = xmin, xmax = xmax,
                             ymin = ymin, ymax = ymax,
                             image = png_file)) +#, color = rgb(0,0,1,.2)) +
-        geom_rect(data = simg_dt,
+        geom_rect(data = image_dt,
                   aes(xmin = xmin, xmax = xmax,
                       ymin = ymin, ymax = ymax),
                   fill = NA, color = "black") +
         coord_cartesian(xlim = xrng, ylim = yrng)
-    if(show_plot) print(p)
-    invisible(list(plot = p, plot_data = simg_dt))
+    p
 }
 
-#' Title
+#' plot_tsne_img
 #'
-#' @param image_dt
-#' @param tsne_dt
-#' @param n_points
-#' @param p
-#' @param xrng
-#' @param yrng
-#' @param N_floor
-#' @param N_ceiling
-#' @param min_size
-#' @param show_plot
+#' @param image_dt $image_dt of result from prep_images()
+#' @param x_points numeric.  number of grid points to use in x dimension.
+#' @param y_points numeric.  number of grid points to use in y dimension.
+#' @param xrng view domain in x dimension.
+#' @param yrng view domain in y dimension.
+#' @param p an existing ggplot to overlay images onto.  Default of NULL starts a
+#'   new plot.
+#' @param N_floor The value of N to consider 0.  bins with N values <= N_floor
+#'   will be ignored.
+#' @param N_ceiling The value of N to consider 1.  bins with N values >=
+#'   N_ceiling will have images drawn at full size.
+#' @param min_size Numeric (0, 1]. The minimum size images to draw.  The default
+#'   of .3 draws images for all bins with N values >= 30% of the way from
+#'   N_floor to N_ceiling.
+#' @param return_data if TRUE, data.table that would have been used to create
+#'   ggplot is returned instead.
 #'
-#' @return
+#' @return ggplot containing images summarizing t-sne regions.  if return_data
+#'   is TRUE, instead the data.table containing plot info is returned.
 #' @export
 #'
 #' @examples
+#' data("profile_dt")
+#' data("tsne_dt")
+#' img_res = prep_images(profile_dt, tsne_dt, 4, facet_by = "cell")
+#' #zoom on top-right quadrant
+#' img_res.zoom = prep_images(profile_dt, tsne_dt, 4, xrng = c(0, .5), yrng = c(0, .5))
+#' plot_tsne_img_byCell(img_res$image_dt,
+#'               x_points = img_res$x_points)
+#' plot_tsne_img_byCell(img_res.zoom$image_dt,
+#'               x_points = img_res.zoom$x_points,
+#'               xrng = img_res.zoom$xrng,
+#'               yrng = img_res.zoom$yrng)
 plot_tsne_img_byCell = function(image_dt,
                                 tsne_dt,
-                                n_points,
+                                x_points,
+                                y_points = x_points,
                                 p = NULL,
                                 xrng = c(-.5, .5),
                                 yrng = c(-.5, .5),
                                 N_floor = 0,
                                 N_ceiling = NULL,
                                 min_size = .3,
-                                show_plot = FALSE
+                                return_data = FALSE
 ){
     cell = bx = by = NULL;
-    # tsne_dt$bx = mybin(tsne_dt$tx, n_points, xrng)
-    # tsne_dt$by = mybin(tsne_dt$ty, n_points, xrng)
-    simg_dt = merge(image_dt[, list(bx, by, plot_id, png_file, tx, ty)],
-                    tsne_dt[, list(N = .N), list(cell, bx, by)], by = c("bx", "by"), allow.cartesian = TRUE)
-    simg_dt = set_image_rects(simg_dt,
-                              n_points = n_points,
-                              xrng = xrng,
-                              yrng = yrng,
-                              N_floor = N_floor,
-                              N_ceiling = N_ceiling,
-                              min_size = min_size
+    # image_dt = merge(image_dt[, list(bx, by, plot_id, png_file, tx, ty)],
+    #                  tsne_dt[, list(N = .N), list(cell, bx, by)], by = c("bx", "by"), allow.cartesian = TRUE)
+    image_dt = set_image_rects(image_dt,
+                               x_points = x_points,
+                               y_points = y_points,
+                               xrng = xrng,
+                               yrng = yrng,
+                               N_floor = N_floor,
+                               N_ceiling = N_ceiling,
+                               min_size = min_size
     )
+    if(return_data) return(image_dt)
     if(is.null(p)) p = ggplot()
     p = p +
-        geom_image.rect(data = simg_dt,
+        geom_image.rect(data = image_dt,
                         aes(xmin = xmin, xmax = xmax,
                             ymin = ymin, ymax = ymax,
                             image = png_file)) +#, color = rgb(0,0,1,.2)) +
-        geom_rect(data = simg_dt,
+        geom_rect(data = image_dt,
                   aes(xmin = xmin, xmax = xmax,
                       ymin = ymin, ymax = ymax),
                   fill = NA, color = "black") +
         coord_cartesian(xlim = xrng, ylim = yrng) +
         facet_wrap("cell", drop = FALSE)
-    if(show_plot) print(p)
-    invisible(list(plot = p, plot_data = simg_dt))
+    p
 }
-
-#' #' Title
-#' #'
-#' #' @param img_results
-#' #' @param qcell
-#' #' @param xrng
-#' #' @param yrng
-#' #' @param N_floor
-#' #' @param N_ceiling
-#' #' @param min_size
-#' #' @param facet_by
-#' #'
-#' #' @return
-#' #' @export
-#' #'
-#' #' @examples
-#' make_img_plots_facet = function(img_results, qcell = NULL,
-#'                                 xrng = c(-.5, .5),
-#'                                 yrng = c(-.5, .5),
-#'                                 N_floor = 0,
-#'                                 N_ceiling = NULL,
-#'                                 min_size = .3,
-#'                                 facet_by = "cell"){
-#'     return_list = TRUE
-#'     if(all(c("image_dt", "summary_profile_dt", "tsne_dt") %in% names(img_results))){
-#'         img_results = list(img_results)
-#'         return_list = FALSE
-#'     }
-#'     stopifnot(is.list(img_results))
-#'     # stopifnot(is.list(img_results$img_res))
-#'
-#'     if(is.null(qcell))
-#'         qcell =
-#'         as.character(unique(
-#'             img_results[[1]]$tsne_dt$cell
-#'         ))
-#'
-#'     plots = lapply(img_results, function(x){
-#'         img_dt = copy(x$image_dt)
-#'         # img_dt$N = NULL
-#'         # tdt = x$tsne_dt[cell %in% qcell, list(.N), list(bx, by)]
-#'         # img_dt = merge(img_dt, tdt, by = c("bx", "by"))
-#'         plot_tsne_img(img_dt,
-#'                       n_points = x$n_points,
-#'                       N_floor = N_floor,
-#'                       N_ceiling = N_ceiling,
-#'                       min_size = min_size,
-#'                       show_plot = FALSE,
-#'                       xrng = xrng,
-#'                       yrng = yrng)$plot +
-#'             coord_cartesian(xlim = xrng, ylim = yrng) +
-#'             facet_wrap(facet_by, drop = FALSE)
-#'     })
-#'
-#'
-#'     # pg = cowplot::plot_grid(plotlist = plots, nrow = length(plots))
-#'     # pg
-#'     if(return_list){
-#'         plots
-#'     }else{
-#'         plots[[1]]
-#'     }
-#'
-#' }
-
-#' #' Title
-#' #'
-#' #' @param img_results
-#' #' @param qcell
-#' #' @param xrng
-#' #' @param yrng
-#' #' @param N_floor
-#' #' @param N_ceiling
-#' #' @param min_size
-#' #' @param as_facet
-#' #'
-#' #' @return
-#' #' @export
-#' #'
-#' #' @examples
-#' make_img_plots = function(img_results, qcell = NULL,
-#'                           xrng = c(-.5, .5),
-#'                           yrng = c(-.5, .5),
-#'                           N_floor = 0,
-#'                           N_ceiling = NULL,
-#'                           min_size = .3,
-#'                           as_facet = TRUE){
-#'     return_list = TRUE
-#'     if(all(c("image_dt", "summary_profile_dt", "tsne_dt") %in% names(img_results))){
-#'         img_results = list(img_results)
-#'         return_list = FALSE
-#'     }
-#'     stopifnot(is.list(img_results))
-#'
-#'     # img_results = lapply(img_results, function(x){
-#'     #     if(is.null(x$cell)){
-#'     #         x$cell = factor("cell")
-#'     #     }
-#'     #     x
-#'     # })
-#'     if(is.null(qcell))
-#'         qcell =
-#'         levels(img_results[[1]]$tsne_dt$cell)
-#'
-#'
-#'     if(as_facet){
-#'         plots = lapply(img_results, function(x){
-#'             pdt = x$tsne_dt[cell %in% qcell]
-#'             pdt$cell = factor(pdt$cell, levels = qcell)
-#'             plot_tsne_img_byCell(x$image_dt,
-#'                                  pdt,
-#'                                  n_points = x$n_points,
-#'                                  N_floor = N_floor,
-#'                                  N_ceiling = N_ceiling,
-#'                                  min_size = min_size,
-#'                                  show_plot = FALSE,
-#'                                  xrng = xrng, yrng =
-#'                                      yrng)$plot +
-#'                 coord_cartesian(xlim = xrng, ylim = yrng)
-#'         })
-#'     }else{
-#'         plots = lapply(img_results, function(x){
-#'             img_dt = copy(x$image_dt)
-#'             img_dt$N = NULL
-#'             tdt = x$tsne_dt[cell %in% qcell, list(.N), list(bx, by)]
-#'             img_dt = merge(img_dt, tdt)
-#'             plot_tsne_img(img_dt,
-#'                           n_points = x$n_points,
-#'                           N_floor = N_floor,
-#'                           N_ceiling = N_ceiling,
-#'                           min_size = min_size,
-#'                           show_plot = FALSE,
-#'                           xrng = xrng,
-#'                           yrng = yrng)$plot +
-#'                 coord_cartesian(xlim = xrng, ylim = yrng)
-#'         })
-#'     }
-#'
-#'
-#'     # pg = cowplot::plot_grid(plotlist = plots, nrow = length(plots))
-#'     # pg
-#'     if(return_list){
-#'         plots
-#'     }else{
-#'         plots[[1]]
-#'     }
-#' }
