@@ -15,7 +15,6 @@ cfg_dt = cfg_dt[cell %in% c("ESH1", "HUES48", "HUES64")]
 cfg_dt[, norm_factor := ifelse(mark == "H3K4me3", .3, 1)]
 
 tsne_input = stsFetchTsneInput(cfg_dt, query_gr, force_overwrite = TRUE)
-save(tsne_input, query_gr, cfg_dt, file = "tmp_bam.save")
 
 data("bam_pileup_dt")
 test_that("stsFetchTsneInput dimensions of outputs", {
