@@ -4,7 +4,7 @@
 \alias{plot_tsne_img}
 \title{Title}
 \usage{
-plot_tsne_img(images_dt, n_points, p = NULL, xrng = c(-0.5, 0.5),
+plot_tsne_img(image_dt, n_points, p = NULL, xrng = c(-0.5, 0.5),
   yrng = c(-0.5, 0.5), N_floor = 0, N_ceiling = NULL,
   min_size = 0.3, show_plot = FALSE)
 }

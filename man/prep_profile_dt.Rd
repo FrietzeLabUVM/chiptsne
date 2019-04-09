@@ -5,12 +5,39 @@
 \title{applies normalizations and transformations to prof_dt, a tidy data.table of
 profiles.}
 \usage{
-prep_profile_dt(prof_dt, norm_dt, qgr, cap_value, high_on_right = TRUE)
+prep_profile_dt(prof_dt, norm_dt, qgr, cap_value = Inf,
+  high_on_right = TRUE)
 }
 \arguments{
-\item{high_on_right}{}
+\item{prof_dt}{data.table of ChIP-seq signal profiles.}
+
+\item{norm_dt}{data.table containing norm_factor values for cell/mark
+combinations.}
+
+\item{qgr}{GRanges}
+
+\item{cap_value}{numeric, ChIP-seq data is prone to outliers, which will wash
+out weaker signal if not properly capped.  Default is Inf, i.e. no capping.}
+
+\item{high_on_right}{boolean, should profiles be flipped when most signal is
+on the left? Default is TRUE.  This is appropriate when there is no
+biological significance to the orientation of a signal, i.e. mirror image
+profiles are equivalent.}
+}
+\value{
+list of two items.  prepared version of prof_dt and query_gr modified
+  to reflect any flipping required by high_on_right.
 }
 \description{
 applies normalizations and transformations to prof_dt, a tidy data.table of
 profiles.
+}
+\examples{
+data(profile_datatable)
+data(query_gr)
+#typically, norm_dt is the same configuration table used to fetch prof_dt
+#here we derive a new norm_dt that will reduce H3K4me3 to 30\% of H3K27me3.
+norm_dt = unique(profile_datatable[, list(cell, mark)])
+norm_dt[, norm_factor := ifelse(mark == "H3K4me3", .3, 1)]
+prep_profile_dt(profile_datatable, norm_dt, query_gr)
 }

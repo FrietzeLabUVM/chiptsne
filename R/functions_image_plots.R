@@ -1,45 +1,116 @@
-#' Title
+stsPlotSummaryProfiles = function(
+    ## basic inputs
+    profile_dt,
+    position_dt,
+    ## resolution
+    x_points,
+    y_points = x_points,
+    ## view domain
+    xrng = range(position_dt$tx),
+    yrng = range(position_dt$ty),
+    ## image file path and output
+    rname = digest::digest(list(
+        profile_dt, position_dt,
+        x_points,
+        y_points,
+        apply_norm,
+        ylim,
+        line_colors,
+        n_splines,
+        ma_size,
+        facet_by)),
+    odir = file.path("tsne_images/", rname),
+    force_rewrite = FALSE,
+    n_cores = getOption("mc.cores", 1),
+    ## preplot transformation
+    apply_norm = TRUE,
+    ylim = c(0, 1),
+    ma_size = 2,
+    n_splines = 10,
+    ## plot organization
+    facet_by = NULL,
+    line_colors = c("H3K4me3" = "forestgreen",
+                    "H3K27me3" = "firebrick1"),
+    group_mapping = NULL,
+    ## sizing and level of detail
+    N_floor = 0,
+    N_ceiling = NULL,
+    min_size = .3,
+    show_plot = FALSE){
+    #prepare images
+    prep_images()
+    plot_tsne_img()
+    plot_tsne_img_byCell()
+
+}
+
+#' prep_images
 #'
-#' @param profiles_dt
-#' @param position_dt
-#' @param n_points
-#' @param xrng
-#' @param yrng
-#' @param rname
-#' @param odir
-#' @param force_rewrite
-#' @param apply_norm
-#' @param ylim
-#' @param facet_by
-#' @param ma_size
-#' @param n_cores
-#' @param line_colors
+#' Prepares images summarizing profiles in t-sne regions and returns ggimage
+#' compatible data.frame for plotting.
 #'
-#' @return
+#' @param profile_dt a tidy data.table for profile data as retrieved by
+#'   stsFetchTsneInput.  Expected variable names are id, cell, mark, x, and y.
+#' @param position_dt a tidy data.table containing t-sne embedding.  Expected
+#'   variable names are tx, ty, id, and cell.
+#' @param x_points numeric.  number of grid points to use in x dimension.
+#' @param y_points numeric.  number of grid points to use in y dimension.
+#'   Defaults to same value as x_points.
+#' @param xrng view domain in x dimension, default is range of position_dt$tx.
+#' @param yrng view domain in y dimension, default is range of position_dt$ty.
+#' @param rname prefix for image files.  existing image files are used if
+#'   present.
+#' @param odir output directory for image files.
+#' @param force_rewrite if TRUE, images are overwritten even if they exist.
+#' @param apply_norm if TRUE, y values are trimmed to 95th percentile and
+#'   transformed ot domain of [0,1]. Default is TRUE.
+#' @param ylim y-limits of regional summary plots.  Default of c(0, 1) is
+#'   compatible with apply_norm = TRUE.
+#' @param facet_by character. varaible name to facet profile_dt by when
+#'   constructing images. The only valid non-null value with seqtsne functions
+#'   is "cell".
+#' @param n_splines number of points to interpolate with splines.
+#' @param ma_size moving average size when smoothing profiles.
+#' @param n_cores number of cores to use when writing images.  Default is
+#' value of mc.cores option if set or 1.
+#' @param line_colors named vector of line color.  Names correspond to values
+#' of profile_dt 'mark' variable and values are colors.
+#'
+#' @return data.table with variables
 #' @export
 #' @importFrom seqsetvis applySpline
 #'
 #' @examples
-make_tsne_img = function(profiles_dt, position_dt, n_points,
-                         xrng = range(position_dt$tx),
-                         yrng = range(position_dt$ty),
-                         rname = digest::digest(list(
-                             profiles_dt, position_dt,
-                             n_points, apply_norm,
-                             ylim, line_colors, facet_by)),
-                         odir = file.path("tsne_images/", rname),
-                         force_rewrite = FALSE,
-                         apply_norm = TRUE,
-                         ylim = c(0, 1),
-                         facet_by = NULL,
-                         # view_rect = list(),
-                         ma_size = 2,
-                         n_cores = getOption("mc.cores", 1),
-                         line_colors = c("H3K4me3" = "forestgreen",
-                                         "H3K27me3" = "firebrick1"),
-                         group_mapping = NULL){
-    if(!all(unique(profiles_dt$mark) %in% names(line_colors))){
-        missing_colors = setdiff(unique(profiles_dt$mark), names(line_colors))
+prep_images = function(profile_dt,
+                       position_dt,
+                       x_points,
+                       y_points = x_points,
+                       xrng = range(position_dt$tx),
+                       yrng = range(position_dt$ty),
+                       rname = digest::digest(list(
+                           profile_dt, position_dt,
+                           x_points,
+                           y_points,
+                           apply_norm,
+                           ylim,
+                           line_colors,
+                           n_splines,
+                           ma_size,
+                           facet_by)),
+                       odir = file.path("tsne_images/", rname),
+                       force_rewrite = FALSE,
+                       apply_norm = TRUE,
+                       ylim = c(0, 1),
+                       facet_by = NULL,
+                       # view_rect = list(),
+                       ma_size = 2,
+                       n_splines = 10,
+                       n_cores = getOption("mc.cores", 1),
+                       line_colors = c("H3K4me3" = "forestgreen",
+                                       "H3K27me3" = "firebrick1"),
+                       group_mapping = NULL){
+    if(!all(unique(profile_dt$mark) %in% names(line_colors))){
+        missing_colors = setdiff(unique(profile_dt$mark), names(line_colors))
         stop("line_colors is missing assignments for: ", paste(missing_colors, collapse = ", "))
     }
     stopifnot()
@@ -48,10 +119,10 @@ make_tsne_img = function(profiles_dt, position_dt, n_points,
     position_dt = copy(position_dt)
     position_dt = position_dt[tx >= min(xrng) & tx <= max(xrng) & ty >= min(yrng) & ty <= max(yrng)]
     #use positional info from position_dt to bin points
-    position_dt[, bx := mybin(tx, n_points, xrng = xrng)]
-    position_dt[, by := mybin(ty, n_points, xrng = yrng)]
+    position_dt[, bx := mybin(tx, x_points, xrng = xrng)]
+    position_dt[, by := mybin(ty, y_points, xrng = yrng)]
     #merge binning info to profiles
-    mdt = merge(profiles_dt, position_dt[, list(bx, by, cell, id)], allow.cartesian=TRUE, by = intersect(colnames(profiles_dt), c("cell", "id")))#, by = c("cell", "id"))
+    mdt = merge(profile_dt, position_dt[, list(bx, by, cell, id)], allow.cartesian=TRUE, by = intersect(colnames(profile_dt), c("cell", "id")))#, by = c("cell", "id"))
     if(is.null(mdt$mark)) mdt$mark = "signal"
 
     if(is.null(facet_by)){
@@ -73,8 +144,8 @@ make_tsne_img = function(profiles_dt, position_dt, n_points,
         img_dt[, png_file := file.path(odir, paste0(get(facet_by), "_", plot_id, ".png"))]
     }
 
-    xs = mybin_centers(tsne_res$tx, n_points, xrng = xrng)
-    ys = mybin_centers(tsne_res$ty, n_points, xrng = yrng)
+    xs = mybin_centers(tsne_res$tx, x_points, xrng = xrng)
+    ys = mybin_centers(tsne_res$ty, y_points, xrng = yrng)
 
     # plot(expand.grid(xs, ys), xlim = xrng, ylim = yrng)
     # rect(min(xrng), min(yrng), max(xrng), max(yrng), col = rgb(0,0,1,.1))
@@ -128,7 +199,7 @@ make_tsne_img = function(profiles_dt, position_dt, n_points,
             # pdt[, ysm := seqsetvis:::movingAverage(ynorm, n = ma_size), by = list(mark)]
             pdt[, ysm := movingAverage(ynorm, n = ma_size), by = list(mark)]
 
-            pdt = seqsetvis::applySpline(pdt, n = 10, by_ = "mark", y_ = "ysm")
+            pdt = seqsetvis::applySpline(pdt, n = n_splines, by_ = "mark", y_ = "ysm")
             list(pdt, fpath)
         })
         # hidden = lapply(plot_info, function(x){
@@ -166,7 +237,10 @@ make_tsne_img = function(profiles_dt, position_dt, n_points,
         }
     }
 
-    return(list(images_dt = img_dt, summary_profiles_dt = mdt, tsne_dt = position_dt, n_points = n_points, xrng = xrng, yrng = yrng))
+    return(list(image_dt = img_dt, summary_profile_dt = mdt,
+                tsne_dt = position_dt,
+                x_points = x_points, y_points = y_points,
+                xrng = xrng, yrng = yrng))
 }
 
 #' Title
@@ -183,13 +257,13 @@ make_tsne_img = function(profiles_dt, position_dt, n_points,
 #' @export
 #'
 #' @examples
-prep_tsne_img = function(simg_dt,
-                         n_points,
-                         xrng,
-                         yrng,
-                         N_floor = 0,
-                         N_ceiling = NULL,
-                         min_size = .3
+set_image_rects = function(simg_dt,
+                           n_points,
+                           xrng,
+                           yrng,
+                           N_floor = 0,
+                           N_ceiling = NULL,
+                           min_size = .3
 ){
     if(is.null(N_ceiling)){
         N_ceiling = max(simg_dt$N)
@@ -215,7 +289,7 @@ prep_tsne_img = function(simg_dt,
 
 #' Title
 #'
-#' @param images_dt
+#' @param image_dt
 #' @param n_points
 #' @param p
 #' @param xrng
@@ -229,7 +303,7 @@ prep_tsne_img = function(simg_dt,
 #' @export
 #'
 #' @examples
-plot_tsne_img = function(images_dt,
+plot_tsne_img = function(image_dt,
                          n_points,
                          p = NULL,
                          xrng = c(-.5, .5),
@@ -239,14 +313,14 @@ plot_tsne_img = function(images_dt,
                          min_size = .3,
                          show_plot = FALSE
 ){
-    simg_dt = copy(images_dt)
-    simg_dt = prep_tsne_img(simg_dt,
-                            n_points = n_points,
-                            xrng = xrng,
-                            yrng = yrng,
-                            N_floor = N_floor,
-                            N_ceiling = N_ceiling,
-                            min_size = min_size
+    simg_dt = copy(image_dt)
+    simg_dt = set_image_rects(simg_dt,
+                              n_points = n_points,
+                              xrng = xrng,
+                              yrng = yrng,
+                              N_floor = N_floor,
+                              N_ceiling = N_ceiling,
+                              min_size = min_size
     )
     if(is.null(p)) p = ggplot()
     p = p +
@@ -265,7 +339,7 @@ plot_tsne_img = function(images_dt,
 
 #' Title
 #'
-#' @param images_dt
+#' @param image_dt
 #' @param tsne_dt
 #' @param n_points
 #' @param p
@@ -280,7 +354,7 @@ plot_tsne_img = function(images_dt,
 #' @export
 #'
 #' @examples
-plot_tsne_img_byCell = function(images_dt,
+plot_tsne_img_byCell = function(image_dt,
                                 tsne_dt,
                                 n_points,
                                 p = NULL,
@@ -294,15 +368,15 @@ plot_tsne_img_byCell = function(images_dt,
     cell = bx = by = NULL;
     # tsne_dt$bx = mybin(tsne_dt$tx, n_points, xrng)
     # tsne_dt$by = mybin(tsne_dt$ty, n_points, xrng)
-    simg_dt = merge(images_dt[, list(bx, by, plot_id, png_file, tx, ty)],
+    simg_dt = merge(image_dt[, list(bx, by, plot_id, png_file, tx, ty)],
                     tsne_dt[, list(N = .N), list(cell, bx, by)], by = c("bx", "by"), allow.cartesian = TRUE)
-    simg_dt = prep_tsne_img(simg_dt,
-                            n_points = n_points,
-                            xrng = xrng,
-                            yrng = yrng,
-                            N_floor = N_floor,
-                            N_ceiling = N_ceiling,
-                            min_size = min_size
+    simg_dt = set_image_rects(simg_dt,
+                              n_points = n_points,
+                              xrng = xrng,
+                              yrng = yrng,
+                              N_floor = N_floor,
+                              N_ceiling = N_ceiling,
+                              min_size = min_size
     )
     if(is.null(p)) p = ggplot()
     p = p +
@@ -343,7 +417,7 @@ plot_tsne_img_byCell = function(images_dt,
 #'                                 min_size = .3,
 #'                                 facet_by = "cell"){
 #'     return_list = TRUE
-#'     if(all(c("images_dt", "summary_profiles_dt", "tsne_dt") %in% names(img_results))){
+#'     if(all(c("image_dt", "summary_profile_dt", "tsne_dt") %in% names(img_results))){
 #'         img_results = list(img_results)
 #'         return_list = FALSE
 #'     }
@@ -357,7 +431,7 @@ plot_tsne_img_byCell = function(images_dt,
 #'         ))
 #'
 #'     plots = lapply(img_results, function(x){
-#'         img_dt = copy(x$images_dt)
+#'         img_dt = copy(x$image_dt)
 #'         # img_dt$N = NULL
 #'         # tdt = x$tsne_dt[cell %in% qcell, list(.N), list(bx, by)]
 #'         # img_dt = merge(img_dt, tdt, by = c("bx", "by"))
@@ -407,7 +481,7 @@ plot_tsne_img_byCell = function(images_dt,
 #'                           min_size = .3,
 #'                           as_facet = TRUE){
 #'     return_list = TRUE
-#'     if(all(c("images_dt", "summary_profiles_dt", "tsne_dt") %in% names(img_results))){
+#'     if(all(c("image_dt", "summary_profile_dt", "tsne_dt") %in% names(img_results))){
 #'         img_results = list(img_results)
 #'         return_list = FALSE
 #'     }
@@ -428,7 +502,7 @@ plot_tsne_img_byCell = function(images_dt,
 #'         plots = lapply(img_results, function(x){
 #'             pdt = x$tsne_dt[cell %in% qcell]
 #'             pdt$cell = factor(pdt$cell, levels = qcell)
-#'             plot_tsne_img_byCell(x$images_dt,
+#'             plot_tsne_img_byCell(x$image_dt,
 #'                                  pdt,
 #'                                  n_points = x$n_points,
 #'                                  N_floor = N_floor,
@@ -441,7 +515,7 @@ plot_tsne_img_byCell = function(images_dt,
 #'         })
 #'     }else{
 #'         plots = lapply(img_results, function(x){
-#'             img_dt = copy(x$images_dt)
+#'             img_dt = copy(x$image_dt)
 #'             img_dt$N = NULL
 #'             tdt = x$tsne_dt[cell %in% qcell, list(.N), list(bx, by)]
 #'             img_dt = merge(img_dt, tdt)

@@ -10,6 +10,7 @@
 #' @param verbose if TRUE, a series of status messages are output.  Default is FALSE.
 #' @return the result of running FUN or loading cached results.
 #' @export
+#' @import BiocFileCache
 #'
 #' @examples
 #' library(BiocFileCache)
@@ -107,7 +108,7 @@ rescale_capped = function(x, to = c(0,1), from = range(x, na.rm = TRUE, finite =
 #' @examples
 mybin = function(x, n_points, xrng = range(x)){
     stopifnot(length(xrng) == 2)
-    floor(rescale_capped(x, xrng) * (n_points-.00001))+1
+    floor(rescale_capped(x, 0:1, xrng) * (n_points-.00001))+1
 }
 
 #' Title

@@ -2,16 +2,52 @@
 % Please edit documentation in R/functions_tsne.R
 \name{stsRunTsne}
 \alias{stsRunTsne}
-\title{Title}
+\title{stsRunTsne}
 \usage{
-stsRunTsne(tsne_mat, perplexity = 100, n_cores = getOption("mc.cores",
-  1), high_topright = TRUE, norm1 = TRUE,
-  bfc = BiocFileCache::BiocFileCache(), rname = NULL,
+stsRunTsne(profile_dt, perplexity = 100,
+  n_cores = getOption("mc.cores", 1), high_topright = TRUE,
+  norm1 = TRUE, bfc = BiocFileCache::BiocFileCache(), rname = NULL,
   force_overwrite = FALSE)
 }
 \arguments{
-\item{force_overwrite}{}
+\item{profile_dt}{a tidy data.table for profile data as retrieved by
+stsFetchTsneInput}
+
+\item{perplexity}{perplexity value to use when running Rtsne.}
+
+\item{n_cores}{number of cores to use when running Rtsne.  Default is
+value of mc.cores option if set or 1.}
+
+\item{high_topright}{if TRUE, returned t-sne space is flipped horizontallly
+and vertically as required to ensure maximum signal is in the top-right of
+the space.}
+
+\item{norm1}{if TRUE, returned t-sne space is transormed to a domain of
+[-.5, .5] in x and y.}
+
+\item{bfc}{BiocFileCache obect to use when caching.}
+
+\item{rname}{rname to use when querying the cache. Default is a digest
+of 20 sampled rows and columns from the tsne input matrix and perplexity.}
+
+\item{force_overwrite}{if TRUE, any contents of cache are overwritten.}
+}
+\value{
+a tidy data.table containing t-sne embedding.  variable names
+are tx, ty, id, and cell.
 }
 \description{
-Title
+stsRunTsne
+}
+\examples{
+data("query_gr")
+bw_files = dir(system.file('extdata', package = "seqtsne"), pattern = ".bw$", full.names = TRUE)
+cfg_dt = data.table(file = bw_files)
+cfg_dt[, c("cell", "mark") := tstrsplit(basename(file), "_", keep = 1:2)]
+cfg_dt = cfg_dt[cell \%in\% c("ESH1", "HUES48", "HUES64")]
+cfg_dt[, norm_factor := ifelse(mark == "H3K4me3", .3, 1)]
+profile_dt = stsFetchTsneInput(cfg_dt, query_gr)
+tsne_res = stsRunTsne(profile_dt$bw_dt, perplexity = 15)
+tsne_res
+
 }

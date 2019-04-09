@@ -4,7 +4,7 @@
 \alias{plot_tsne_img_byCell}
 \title{Title}
 \usage{
-plot_tsne_img_byCell(images_dt, tsne_dt, n_points, p = NULL,
+plot_tsne_img_byCell(image_dt, tsne_dt, n_points, p = NULL,
   xrng = c(-0.5, 0.5), yrng = c(-0.5, 0.5), N_floor = 0,
   N_ceiling = NULL, min_size = 0.3, show_plot = FALSE)
 }

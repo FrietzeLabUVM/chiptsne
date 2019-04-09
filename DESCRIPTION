@@ -11,8 +11,10 @@ Encoding: UTF-8
 LazyData: true
 Depends: R (>= 3.5), data.table, ggplot2
 Imports: 
+    BiocFileCache,
     GenomicRanges,
+    IRanges,
     magick,
-    seqsetvis,
-    Rtsne
-RoxygenNote: 6.1.0
+    Rtsne,
+    seqsetvis
+RoxygenNote: 6.1.1
