@@ -4,7 +4,7 @@
 \alias{calc_delta}
 \title{Title}
 \usage{
-calc_delta(tsne_res, cell_a, cell_b, n_points)
+calc_delta(tsne_res, cell_a, cell_b, x_points, y_points = x_points)
 }
 \arguments{
 \item{n_points}{}

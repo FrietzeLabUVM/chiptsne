@@ -105,34 +105,38 @@ rescale_capped = function(x, to = c(0,1), from = range(x, na.rm = TRUE, finite =
     y
 }
 
+#' bin_values
 #'
+#' @param x Values to assign to bins
+#' @param n_bins Number of bins to assign values to
+#' @param xrng Optional numeric of length 2. Defines the domain to define bins
+#'   for. Defaults to range(x).
 #'
-#' @param x
-#' @param n_points
-#' @param xrng
-#'
-#' @return
+#' @return bin assignments parall to x.
 #'
 #' @examples
-mybin = function(x, n_points, xrng = range(x)){
+#' bin_values(0:10, 3)
+bin_values = function(x, n_bins, xrng = range(x)){
     stopifnot(length(xrng) == 2)
-    floor(rescale_capped(x, 0:1, xrng) * (n_points-.00001))+1
+    floor(rescale_capped(x, 0:1, xrng) * (n_bins-.00001))+1
 }
 
-#' Title
+#' bin_values_centers
 #'
-#' @param x
-#' @param n_points
-#' @param xrng
+#' @param x Values to assign to bins
+#' @param n_bins Number of bins to assign values to
+#' @param xrng Optional numeric of length 2. Defines the domain to define bins
+#'   for. Defaults to range(x).
 #'
-#' @return
+#' @return numeric of length n_bins containing centers of bins.
 #'
 #' @examples
-mybin_centers = function(x, n_points, xrng = range(x)){
+#' bin_values_centers(0:10, 3)
+bin_values_centers = function(x, n_bins, xrng = range(x)){
     stopifnot(length(xrng) == 2)
     # xrng = range(x)
-    xspc = diff(xrng)/n_points/2
-    xs = seq(min(xrng)+xspc, max(xrng)-xspc, diff(xrng)/(n_points))
+    xspc = diff(xrng)/n_bins/2
+    xs = seq(min(xrng)+xspc, max(xrng)-xspc, diff(xrng)/(n_bins))
     xs
 }
 
@@ -258,22 +262,22 @@ annotate_rects = function(p,
 #' @export
 #'
 #' @examples
-calc_delta = function(tsne_res, cell_a, cell_b, n_points){
+calc_delta = function(tsne_res, cell_a, cell_b, x_points, y_points = x_points){
     v_dt = dcast(tsne_res[cell %in% c(cell_a, cell_b)], "id~cell", value.var = c("tx", "ty"))
     colnames(v_dt) = sub(cell_a, "cell_a", colnames(v_dt))
     colnames(v_dt) = sub(cell_b, "cell_b", colnames(v_dt))
-    v_dt$bx_cell_a = mybin(v_dt$tx_cell_a, n_points = n_points, xrng = range(tsne_res$tx))
-    xs = mybin_centers(v_dt$tx_cell_a, n_points = n_points, xrng = range(tsne_res$tx))
+    v_dt$bx_cell_a = bin_values(v_dt$tx_cell_a, n_bins = x_points, xrng = range(tsne_res$tx))
+    xs = bin_values_centers(v_dt$tx_cell_a, n_bins = x_points, xrng = range(tsne_res$tx))
     v_dt$btx_cell_a = xs[v_dt$bx_cell_a]
 
-    v_dt$by_cell_a = mybin(v_dt$ty_cell_a, n_points = n_points, xrng = range(tsne_res$ty))
-    ys = mybin_centers(v_dt$ty_cell_a, n_points = n_points, xrng = range(tsne_res$ty))
+    v_dt$by_cell_a = bin_values(v_dt$ty_cell_a, n_bins = y_points, xrng = range(tsne_res$ty))
+    ys = bin_values_centers(v_dt$ty_cell_a, n_bins = y_points, xrng = range(tsne_res$ty))
     v_dt$bty_cell_a = ys[v_dt$by_cell_a]
 
     av_dt = v_dt[, list(tx_cell_b = mean(tx_cell_b), ty_cell_b = mean(ty_cell_b), N = .N), list(bx_cell_a, by_cell_a)]
     av_dt$tx_cell_a = xs[av_dt$bx_cell_a]
     av_dt$ty_cell_a = ys[av_dt$by_cell_a]
-    return(list(velocity_dt = v_dt, agg_velocity_dt = av_dt))
+    return(list(velocity_dt = v_dt[], agg_velocity_dt = av_dt[]))
 }
 
 #' Title

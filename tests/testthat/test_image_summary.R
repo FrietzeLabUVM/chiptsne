@@ -15,23 +15,23 @@ img_res = prep_images(profile_dt, tsne_dt,
                         x_points = 4, y_points = 3,
                         xrng = c(-.3, .4), yrng = c(-.45, .35))
 
-test_that("stsPrepImages names of outputs", {
+test_that("prep_images names of outputs", {
     expect_equal(names(img_res), c("image_dt", "summary_profile_dt", "tsne_dt", "x_points", "y_points", "xrng", "yrng"))
 })
 
-test_that("stsPrepImages variables of image_dt", {
+test_that("prep_images variables of image_dt", {
     expect_equal(colnames(img_res$image_dt), c("bx", "by", "plot_id", "png_file", "tx", "ty", "N"))
 })
 
-test_that("stsPrepImages variables of summary_profile_dt", {
+test_that("prep_images variables of summary_profile_dt", {
     expect_equal(colnames(img_res$summary_profile_dt), c("bx", "by", "x", "mark", "y", "plot_id", "ynorm", "group"))
 })
 
-test_that("stsPrepImages variables of tsne_dt", {
+test_that("prep_images variables of tsne_dt", {
     expect_equal(colnames(img_res$tsne_dt), c("tx", "ty", "id", "cell", "bx", "by"))
 })
 
-test_that("stsPrepImages parameter passthrough", {
+test_that("prep_images parameter passthrough", {
     expect_equal(img_res$x_points, 4)
     expect_equal(img_res$y_points, 3)
     expect_equal(img_res$xrng, c(-.3, .4))

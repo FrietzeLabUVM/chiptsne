@@ -96,7 +96,7 @@ stsRunTsne = function(profile_dt,
         tdt$rs = NULL
     }
     tdt$rn = NULL
-    tdt
+    tdt[]
 }
 
 
@@ -157,7 +157,7 @@ prep_profile_dt = function(prof_dt,
     if(is.finite(cap_value)){
         prof_dt[y > cap_value, y := cap_value]
     }
-    list(prof_dt = prof_dt, query_gr = qgr)
+    list(prof_dt = prof_dt[], query_gr = qgr)
 }
 
 #' dt2mat

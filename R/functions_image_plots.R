@@ -125,8 +125,8 @@ prep_images = function(profile_dt,
     position_dt = copy(position_dt)
     position_dt = position_dt[tx >= min(xrng) & tx <= max(xrng) & ty >= min(yrng) & ty <= max(yrng)]
     #use positional info from position_dt to bin points
-    position_dt[, bx := mybin(tx, x_points, xrng = xrng)]
-    position_dt[, by := mybin(ty, y_points, xrng = yrng)]
+    position_dt[, bx := bin_values(tx, x_points, xrng = xrng)]
+    position_dt[, by := bin_values(ty, y_points, xrng = yrng)]
     #merge binning info to profiles
     mdt = merge(profile_dt, position_dt[, list(bx, by, cell, id)], allow.cartesian=TRUE, by = intersect(colnames(profile_dt), c("cell", "id")))#, by = c("cell", "id"))
     if(is.null(mdt$mark)) mdt$mark = "signal"
@@ -150,8 +150,8 @@ prep_images = function(profile_dt,
         img_dt[, png_file := file.path(odir, paste0(get(facet_by), "_", plot_id, ".png"))]
     }
 
-    xs = mybin_centers(tsne_res$tx, x_points, xrng = xrng)
-    ys = mybin_centers(tsne_res$ty, y_points, xrng = yrng)
+    xs = bin_values_centers(tsne_res$tx, x_points, xrng = xrng)
+    ys = bin_values_centers(tsne_res$ty, y_points, xrng = yrng)
 
     # plot(expand.grid(xs, ys), xlim = xrng, ylim = yrng)
     # rect(min(xrng), min(yrng), max(xrng), max(yrng), col = rgb(0,0,1,.1))
@@ -243,8 +243,8 @@ prep_images = function(profile_dt,
         }
     }
 
-    return(list(image_dt = img_dt, summary_profile_dt = mdt,
-                tsne_dt = position_dt,
+    return(list(image_dt = img_dt[], summary_profile_dt = mdt[],
+                tsne_dt = position_dt[],
                 x_points = x_points, y_points = y_points,
                 xrng = xrng, yrng = yrng))
 }
@@ -312,7 +312,7 @@ set_image_rects = function(image_dt,
     image_dt[, xmax := tx + xspc * img_size]
     image_dt[, ymin := ty - yspc * img_size]
     image_dt[, ymax := ty + yspc * img_size]
-    image_dt
+    image_dt[]
 }
 
 #' plot_tsne_img
