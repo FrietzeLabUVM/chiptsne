@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions_util.R
 \name{calc_delta}
 \alias{calc_delta}
-\title{Title}
+\title{calc_delta}
 \usage{
 calc_delta(tsne_res, cell_a, cell_b, x_points, y_points = x_points)
 }
@@ -10,5 +10,5 @@ calc_delta(tsne_res, cell_a, cell_b, x_points, y_points = x_points)
 \item{n_points}{}
 }
 \description{
-Title
+calc_delta
 }

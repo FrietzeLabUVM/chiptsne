@@ -12,10 +12,13 @@ LazyData: true
 Depends: R (>= 3.5), data.table, ggplot2
 Imports: 
     BiocFileCache,
+    digest,
     GenomicRanges,
     IRanges,
     magick,
+    methods,
     Rtsne,
+    scales,
     seqsetvis
 RoxygenNote: 6.1.1
 Suggests: 

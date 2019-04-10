@@ -7,12 +7,12 @@
 prep_images(profile_dt, position_dt, x_points, y_points = x_points,
   xrng = range(position_dt$tx), yrng = range(position_dt$ty),
   rname = digest::digest(list(profile_dt, position_dt, x_points,
-  y_points, apply_norm, ylim, line_colors, n_splines, ma_size, facet_by)),
-  odir = file.path("tsne_images/", rname), force_rewrite = FALSE,
-  apply_norm = TRUE, ylim = c(0, 1), facet_by = NULL, ma_size = 2,
-  n_splines = 10, n_cores = getOption("mc.cores", 1),
-  line_colors = c(H3K4me3 = "forestgreen", H3K27me3 = "firebrick1"),
-  group_mapping = NULL)
+  y_points, apply_norm, ylim, line_color_mapping, n_splines, ma_size,
+  facet_by)), odir = file.path("tsne_images/", rname),
+  force_rewrite = FALSE, apply_norm = TRUE, ylim = c(0, 1),
+  facet_by = NULL, ma_size = 2, n_splines = 10,
+  n_cores = getOption("mc.cores", 1), line_color_mapping = c(H3K4me3 =
+  "forestgreen", H3K27me3 = "firebrick1"), vertical_facet_mapping = NULL)
 }
 \arguments{
 \item{profile_dt}{a tidy data.table for profile data as retrieved by
@@ -54,8 +54,10 @@ is "cell".}
 \item{n_cores}{number of cores to use when writing images.  Default is
 value of mc.cores option if set or 1.}
 
-\item{line_colors}{named vector of line color.  Names correspond to values
+\item{line_color_mapping}{named vector of line color.  Names correspond to values
 of profile_dt 'mark' variable and values are colors.}
+
+\item{vertical_facet_mapping}{named vector of vertical facet for data}
 }
 \value{
 data.table with variables

@@ -10,7 +10,7 @@
 #' @param verbose if TRUE, a series of status messages are output.  Default is FALSE.
 #' @return the result of running FUN or loading cached results.
 #' @export
-#' @import BiocFileCache
+#' @importFrom BiocFileCache bfcnew bfcquery bfcrpath
 #'
 #' @examples
 #' library(BiocFileCache)
@@ -251,7 +251,7 @@ annotate_rects = function(p,
 }
 
 
-#' Title
+#' calc_delta
 #'
 #' @param tsne_res
 #' @param cell_a
@@ -280,7 +280,7 @@ calc_delta = function(tsne_res, cell_a, cell_b, x_points, y_points = x_points){
     return(list(velocity_dt = v_dt[], agg_velocity_dt = av_dt[]))
 }
 
-#' Title
+#' plot_profiles_selected
 #'
 #' @param data_dt
 #' @param qgr

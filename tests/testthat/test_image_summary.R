@@ -12,8 +12,8 @@ options("mc.cores" = 4)
 npx = 4
 npy = 3
 img_res = prep_images(profile_dt, tsne_dt,
-                        x_points = 4, y_points = 3,
-                        xrng = c(-.3, .4), yrng = c(-.45, .35))
+                      x_points = 4, y_points = 3,
+                      xrng = c(-.3, .4), yrng = c(-.45, .35))
 
 test_that("prep_images names of outputs", {
     expect_equal(names(img_res), c("image_dt", "summary_profile_dt", "tsne_dt", "x_points", "y_points", "xrng", "yrng"))
@@ -39,9 +39,23 @@ test_that("prep_images parameter passthrough", {
 })
 
 img_rect = set_image_rects(img_res$image_dt,
-                x_points = img_res$x_points, y_points = img_res$y_points,
-                xrng = img_res$xrng, yrng = img_res$yrng)
+                           x_points = img_res$x_points, y_points = img_res$y_points,
+                           xrng = img_res$xrng, yrng = img_res$yrng)
 
-p = plot_tsne_img(img_res$image_dt,
-              x_points = img_res$x_points, y_points = img_res$y_points,
-              xrng = img_res$xrng, yrng = img_res$yrng)
+test_that("set_image_rects variables", {
+    expect_s3_class(img_rect, "data.frame")
+    expect_s3_class(img_rect, "data.table")
+    expect_equal(colnames(img_rect),
+                 c("bx", "by", "plot_id", "png_file", "tx", "ty", "N", "img_size", "xmin", "xmax", "ymin", "ymax"))
+})
+
+
+
+test_that("set_image_rects variables", {
+    p = plot_tsne_img(img_res$image_dt,
+                      x_points = img_res$x_points, y_points = img_res$y_points,
+                      xrng = img_res$xrng, yrng = img_res$yrng)
+    expect_s3_class(p, "gg")
+})
+
+stsPlotSummaryProfiles(profile_dt = profile_dt, position_dt = tsne_dt, x_points = 4)

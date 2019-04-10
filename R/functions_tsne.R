@@ -21,7 +21,7 @@
 #' @return a tidy data.table containing t-sne embedding.  variable names
 #' are tx, ty, id, and cell.
 #' @export
-#' @import Rtsne
+#' @importFrom Rtsne Rtsne
 #' @examples
 #' data("query_gr")
 #' bw_files = dir(system.file('extdata', package = "seqtsne"), pattern = ".bw$", full.names = TRUE)

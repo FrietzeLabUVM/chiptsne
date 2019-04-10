@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions_util.R
 \name{plot_profiles_selected}
 \alias{plot_profiles_selected}
-\title{Title}
+\title{plot_profiles_selected}
 \usage{
 plot_profiles_selected(data_dt, qgr, qcells, tss_ids,
   color_mapping = c(H3K27me3 = "firebrick", H3K4me3 = "forestgreen"))
@@ -11,5 +11,5 @@ plot_profiles_selected(data_dt, qgr, qcells, tss_ids,
 \item{tss_ids}{}
 }
 \description{
-Title
+plot_profiles_selected
 }
