@@ -4,9 +4,9 @@
 \alias{plot_velocity_arrows}
 \title{Title}
 \usage{
-plot_velocity_arrows(tsne_res, cell_a, cell_b, p = NULL,
-  id_to_plot = NULL, max_plotted = 500, return_data = FALSE,
-  delta.min = 0, delta.max = Inf, angle.min = 0, angle.max = 360)
+plot_velocity_arrows(velocity_dt, p = NULL, id_to_plot = NULL,
+  max_plotted = 500, delta.min = 0, delta.max = Inf, angle.min = 0,
+  angle.max = 360)
 }
 \arguments{
 \item{angle.max}{}

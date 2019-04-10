@@ -4,7 +4,7 @@
 \alias{plot_velocity_arrows_selected}
 \title{Title}
 \usage{
-plot_velocity_arrows_selected(tsne_res, qgr, qcells, tss_ids,
+plot_velocity_arrows_selected(tsne_dt, qgr, qcells, tss_ids,
   grp_var = c("id", "grp")[1], line_type = c("curve", "spline",
   "straight")[2], label_type = c("text", "label", "none")[2])
 }

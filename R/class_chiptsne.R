@@ -11,7 +11,7 @@ setClass(Class = "ChIPtsne",
              id_attrib = "character",
              profile_dt = "data.table",
              query_gr = "GRanges",
-             tsne_res = "data.table",
+             tsne_dt = "data.table",
              hic_1d = "data.table"
 
          ),

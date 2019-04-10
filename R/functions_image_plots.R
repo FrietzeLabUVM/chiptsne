@@ -288,8 +288,8 @@ prep_images = function(profile_dt,
         img_dt[, png_file := file.path(odir, paste0(get(facet_by), "_", plot_id, ".png"))]
     }
 
-    xs = bin_values_centers(tsne_res$tx, x_points, xrng = xrng)
-    ys = bin_values_centers(tsne_res$ty, y_points, xrng = yrng)
+    xs = bin_values_centers(position_dt$tx, x_points, xrng = xrng)
+    ys = bin_values_centers(position_dt$ty, y_points, xrng = yrng)
 
     # plot(expand.grid(xs, ys), xlim = xrng, ylim = yrng)
     # rect(min(xrng), min(yrng), max(xrng), max(yrng), col = rgb(0,0,1,.1))

@@ -251,33 +251,68 @@ annotate_rects = function(p,
 }
 
 
-#' calc_delta
+#' Title
 #'
-#' @param tsne_res
+#' @param tsne_dt
 #' @param cell_a
 #' @param cell_b
-#' @param n_points
+#' @param x_points
+#' @param y_points
+#' @param strategy
 #'
 #' @return
 #' @export
 #'
 #' @examples
-calc_delta = function(tsne_res, cell_a, cell_b, x_points, y_points = x_points){
-    v_dt = dcast(tsne_res[cell %in% c(cell_a, cell_b)], "id~cell", value.var = c("tx", "ty"))
+calc_delta = function(tsne_dt, cell_a, cell_b, x_points, y_points = x_points, strategy = "normal"){
+    v_dt = dcast(tsne_dt[cell %in% c(cell_a, cell_b)], "id~cell", value.var = c("tx", "ty"))
     colnames(v_dt) = sub(cell_a, "cell_a", colnames(v_dt))
     colnames(v_dt) = sub(cell_b, "cell_b", colnames(v_dt))
-    v_dt$bx_cell_a = bin_values(v_dt$tx_cell_a, n_bins = x_points, xrng = range(tsne_res$tx))
-    xs = bin_values_centers(v_dt$tx_cell_a, n_bins = x_points, xrng = range(tsne_res$tx))
+
+    v_dt$bx_cell_a = bin_values(v_dt$tx_cell_a, n_bins = x_points, xrng = range(tsne_dt$tx))
+    xs = bin_values_centers(v_dt$tx_cell_a, n_bins = x_points, xrng = range(tsne_dt$tx))
     v_dt$btx_cell_a = xs[v_dt$bx_cell_a]
 
-    v_dt$by_cell_a = bin_values(v_dt$ty_cell_a, n_bins = y_points, xrng = range(tsne_res$ty))
-    ys = bin_values_centers(v_dt$ty_cell_a, n_bins = y_points, xrng = range(tsne_res$ty))
+    v_dt$by_cell_a = bin_values(v_dt$ty_cell_a, n_bins = y_points, xrng = range(tsne_dt$ty))
+    ys = bin_values_centers(v_dt$ty_cell_a, n_bins = y_points, xrng = range(tsne_dt$ty))
     v_dt$bty_cell_a = ys[v_dt$by_cell_a]
+    # strategy = "by_destination"
+    # strategy = "by_direction"
 
-    av_dt = v_dt[, list(tx_cell_b = mean(tx_cell_b), ty_cell_b = mean(ty_cell_b), N = .N), list(bx_cell_a, by_cell_a)]
-    av_dt$tx_cell_a = xs[av_dt$bx_cell_a]
-    av_dt$ty_cell_a = ys[av_dt$by_cell_a]
-    return(list(velocity_dt = v_dt[], agg_velocity_dt = av_dt[]))
+    v_dt = switch(strategy,
+           "by_destination" = {
+               v_dt = v_dt[, list(tx_cell_b = mean(tx_cell_b), ty_cell_b = mean(ty_cell_b), N = .N), list(bx_cell_a, by_cell_a)]
+               v_dt$tx_cell_a = xs[v_dt$bx_cell_a]
+               v_dt$ty_cell_a = ys[v_dt$by_cell_a]
+               v_dt
+           },
+           "by_direction" = {
+               v_dt = v_dt[, list(tx_cell_b = mean(tx_cell_b - tx_cell_a), ty_cell_b = mean(ty_cell_b - ty_cell_a), N = .N), list(bx_cell_a, by_cell_a)]
+               v_dt$tx_cell_b = xs[v_dt$bx_cell_a] + v_dt$tx_cell_b
+               v_dt$ty_cell_b = ys[v_dt$by_cell_a] + v_dt$ty_cell_b
+               v_dt$tx_cell_a = xs[v_dt$bx_cell_a]
+               v_dt$ty_cell_a = ys[v_dt$by_cell_a]
+               v_dt
+           },
+           "individual_recentered" = {
+               v_dt = copy(v_dt)
+               v_dt = v_dt[, tx_cell_b := tx_cell_b - tx_cell_a]
+               v_dt = v_dt[, ty_cell_b := ty_cell_b - ty_cell_a]
+               v_dt$tx_cell_b = xs[v_dt$bx_cell_a] + v_dt$tx_cell_b
+               v_dt$ty_cell_b = ys[v_dt$by_cell_a] + v_dt$ty_cell_b
+               v_dt$tx_cell_a = xs[v_dt$bx_cell_a]
+               v_dt$ty_cell_a = ys[v_dt$by_cell_a]
+               v_dt
+           },
+           "normal" = {
+               v_dt
+           },
+           {
+               stop("unrecognized delta strategy ", strategy)
+           })
+
+
+    return(v_dt[])
 }
 
 #' plot_profiles_selected

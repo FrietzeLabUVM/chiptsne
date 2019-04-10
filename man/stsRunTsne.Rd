@@ -47,7 +47,7 @@ cfg_dt[, c("cell", "mark") := tstrsplit(basename(file), "_", keep = 1:2)]
 cfg_dt = cfg_dt[cell \%in\% c("ESH1", "HUES48", "HUES64")]
 cfg_dt[, norm_factor := ifelse(mark == "H3K4me3", .3, 1)]
 profile_dt = stsFetchTsneInput(cfg_dt, query_gr)
-tsne_res = stsRunTsne(profile_dt$bw_dt, perplexity = 15)
-tsne_res
+tsne_dt = stsRunTsne(profile_dt$bw_dt, perplexity = 15)
+tsne_dt
 
 }

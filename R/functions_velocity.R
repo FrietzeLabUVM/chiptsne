@@ -1,8 +1,9 @@
+# enforce domain of [0,360)
 ang_cap = function(angle){
-    # angle[angle > 360]
-    angle - floor(angle / 360)*360
+    angle%%360
 }
 
+# return angle between (x1, y1) and (x2, y2)
 xy2deg = function(x1, y1, x2, y2){
     x = x2 - x1
     y = y2 - y1
@@ -13,6 +14,7 @@ xy2deg = function(x1, y1, x2, y2){
     ang_cap(deg)
 }
 
+# return euclidean distance between (x1, y1) and (x2, y2)
 xy2dist = function(x1, y1, x2, y2){
     x = x2 - x1
     y = y2 - y1
@@ -21,7 +23,7 @@ xy2dist = function(x1, y1, x2, y2){
 
 #' Title
 #'
-#' @param tsne_res
+#' @param tsne_dt
 #' @param cell_a
 #' @param cell_b
 #' @param n_points
@@ -33,47 +35,182 @@ xy2dist = function(x1, y1, x2, y2){
 #' @export
 #'
 #' @examples
-plot_velocity_arrows_binned = function(tsne_res,
-                                       cell_a, cell_b,
-                                       n_points,
-                                       points_as_background = TRUE,
-                                       p = NULL,
-                                       min_N = 0,
-                                       id_to_plot = NULL
+plot_regional_velocity = function(tsne_dt,
+                                  cell_a, cell_b,
+                                  n_points,
+                                  points_as_background = FALSE,
+                                  p = NULL,
+                                  min_N = 0,
+                                  id_to_plot = NULL,
+                                  strategy = c("by_direction", "by_destination", "individual_recentered")[2]
 ){
+    if(is.numeric(strategy)){
+        strategy = c("by_destination", "by_direction", "individual_recentered")[strategy]
+    }
     if(is.null(id_to_plot)){
-        tsne_res.tp = copy(tsne_res)
+        tsne_dt.tp = copy(tsne_dt)
     }else{
-        tsne_res.tp = tsne_res[id %in% id_to_plot]
+        tsne_dt.tp = tsne_dt[id %in% id_to_plot]
     }
 
-    av_dt = calc_delta(tsne_res.tp, cell_a, cell_b, n_points)$agg_velocity_dt
-    if(is.null(p)) p = ggplot()
-    if(points_as_background){
-        p = p + geom_point(data = tsne_res.tp[cell %in% c(cell_a, cell_b)], aes(x = tx, y = ty, color = cell))
+    av_dt = calc_delta(tsne_dt.tp, cell_a, cell_b, n_points, strategy = strategy)
+    # if(is.null(av_dt$N)) av_dt$N = 1
+    if (is.null(p))
+        p = ggplot()
+    if (points_as_background) {
+        p = p + geom_point(data = tsne_dt.tp[cell %in% c(cell_a, cell_b)],
+                           aes(x = tx, y = ty, color = cell))
     }
-    p = p + geom_segment(data = av_dt[N >= min_N],
-                         aes(x = tx_cell_a, xend = tx_cell_b,
-                             y = ty_cell_a, yend = ty_cell_b,
-                             size = N), arrow = arrow()) +
-        coord_cartesian(xlim = range(tsne_res$tx), ylim = range(tsne_res$ty)) +
-        scale_fill_gradient2(low = "gray", high = "black") +
-        labs(x = "x", y = "y", fill = "density") +
-        scale_size_continuous(range = c(.5, 2),
-                              breaks = range(av_dt$N)) +
-        theme_classic()
+    if (is.null(av_dt$N)) {
+        p = p + geom_segment(
+            data = av_dt,
+            aes(
+                x = tx_cell_a,
+                xend = tx_cell_b,
+                y = ty_cell_a,
+                yend = ty_cell_b
+            ),
+            arrow = arrow(length = unit(x = .02, units = "npc"))
+        ) +
+            coord_cartesian(xlim = range(tsne_dt$tx), ylim = range(tsne_dt$ty)) +
+            scale_fill_gradient2(low = "gray", high = "black") +
+            labs(x = "x", y = "y", fill = "density") +
+            theme_classic()
+    }else{
+        p = p + geom_segment(
+            data = av_dt[N >= min_N],
+            aes(
+                x = tx_cell_a,
+                xend = tx_cell_b,
+                y = ty_cell_a,
+                yend = ty_cell_b,
+                size = N
+            ),
+            arrow = arrow(length = unit(x = .02, units = "npc"))
+        ) +
+            coord_cartesian(xlim = range(tsne_dt$tx), ylim = range(tsne_dt$ty)) +
+            scale_fill_gradient2(low = "gray", high = "black") +
+            labs(x = "x", y = "y", fill = "density") +
+            scale_size_continuous(range = c(.5, 2),
+                                  breaks = range(av_dt$N)) +
+            theme_classic()
+    }
+
     # p_velocity = ggplot() +
-    # geom_density2d(data = tsne_res, aes(x = tsne_res$tx, y = tsne_res$ty, color = "lightgray") +
-    # geom_density2d(data = tsne_res, aes(x = tx, y = ty), color = "lightgray") +
-    # stat_density_2d(data = tsne_res, aes(x = tx, y = ty, fill = stat(level)), geom = "polygon", bins = 7) +
-    # geom_point(data = tsne_res.tp[cell %in% c(cell_a, cell_b)][id %in% sampleCap(id, 500)], aes(x = tx, y = ty, color = cell)) +
+    # geom_density2d(data = tsne_dt, aes(x = tsne_dt$tx, y = tsne_dt$ty, color = "lightgray") +
+    # geom_density2d(data = tsne_dt, aes(x = tx, y = ty), color = "lightgray") +
+    # stat_density_2d(data = tsne_dt, aes(x = tx, y = ty, fill = stat(level)), geom = "polygon", bins = 7) +
+    # geom_point(data = tsne_dt.tp[cell %in% c(cell_a, cell_b)][id %in% sampleCap(id, 500)], aes(x = tx, y = ty, color = cell)) +
     p
 }
 
+#' prep_velocity
+#'
+#' @param tsne_dt
+#' @param cell_a
+#' @param cell_b
+#' @param id_to_plot
+#' @param max_plotted
+#' @param return_data
+#' @param delta.min
+#' @param delta.max
+#' @param angle.min
+#' @param angle.max
+#' @param drop_backgroud
+#'
+#' @return
+#' @export
+#'
+#' @examples
+prep_velocity = function(tsne_dt,
+                         cell_a,
+                         cell_b,
+                         id_to_plot = NULL,
+                         max_plotted = 500,
+                         return_data = FALSE,
+                         delta.min = 0,
+                         delta.max = Inf,
+                         angle.min = 0,
+                         angle.max = 360,
+                         drop_backgroud = FALSE) {
+
+    v_dt = calc_delta(tsne_dt, cell_a, cell_b, 10)
+
+    # manual selection
+    if(is.null(id_to_plot)){
+        v_dt.tp = copy(v_dt)
+    }else{
+        v_dt.tp = v_dt[id %in% id_to_plot]
+    }
+    # random selection
+    if(max_plotted < Inf){
+        v_dt.tp = v_dt.tp[id %in% sampleCap(v_dt.tp$id, max_plotted)]
+    }
+    # angle selection
+    v_dt.tp[, angle := xy2deg(x1 = tx_cell_a, x2 = tx_cell_b, y1 = ty_cell_a, y2 = ty_cell_b)]
+    if(angle.min > angle.max){
+        v_dt.tp[, foreground := angle <= angle.min & angle >= angle.max]
+    }else{
+        v_dt.tp[, foreground := angle >= angle.min & angle <= angle.max]
+    }
+    # distance selection
+    v_dt.tp[, distance := xy2dist(x1 = tx_cell_a, x2 = tx_cell_b, y1 = ty_cell_a, y2 = ty_cell_b)]
+    v_dt.tp = v_dt.tp[distance < delta.min | distance > delta.max, foreground := FALSE]
+    if(drop_backgroud){
+        v_dt.tp = v_dt.tp[foreground == TRUE]
+    }
+    v_dt.tp[]
+}
 
 #' Title
 #'
-#' @param tsne_res
+#' @param velocity_dt
+#'
+#' @return
+#' @export
+#'
+#' @examples
+plot_velocity_centered = function(velocity_dt){
+    ggplot(velocity_dt, aes(x = angle, xend = angle, y = 0, yend = distance, color = angle)) +
+        geom_segment(stat = "identity", alpha = .5, size = 1) +
+        coord_polar() +
+        scale_color_gradientn(colours = c("orange", "red", "purple", "blue",
+                                          "green", "orange"), limits = c(0, 360), breaks = 0:4*90) +
+        scale_x_continuous(limits = c(0, 360), breaks = 0:4*90)
+}
+
+#' Title
+#'
+#' @param velocity_dt
+#'
+#' @return
+#' @export
+#'
+#' @examples
+plot_velocity_bins = function(velocity_dt, bins = 36, bin_FUN = list(length, sum, mean)[[1]]){#use_distance = FALSE){
+    velocity_dt[, angle_bin := ceiling((angle)/(360/bins))]
+    # if(use_distance){
+    #     b_dt = velocity_dt[, .(N = sum(distance)), angle_bin]
+    # }else{
+    #     b_dt = velocity_dt[, .N, angle_bin]
+    # }
+    if(is.null(bin_FUN)){
+        bin_FUN = length
+    }
+    b_dt = velocity_dt[, .(bin_value = bin_FUN(distance)), angle_bin]
+
+    p_key = ggplot(b_dt, aes(x = angle_bin, y = bin_value, fill = angle_bin)) +
+        geom_bar(width = 1, stat = "identity") + coord_polar() +
+        scale_fill_gradientn(colours = c("orange", "red", "purple", "blue",
+                                         "green", "orange"), limits = c(0, 360)/(360/bins),
+                             breaks = 0:4*90/(360/bins), labels = function(x)x*360/bins) +
+        scale_x_continuous(labels = function(x)x*360/bins, breaks = 0:4*90/(360/bins), limits = c(0, bins))
+    p_key
+}
+
+#' Title
+#'
+#' @param tsne_dt
 #' @param cell_a
 #' @param cell_b
 #' @param p
@@ -88,58 +225,22 @@ plot_velocity_arrows_binned = function(tsne_res,
 #' @export
 #'
 #' @examples
-plot_velocity_arrows = function(tsne_res, cell_a, cell_b,
+plot_velocity_arrows = function(velocity_dt,
                                 p = NULL,
                                 id_to_plot = NULL,
                                 max_plotted = 500,
-                                return_data = FALSE,
                                 delta.min = 0,
                                 delta.max = Inf,
                                 angle.min = 0,
                                 angle.max = 360){
-    v_dt = calc_delta(tsne_res, cell_a, cell_b, 10)$velocity_dt
-    v_dt[, distance := xy2dist(x1 = tx_cell_a, x2 = tx_cell_b, y1 = ty_cell_a, y2 = ty_cell_b)]
-    v_dt = v_dt[distance >= delta.min & distance <= delta.max]
-    if(is.null(id_to_plot)){
-        v_dt.tp = copy(v_dt)
-    }else{
-        v_dt.tp = v_dt[id %in% id_to_plot]
-    }
-    v_dt.tp = v_dt.tp[id %in% sampleCap(v_dt.tp$id, max_plotted)]
-
-    v_dt.tp[, angle := xy2deg(x1 = tx_cell_a, x2 = tx_cell_b, y1 = ty_cell_a, y2 = ty_cell_b)]
-
-    if(angle.min > angle.max){
-        v_dt.tp[, foreground := angle <= angle.min & angle >= angle.max]
-    }else{
-        v_dt.tp[, foreground := angle >= angle.min & angle <= angle.max]
-    }
-
-    bins = 36
-    v_dt.tp[, angle_bin := ceiling((angle)/(360/bins))]
-    b_dt = v_dt.tp[, .N, angle_bin]
-    p_key = ggplot(b_dt, aes(x = angle_bin, y = N, fill = angle_bin)) +
-        geom_bar(width = 1, stat = "identity") + coord_polar() +
-        scale_fill_gradientn(colours = c("orange", "red", "purple", "blue",
-                                         "green", "orange"), limits = c(0, 360)/(360/bins),
-                             breaks = 0:4*90/(360/bins), labels = function(x)x*360/bins) +
-        scale_x_continuous(labels = function(x)x*360/bins, breaks = 1:4*90/(360/bins))
-    p_key
-    bg = v_dt.tp[foreground == FALSE & distance >= delta.min]
-    # v_dt.tp[, grp1 := tx_cell_a > tx_cell_b]
-    # v_dt.tp[, grp2 := ty_cell_a > ty_cell_b]
-    if(return_data){
-        return(v_dt.tp)
-    }
+    bg = velocity_dt[foreground == FALSE & distance >= delta.min]
     if(is.null(p)) p = ggplot()
     p_arrows = p +
-        labs(title = paste("from", cell_a, "to", cell_b),
-             subtitle = "color mapped to angle") +
         annotate("segment",
                  x = bg$tx_cell_a, xend = bg$tx_cell_b,
                  y = bg$ty_cell_a, yend = bg$ty_cell_b,
                  color = "lightgray") +
-        geom_segment(data = v_dt.tp[foreground == TRUE],
+        geom_segment(data = velocity_dt[foreground == TRUE],
                      aes(x = tx_cell_a, xend = tx_cell_b,
                          y = ty_cell_a, yend = ty_cell_b,
                          color = angle),
@@ -147,12 +248,12 @@ plot_velocity_arrows = function(tsne_res, cell_a, cell_b,
 
         scale_color_gradientn(colours = c("orange", "red", "purple", "blue",
                                           "green", "orange"), limits = c(0, 360), breaks = 0:4*90)
-    list(p_arrows, p_key)
+    p_arrows
 }
 
 #' Title
 #'
-#' @param tsne_res
+#' @param tsne_dt
 #' @param qgr
 #' @param qcells
 #' @param tss_ids
@@ -164,14 +265,14 @@ plot_velocity_arrows = function(tsne_res, cell_a, cell_b,
 #' @export
 #'
 #' @examples
-plot_velocity_arrows_selected = function(tsne_res, qgr, qcells, tss_ids,
+plot_velocity_arrows_selected = function(tsne_dt, qgr, qcells, tss_ids,
                                          grp_var = c("id", "grp")[1],
                                          line_type = c("curve", "spline", "straight")[2],
                                          label_type = c("text", "label", "none")[2]){
     # qcells = c("H7", "CD34", "Kasumi1", "mm1s", "Nalm6")
     # tss_ids = subset(qgr, gene_name == "RUNX1")$id[1]
-    stopifnot(qcells %in% unique(tsne_res$cell))
-    if(!tss_ids %in% tsne_res$id){
+    stopifnot(qcells %in% unique(tsne_dt$cell))
+    if(!tss_ids %in% tsne_dt$id){
         tmp = unlist(strsplit(tss_ids, " "))
         if(length(tmp) > 1){
             tss_ids = tmp[1]
@@ -184,9 +285,9 @@ plot_velocity_arrows_selected = function(tsne_res, qgr, qcells, tss_ids,
     }
     names(qgr) = qgr$id
     message(paste(as.character(qgr[tss_ids]), collapse = "\n"))
-    stopifnot(tss_ids %in% tsne_res$id)
+    stopifnot(tss_ids %in% tsne_dt$id)
 
-    lines_dt = tsne_res[cell %in% qcells & id %in% tss_ids]
+    lines_dt = tsne_dt[cell %in% qcells & id %in% tss_ids]
 
     lines_dt$cell = factor(lines_dt$cell, levels = qcells)
     lines_dt = lines_dt[order(cell)][order(id)][]
@@ -203,7 +304,7 @@ plot_velocity_arrows_selected = function(tsne_res, qgr, qcells, tss_ids,
     # lines_dt[, list(tx = spline(x = pid, y = tx, n = n*(length(qcells)-1)),
     # ty = spline(x = pid, y = ty, n = n*(length(qcells)-1))), by = id]
     p =     ggplot() +
-        geom_point(data = tsne_res[sample(seq(nrow(tsne_res)), 5000),],
+        geom_point(data = tsne_dt[sample(seq(nrow(tsne_dt)), 5000),],
                    aes(x = tx, y = ty), color = "gray") +
         labs(title = paste(qcells, collapse = ", ")) +
         theme_classic() +

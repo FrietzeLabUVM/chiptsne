@@ -2,13 +2,14 @@
 % Please edit documentation in R/functions_util.R
 \name{calc_delta}
 \alias{calc_delta}
-\title{calc_delta}
+\title{Title}
 \usage{
-calc_delta(tsne_res, cell_a, cell_b, x_points, y_points = x_points)
+calc_delta(tsne_dt, cell_a, cell_b, x_points, y_points = x_points,
+  strategy = "normal")
 }
 \arguments{
-\item{n_points}{}
+\item{strategy}{}
 }
 \description{
-calc_delta
+Title
 }
