@@ -5,3 +5,10 @@ sudo: false
 cache: packages
 after_success:
     - Rscript -e 'covr::codecov()'
+matrix:
+    include:
+        addons:
+            apt:
+              update: true
+              packages:
+                - libmagick++-dev
