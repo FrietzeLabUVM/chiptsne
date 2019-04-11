@@ -130,6 +130,9 @@ prep_profile_dt = function(prof_dt,
                            qgr,
                            cap_value = Inf,
                            high_on_right = TRUE){
+    x = y = norm_factor = cell = id = left_sum = right_sum =
+        needs_flip = .N = flipe_strand = fraction_flipped = NULL
+
     if(!all(norm_dt$norm_factor == 1)){
         prof_dt = merge(prof_dt, norm_dt, by = intersect(colnames(prof_dt),
                                                          colnames(norm_dt)))

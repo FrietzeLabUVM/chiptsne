@@ -9,71 +9,57 @@ data("profile_dt")
 data("tsne_dt")
 options("mc.cores" = 4)
 
-vel_dt = prep_velocity(tsne_dt, "HUES48", "HUES64", angle.max = 160)#, max_plotted = 5)
-plot_velocity_bins(vel_dt[foreground == TRUE])
-plot_velocity_bins(vel_dt, bin_FUN = mean)
-plot_velocity_bins(vel_dt, bin_FUN = sum)
-plot_velocity_centered(vel_dt)
-vel_dt$foreground = TRUE
-plot_velocity_arrows(vel_dt, angle_as_color = TRUE)
-p_arr = plot_velocity_arrows(vel_dt, angle_as_color = FALSE)
+vel_dt = prep_velocity(tsne_dt, "HUES48", "HUES64")
 
-p_arr = ggplot() + annotate(
-    "segment",
-    x = vel_dt$tx_cell_a,
-    xend = vel_dt$tx_cell_b,
-    y = vel_dt$ty_cell_a,
-    yend = vel_dt$ty_cell_b,
-    color = "gray",
-    arrow = arrow(length = unit(.02, "npc"))
-)
-p_arr
-plot_regional_velocity(
-    tsne_dt,
-    "HUES48",
-    "HUES64",
-    n_points = 6,
-    p = p_arr,
-    strategy = "by_direction"
-)
-plot_recentered_velocity(
-    tsne_dt,
-    "HUES48",
-    "HUES64",
-    n_points = 12,
-    p = p_arr
-)
+test_that("prep_velocity variables", {
+    expect_equal(
+        colnames(vel_dt),
+        c(
+            "id",
+            "tx_cell_a",
+            "tx_cell_b",
+            "ty_cell_a",
+            "ty_cell_b",
+            "bx_cell_a",
+            "btx_cell_a",
+            "by_cell_a",
+            "bty_cell_a",
+            "angle",
+            "foreground",
+            "distance"
+        )
+    )
+    expect_equal(nrow(vel_dt), length(query_gr))
+})
 
+test_that("plot_velocity_bins ggplot out", {
+    p1 = plot_velocity_bins(vel_dt)
+    expect_s3_class(p1, "ggplot")
+    p2 = plot_velocity_bins(vel_dt, bin_FUN = mean)
+    expect_s3_class(p2, "ggplot")
+    p3 = plot_velocity_bins(vel_dt, bin_FUN = sum)
+    expect_s3_class(p3, "ggplot")
+})
 
-plot_regional_velocity(
-    tsne_dt,
-    "HUES48",
-    "HUES64",
-    n_points = 3,
-    p = p_arr,
-    strategy = "by_direction",
-    angle_as_color = TRUE
-)
-plot_regional_velocity(
-    tsne_dt,
-    "HUES48",
-    "HUES64",
-    n_points = 6,
-    p = p_arr,
-    strategy = "by_direction",
-    angle_as_color = TRUE
-)
-plot_recentered_velocity(
-    tsne_dt,
-    "HUES48",
-    "HUES64",
-    n_points = 8,
-    p = p_arr,
-    # arrow_FUN = NULL,
-    arrow_FUN = arrow(length = unit(.02, "npc")),
-    angle_as_color = TRUE
-)
+test_that("plot_velocity_centered ggplot out", {
+    p1 = plot_velocity_centered(vel_dt)
+    expect_s3_class(p1, "ggplot")
+})
 
-plot_velocity_bins(velocity_dt = vel_dt, bins = 2)
-plot_velocity_bins(velocity_dt = vel_dt, bins = 36, bin_FUN = sum)
+test_that("plot_velocity_arrows ggplot out", {
+    p1 = plot_velocity_arrows(vel_dt)
+    expect_s3_class(p1, "ggplot")
+})
+
+test_that("plot_regional_velocity ggplot out", {
+    p1 = plot_regional_velocity(tsne_dt, "HUES48", "HUES64", 4)
+    expect_s3_class(p1, "ggplot")
+})
+
+test_that("plot_recentered_velocity ggplot out", {
+    p1 = plot_recentered_velocity(tsne_dt, "HUES48", "HUES64", 4, angle_as_color = TRUE)
+    p1
+    expect_s3_class(p1, "ggplot")
+})
+
 

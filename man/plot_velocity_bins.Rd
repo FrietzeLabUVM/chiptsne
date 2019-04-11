@@ -4,12 +4,26 @@
 \alias{plot_velocity_bins}
 \title{Title}
 \usage{
-plot_velocity_bins(velocity_dt, bins = 36, bin_FUN = list(length, sum,
-  mean)[[1]])
+plot_velocity_bins(velocity_dt, bins = 36, bin_FUN = sum)
 }
 \arguments{
-\item{velocity_dt}{}
+\item{velocity_dt}{data.table with angle and distance info.}
+
+\item{bins}{number of bins to use when summarizing changes.}
+
+\item{bin_FUN}{function to apply per bin to summarize. will be
+passed a numeric vector and must return single value.  Suggested methods
+are length, sum, mean, and median.}
+}
+\value{
+a ggplot with a polar coordinate barplot.
 }
 \description{
 Title
+}
+\examples{
+data("tsne_dt")
+vel_dt = prep_velocity(tsne_dt, unique(tsne_dt$cell)[1], unique(tsne_dt$cell)[2])
+plot_velocity_bins(vel_dt, bins = 18, bin_FUN = sum)
+plot_velocity_bins(vel_dt, bins = 8, bin_FUN = median)
 }

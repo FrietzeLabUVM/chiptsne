@@ -2,16 +2,53 @@
 % Please edit documentation in R/functions_velocity.R
 \name{plot_regional_velocity}
 \alias{plot_regional_velocity}
-\title{Title}
+\title{plot_regional_velocity}
 \usage{
-plot_regional_velocity(tsne_dt, cell_a, cell_b, n_points,
-  points_as_background = FALSE, p = NULL, min_N = 0,
-  id_to_plot = NULL, strategy = c("by_direction", "by_destination")[2],
-  arrow_FUN = NULL, angle_as_color = FALSE)
+plot_regional_velocity(tsne_dt, cell_a, cell_b, x_points,
+  y_points = x_points, points_as_background = FALSE, p = NULL,
+  min_N = 0, id_to_plot = NULL, strategy = c("by_direction",
+  "by_destination")[2], arrow_FUN = NULL, angle_as_color = FALSE)
 }
 \arguments{
-\item{id_to_plot}{}
+\item{tsne_dt}{tidy data.table of tsne results.  variables names must
+include: tx, ty, id, and cell}
+
+\item{cell_a}{an item in tsne_dt$cell. the origin for calculating
+angle/distance.}
+
+\item{cell_b}{an item in tsne_dt$cell. the destination for calculating
+angle/distance.}
+
+\item{x_points}{number of equally spaced bins in the x-dimension. Required.}
+
+\item{y_points}{number of equally spaced bins in the y-dimension. Default is
+x_points.}
+
+\item{points_as_background}{if TRUE, show points in background.}
+
+\item{p}{an existing ggplot to overlay images onto.  Default of NULL starts a
+new plot.}
+
+\item{min_N}{regional bins with fewer than min_N counts will not be shown.}
+
+\item{id_to_plot}{character.  ids in tsne_dt$id. Default of NULL causes all
+ids to be used.}
+
+\item{strategy}{character.  must be one of "by_direction" or "by_destination"}
+
+\item{arrow_FUN}{result of grid::arrow().  Default of NULL does not draw
+arrowheads.}
+
+\item{angle_as_color}{if TRUE, a rainbow like scale is applied to angle.}
+}
+\value{
+ggplot where regionally binned velocities are summarized.
 }
 \description{
-Title
+plot_regional_velocity
+}
+\examples{
+data("tsne_dt")
+plot_regional_velocity(tsne_dt, unique(tsne_dt$cell)[1],
+    unique(tsne_dt$cell)[2], 4, min_N = 4, arrow_FUN = arrow())
 }

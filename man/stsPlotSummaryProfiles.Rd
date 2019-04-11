@@ -9,13 +9,12 @@ stsPlotSummaryProfiles(profile_dt, position_dt, x_points,
   xrng = range(position_dt$tx), yrng = range(position_dt$ty),
   rname = digest::digest(list(profile_dt, position_dt, x_points,
   y_points, apply_norm, ylim, line_color_mapping, n_splines, ma_size,
-  facet_by)), odir = file.path("tsne_images/", rname),
+  facet_by)), odir = file.path(tempdir(), rname),
   force_rewrite = FALSE, n_cores = getOption("mc.cores", 1),
   apply_norm = TRUE, ylim = c(0, 1), ma_size = 2, n_splines = 10,
-  p = NULL, facet_by = NULL, line_color_mapping = c(H3K4me3 =
-  "forestgreen", H3K27me3 = "firebrick1"), vertical_facet_mapping = NULL,
-  N_floor = 0, N_ceiling = NULL, min_size = 0.3,
-  return_data = FALSE)
+  p = NULL, facet_by = NULL, line_color_mapping = NULL,
+  vertical_facet_mapping = NULL, N_floor = 0, N_ceiling = NULL,
+  min_size = 0.3, return_data = FALSE)
 }
 \arguments{
 \item{profile_dt}{a tidy data.table for profile data as retrieved by

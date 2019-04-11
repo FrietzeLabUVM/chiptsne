@@ -251,20 +251,31 @@ annotate_rects = function(p,
 }
 
 
-#' Title
+#' calc_delta
 #'
-#' @param tsne_dt
-#' @param cell_a
-#' @param cell_b
-#' @param x_points
-#' @param y_points
-#' @param strategy
+#' calculates delta (distance/difference) between points in cell_a and cell_b
+#' according to strategy.
 #'
-#' @return
+#' @param tsne_dt result of stsRunTsne()
+#' @param cell_a character that matches single item in tsne_dt$cell.  The origin
+#'   of deltas.
+#' @param cell_b character that matches single item in tsne_dt$cell  The
+#'   destination of deltas.
+#' @param x_points number of equally spaced bins in the x-dimension. Required.
+#' @param y_points number of equally spaced bins in the y-dimension. Default is
+#'   x_points.
+#' @param strategy character.  One of c("by_destination", "by_direction",
+#'   "individual_recentered", "normal")
+#'
+#' @return data.table with directional and angle information added.
 #' @export
 #'
 #' @examples
+#' data(tsne_dt)
+#' calc_delta(tsne_dt, unique(tsne_dt$cell)[1], unique(tsne_dt$cell)[2], x_points= 4)
 calc_delta = function(tsne_dt, cell_a, cell_b, x_points, y_points = x_points, strategy = "normal"){
+    stopifnot(cell_a %in% unique(tsne_dt$cell))
+    stopifnot(cell_b %in% unique(tsne_dt$cell))
     v_dt = dcast(tsne_dt[cell %in% c(cell_a, cell_b)], "id~cell", value.var = c("tx", "ty"))
     colnames(v_dt) = sub(cell_a, "cell_a", colnames(v_dt))
     colnames(v_dt) = sub(cell_b, "cell_b", colnames(v_dt))
@@ -317,37 +328,34 @@ calc_delta = function(tsne_dt, cell_a, cell_b, x_points, y_points = x_points, st
 
 #' plot_profiles_selected
 #'
-#' @param data_dt
-#' @param qgr
-#' @param qcells
-#' @param tss_ids
+#' @param profile_dt a tidy data.table containing profile data.  variable names
+#' are id, cell, mark, x, y.
+#' @param qcells character vector of cells to show data for.
+#' @param id_to_plot character vector of ids to show data for.
+#' @param color_mapping color_mapping for marks.
 #'
-#' @return
+#' @return a ggplot
 #' @export
 #'
 #' @examples
-plot_profiles_selected = function(data_dt, qgr, qcells, tss_ids,
-                                  color_mapping = c("H3K27me3" = "firebrick",
-                                                    "H3K4me3" = "forestgreen")){
-    # qcells = c("H7", "CD34", "Kasumi1", "mm1s", "Nalm6")
-    # tss_ids = subset(qgr, gene_name == "RUNX1")$id[1]
-    stopifnot(qcells %in% unique(data_dt$cell))
-    if(!tss_ids %in% data_dt$id){
-        tmp = unlist(strsplit(tss_ids, " "))
-        if(length(tmp) > 1){
-            tss_ids = tmp[1]
-            tmp = as.numeric(tmp[-1])
-            tss_ids = subset(qgr, gene_name %in% tss_ids)$id[tmp]
-        }else{
-            tss_ids = subset(qgr, gene_name %in% tss_ids)$id
-        }
-
+#' data(profile_dt)
+#' plot_profiles_selected(profile_dt,
+#'     qcells = unique(profile_dt$cell)[1:2],
+#'     id_to_plot = unique(profile_dt$id)[1:3]) +
+#'     theme(panel.spacing = unit(.04, "npc"))
+plot_profiles_selected = function(profile_dt,
+                                  qcells,
+                                  id_to_plot,
+                                  color_mapping = NULL) {
+    if(is.null(color_mapping)){
+        color_mapping = seqsetvis::safeBrew(length(unique(profile_dt$mark)))
+        names(color_mapping) = unique(profile_dt$mark)
     }
-    names(qgr) = qgr$id
-    message(paste(as.character(qgr[tss_ids]), collapse = "\n"))
-    plot_dt = data_dt[id %in% tss_ids & cell %in% qcells]
+    stopifnot(qcells %in% unique(profile_dt$cell))
+    stopifnot(id_to_plot %in% profile_dt$id)
+    plot_dt = profile_dt[id %in% id_to_plot & cell %in% qcells]
     plot_dt$cell = factor(plot_dt$cell, levels = qcells)
-    plot_dt$id = factor(plot_dt$id, levels = tss_ids)
+    plot_dt$id = factor(plot_dt$id, levels = id_to_plot)
 
     p = ggplot(plot_dt, aes(x = x, ymin = 0, ymax = y, y = y, color = mark, fill = mark)) +
         facet_grid("cell~id", switch = "y") +

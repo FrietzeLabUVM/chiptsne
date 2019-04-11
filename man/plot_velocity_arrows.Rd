@@ -2,16 +2,34 @@
 % Please edit documentation in R/functions_velocity.R
 \name{plot_velocity_arrows}
 \alias{plot_velocity_arrows}
-\title{Title}
+\title{plot_velocity_arrows}
 \usage{
 plot_velocity_arrows(velocity_dt, p = NULL, id_to_plot = NULL,
-  max_plotted = 500, delta.min = 0, delta.max = Inf, angle.min = 0,
-  angle.max = 360, angle_as_color = TRUE,
-  background_color = "lightgray")
+  angle_as_color = TRUE, background_color = "lightgray")
 }
 \arguments{
-\item{angle.max}{}
+\item{velocity_dt}{data.table with angle and distance info.}
+
+\item{p}{an existing ggplot to overlay images onto.  Default of NULL starts a
+new plot.}
+
+\item{id_to_plot}{character.  ids in tsne_dt$id. Default of NULL causes all
+ids to be used.}
+
+\item{angle_as_color}{if TRUE, a rainbow like scale is applied to angle.}
+
+\item{background_color}{character. color to use when plotting background
+points.}
+}
+\value{
+ggplot of arrows indicating position in cell line a to cell line b.
 }
 \description{
-Title
+plot_velocity_arrows
+}
+\examples{
+data("tsne_dt")
+vel_dt = prep_velocity(tsne_dt,
+    unique(tsne_dt$cell)[2], unique(tsne_dt$cell)[3])
+plot_velocity_arrows(vel_dt)
 }

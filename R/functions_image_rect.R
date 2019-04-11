@@ -141,7 +141,7 @@ GeomImage.rect <- ggplot2::ggproto("GeomImage.rect", Geom,
                               data[which(data$subset),]
                           },
 
-                          default_aes = aes(image=system.file("extdata/Rlogo.png", package="ggimage"),
+                          default_aes = ggplot2::aes(image=system.file("extdata/Rlogo.png", package="ggimage"),
                                             #size=0.05,
                                             colour = NULL, #angle = 0,
                                             alpha=1),

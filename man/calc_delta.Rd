@@ -2,14 +2,36 @@
 % Please edit documentation in R/functions_util.R
 \name{calc_delta}
 \alias{calc_delta}
-\title{Title}
+\title{calc_delta}
 \usage{
 calc_delta(tsne_dt, cell_a, cell_b, x_points, y_points = x_points,
   strategy = "normal")
 }
 \arguments{
-\item{strategy}{}
+\item{tsne_dt}{result of stsRunTsne()}
+
+\item{cell_a}{character that matches single item in tsne_dt$cell.  The origin
+of deltas.}
+
+\item{cell_b}{character that matches single item in tsne_dt$cell  The
+destination of deltas.}
+
+\item{x_points}{number of equally spaced bins in the x-dimension. Required.}
+
+\item{y_points}{number of equally spaced bins in the y-dimension. Default is
+x_points.}
+
+\item{strategy}{character.  One of c("by_destination", "by_direction",
+"individual_recentered", "normal")}
+}
+\value{
+data.table with directional and angle information added.
 }
 \description{
-Title
+calculates delta (distance/difference) between points in cell_a and cell_b
+according to strategy.
+}
+\examples{
+data(tsne_dt)
+calc_delta(tsne_dt, unique(tsne_dt$cell)[1], unique(tsne_dt$cell)[2], x_points= 4)
 }

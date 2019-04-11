@@ -2,13 +2,25 @@
 % Please edit documentation in R/functions_velocity.R
 \name{plot_velocity_centered}
 \alias{plot_velocity_centered}
-\title{Title}
+\title{plot_velocity_centered}
 \usage{
-plot_velocity_centered(velocity_dt)
+plot_velocity_centered(velocity_dt, line_alpha = 0.5, line_size = 1)
 }
 \arguments{
-\item{velocity_dt}{}
+\item{velocity_dt}{data.table with angle and distance info.}
+
+\item{line_alpha}{numeric [0,1] alpha value of lines}
+
+\item{line_size}{numeric >0 size value of lines}
+}
+\value{
+plot of
 }
 \description{
-Title
+plot_velocity_centered
+}
+\examples{
+data("tsne_dt")
+vel_dt = prep_velocity(tsne_dt, unique(tsne_dt$cell)[1], unique(tsne_dt$cell)[2])
+plot_velocity_centered(vel_dt)
 }

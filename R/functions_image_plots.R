@@ -74,7 +74,7 @@ stsPlotSummaryProfiles = function(## basic inputs
             facet_by
         )
     ),
-    odir = file.path("tsne_images/", rname),
+    odir = file.path(tempdir(), rname),
     force_rewrite = FALSE,
     n_cores = getOption("mc.cores", 1),
     ## preplot transformation
@@ -85,8 +85,7 @@ stsPlotSummaryProfiles = function(## basic inputs
     ## plot organization
     p = NULL,
     facet_by = NULL,
-    line_color_mapping = c("H3K4me3" = "forestgreen",
-                    "H3K27me3" = "firebrick1"),
+    line_color_mapping = NULL,
     vertical_facet_mapping = NULL,
     ## sizing and level of detail
     N_floor = 0,
@@ -107,6 +106,10 @@ stsPlotSummaryProfiles = function(## basic inputs
         }else{
             q_marks = sort(unique(profile_dt$mark))
         }
+    }
+    if(is.null(line_color_mapping)){
+        line_color_mapping = seqsetvis::safeBrew(length(unique(profile_dt$mark)))
+        names(line_color_mapping) = unique(profile_dt$mark)
     }
     stopifnot(q_cells %in% profile_dt$cell)
     stopifnot(q_marks %in% profile_dt$mark)
@@ -231,7 +234,7 @@ prep_images = function(profile_dt,
                                facet_by
                            )
                        ),
-                       odir = file.path("tsne_images/", rname),
+                       odir = file.path(tempdir(), rname),
                        force_rewrite = FALSE,
                        apply_norm = TRUE,
                        ylim = c(0, 1),
@@ -240,9 +243,12 @@ prep_images = function(profile_dt,
                        ma_size = 2,
                        n_splines = 10,
                        n_cores = getOption("mc.cores", 1),
-                       line_color_mapping = c("H3K4me3" = "forestgreen",
-                                       "H3K27me3" = "firebrick1"),
+                       line_color_mapping = NULL,
                        vertical_facet_mapping = NULL) {
+    if(is.null(line_color_mapping)){
+        line_color_mapping = seqsetvis::safeBrew(length(unique(profile_dt$mark)))
+        names(line_color_mapping) = unique(profile_dt$mark)
+    }
     if (!all(unique(profile_dt$mark) %in% names(line_color_mapping))) {
         missing_colors = setdiff(unique(profile_dt$mark), names(line_color_mapping))
         stop(

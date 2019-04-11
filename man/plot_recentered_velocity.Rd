@@ -2,15 +2,51 @@
 % Please edit documentation in R/functions_velocity.R
 \name{plot_recentered_velocity}
 \alias{plot_recentered_velocity}
-\title{Title}
+\title{plot_recentered_velocity}
 \usage{
-plot_recentered_velocity(tsne_dt, cell_a, cell_b, n_points,
-  points_as_background = FALSE, p = NULL, min_N = 0,
+plot_recentered_velocity(tsne_dt, cell_a, cell_b, x_points,
+  y_points = x_points, points_as_background = FALSE, p = NULL,
   id_to_plot = NULL, arrow_FUN = NULL, angle_as_color = FALSE)
 }
 \arguments{
-\item{id_to_plot}{}
+\item{tsne_dt}{tidy data.table of tsne results.  variables names must
+include: tx, ty, id, and cell}
+
+\item{cell_a}{an item in tsne_dt$cell. the origin for calculating
+angle/distance.}
+
+\item{cell_b}{an item in tsne_dt$cell. the destination for calculating
+angle/distance.}
+
+\item{x_points}{number of equally spaced bins in the x-dimension. Required.}
+
+\item{y_points}{number of equally spaced bins in the y-dimension. Default is
+x_points.}
+
+\item{points_as_background}{if TRUE, show points in background.}
+
+\item{p}{an existing ggplot to overlay images onto.  Default of NULL starts a
+new plot.}
+
+\item{id_to_plot}{character.  ids in tsne_dt$id. Default of NULL causes all
+ids to be used.}
+
+\item{arrow_FUN}{result of grid::arrow().  Default of NULL does not draw
+arrowheads.}
+
+\item{angle_as_color}{if TRUE, a rainbow like scale is applied to angle.}
+}
+\value{
+plot where all velocities in a bin transposed to the same origin.
 }
 \description{
-Title
+plot_recentered_velocity
+}
+\examples{
+data("tsne_dt")
+plot_recentered_velocity(tsne_dt,
+    unique(tsne_dt$cell)[1], unique(tsne_dt$cell)[2], 4)
+plot_recentered_velocity(tsne_dt,
+    unique(tsne_dt$cell)[1], unique(tsne_dt$cell)[2], 1,
+    angle_as_color = TRUE)
 }

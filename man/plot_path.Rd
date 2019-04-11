@@ -2,16 +2,58 @@
 % Please edit documentation in R/functions_path.R
 \name{plot_path}
 \alias{plot_path}
-\title{Title}
+\title{plot_path}
 \usage{
-plot_path(tsne_dt, qgr, qcells, tss_ids, grp_var = c("id", "grp")[1],
+plot_path(tsne_dt, qcells, id_to_plot, p = NULL, xrng = c(-0.5, 0.5),
+  yrng = c(-0.5, 0.5), arrowhead_position = c("end", "each")[1],
   line_type = c("curve", "spline", "straight")[2],
   label_type = c("text", "label", "none")[2], bg_points = 5000,
   arrow_FUN = NULL)
 }
 \arguments{
-\item{label_type}{}
+\item{tsne_dt}{data.table with tsne info (tx, ty, id, and cell)}
+
+\item{qcells}{character vector of items in tsne_dt$cell}
+
+\item{id_to_plot}{character vector of ids in tsne_dt$id}
+
+\item{p}{exiting ggplot to add a layer onto.  Default of NULL
+creates a new ggplot.}
+
+\item{xrng}{numeric of length 2. passed to coord_cartesian xlim.  Not used if p is specified.  Default is c(-.5, .5).}
+
+\item{yrng}{numeric of length 2. passed to coord_cartesian ylim.  Not used if p is specified.  Default is c(-.5, .5).}
+
+\item{arrowhead_position}{character, must be one of "each" or "end".
+Determines if arrowheads are drawn for each segment or only on the final
+segment.}
+
+\item{line_type}{character vector describing type of line to connect qcells.
+One of : curve, spline, or straight}
+
+\item{label_type}{character vector describing labelling method for points
+along lines.  One of : text, label, or none.}
+
+\item{bg_points}{number of background id points to plot.}
+
+\item{arrow_FUN}{result of grid::arrow().  Default of NULL does not draw arrowheads.}
+}
+\value{
+ggplot showing how individual ids behave across qcells.
 }
 \description{
-Title
+Traces a path through the t-sne space in cell line order defined by qcells
+for ids in id_to_plot
+}
+\details{
+Good for looking at a small number of ids in a modest number of cells.
+}
+\examples{
+data(tsne_dt)
+plot_path(tsne_dt, unique(tsne_dt$cell), unique(tsne_dt$id)[1:3])
+plot_path(tsne_dt, unique(tsne_dt$cell), unique(tsne_dt$id)[1:3],
+    arrowhead_position = "each", label_type = "none")
+plot_path(tsne_dt, unique(tsne_dt$cell), unique(tsne_dt$id)[1:3],
+    arrowhead_position = "end", label_type = "none", line_type = "spline",
+    arrow_FUN = arrow())
 }
