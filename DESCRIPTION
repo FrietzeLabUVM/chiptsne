@@ -1,12 +1,13 @@
 Package: seqtsne
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Application of t-sne to NGS Genomic Signal Profiles
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Authors@R: person("Joseph R", "Boyd", email = "jrboyd@uvm.edu",
+                  role = c("aut", "cre"))
+Description: Supports all stages of analysis of NGS data using t-sne.  This 
+includes data retrieval from .bam and .bigWig files, normalization, running 
+t-sne, figure generation, and interactive analysis.
+License:  MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Depends: R (>= 3.5), data.table, ggplot2
@@ -24,4 +25,9 @@ RoxygenNote: 6.1.1
 Suggests: 
     covr,
     testthat
-biocViews: Software, ChIPSeq, HighThroughputSequencing, Sequencing, Visualization
+biocViews: 
+    Software, 
+    ChIPSeq, 
+    HighThroughputSequencing, 
+    Sequencing, 
+    Visualization
