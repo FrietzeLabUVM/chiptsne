@@ -6,7 +6,8 @@
 \usage{
 plot_velocity_arrows(velocity_dt, p = NULL, id_to_plot = NULL,
   max_plotted = 500, delta.min = 0, delta.max = Inf, angle.min = 0,
-  angle.max = 360)
+  angle.max = 360, angle_as_color = TRUE,
+  background_color = "lightgray")
 }
 \arguments{
 \item{angle.max}{}

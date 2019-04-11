@@ -6,8 +6,8 @@
 \usage{
 plot_regional_velocity(tsne_dt, cell_a, cell_b, n_points,
   points_as_background = FALSE, p = NULL, min_N = 0,
-  id_to_plot = NULL, strategy = c("by_destination", "by_direction",
-  "individual_recentered")[1])
+  id_to_plot = NULL, strategy = c("by_direction", "by_destination")[2],
+  arrow_FUN = NULL, angle_as_color = FALSE)
 }
 \arguments{
 \item{id_to_plot}{}
