@@ -22,5 +22,6 @@ Imports:
     seqsetvis
 RoxygenNote: 6.1.1
 Suggests: 
-    covr
+    covr,
+    testthat
 biocViews: Software, ChIPSeq, HighThroughputSequencing, Sequencing, Visualization
