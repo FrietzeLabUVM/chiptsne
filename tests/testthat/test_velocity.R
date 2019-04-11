@@ -27,7 +27,73 @@ p_arr = ggplot() + annotate(
     arrow = arrow(length = unit(.02, "npc"))
 )
 p_arr
-plot_regional_velocity(tsne_dt, "HUES48", "HUES64", n_points = 6, p = p_arr, strategy = "by_direction")
-plot_regional_velocity(tsne_dt, "HUES48", "HUES64", n_points = 6, p = p_arr, strategy = "by_direction")
-plot_regional_velocity(tsne_dt, "HUES48", "HUES64", n_points = 6, p = p_arr, strategy = "by_direction")
-plot_regional_velocity(tsne_dt, "HUES48", "HUES64", n_points = 12, p = p_arr, strategy = 3)
+plot_regional_velocity(
+    tsne_dt,
+    "HUES48",
+    "HUES64",
+    n_points = 6,
+    p = p_arr,
+    strategy = "by_direction"
+)
+plot_regional_velocity(
+    tsne_dt,
+    "HUES48",
+    "HUES64",
+    n_points = 6,
+    p = p_arr,
+    strategy = "by_direction"
+)
+plot_regional_velocity(
+    tsne_dt,
+    "HUES48",
+    "HUES64",
+    n_points = 6,
+    p = p_arr,
+    strategy = "by_direction"
+)
+plot_regional_velocity(
+    tsne_dt,
+    "HUES48",
+    "HUES64",
+    n_points = 12,
+    p = p_arr,
+    strategy = 3
+)
+
+
+plot_regional_velocity(
+    tsne_dt,
+    "HUES48",
+    "HUES64",
+    n_points = 3,
+    p = p_arr,
+    strategy = "by_direction",
+    angle_as_color = TRUE
+)
+plot_regional_velocity(
+    tsne_dt,
+    "HUES48",
+    "HUES64",
+    n_points = 6,
+    p = p_arr,
+    strategy = "by_direction",
+    angle_as_color = TRUE
+)
+plot_regional_velocity(
+    tsne_dt,
+    "HUES48",
+    "HUES64",
+    n_points = 6,
+    p = p_arr,
+    strategy = "by_direction",
+    angle_as_color = TRUE
+)
+plot_regional_velocity(
+    tsne_dt,
+    "HUES48",
+    "HUES64",
+    n_points = 8,
+    p = p_arr,
+    strategy = 3,
+    angle_as_color = TRUE
+)

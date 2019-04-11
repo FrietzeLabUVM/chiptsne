@@ -42,18 +42,22 @@ plot_regional_velocity = function(tsne_dt,
                                   p = NULL,
                                   min_N = 0,
                                   id_to_plot = NULL,
-                                  strategy = c("by_direction", "by_destination", "individual_recentered")[2]
+                                  strategy = c("by_direction", "by_destination", "individual_recentered")[2],
+                                  angle_as_color = FALSE
 ){
-    if(is.numeric(strategy)){
-        strategy = c("by_destination", "by_direction", "individual_recentered")[strategy]
+    if(is.numeric(strategy)) {
+        strategy = c("by_destination",
+                     "by_direction",
+                     "individual_recentered")[strategy]
     }
-    if(is.null(id_to_plot)){
+    if (is.null(id_to_plot)) {
         tsne_dt.tp = copy(tsne_dt)
-    }else{
+    } else{
         tsne_dt.tp = tsne_dt[id %in% id_to_plot]
     }
 
     av_dt = calc_delta(tsne_dt.tp, cell_a, cell_b, n_points, strategy = strategy)
+
     # if(is.null(av_dt$N)) av_dt$N = 1
     if (is.null(p))
         p = ggplot()
@@ -62,38 +66,103 @@ plot_regional_velocity = function(tsne_dt,
                            aes(x = tx, y = ty, color = cell))
     }
     if (is.null(av_dt$N)) {
-        p = p + geom_segment(
-            data = av_dt,
-            aes(
-                x = tx_cell_a,
-                xend = tx_cell_b,
-                y = ty_cell_a,
-                yend = ty_cell_b
-            ),
-            arrow = arrow(length = unit(x = .02, units = "npc"))
-        ) +
-            coord_cartesian(xlim = range(tsne_dt$tx), ylim = range(tsne_dt$ty)) +
-            scale_fill_gradient2(low = "gray", high = "black") +
-            labs(x = "x", y = "y", fill = "density") +
-            theme_classic()
-    }else{
-        p = p + geom_segment(
-            data = av_dt[N >= min_N],
-            aes(
-                x = tx_cell_a,
-                xend = tx_cell_b,
-                y = ty_cell_a,
-                yend = ty_cell_b,
-                size = N
-            ),
-            arrow = arrow(length = unit(x = .02, units = "npc"))
-        ) +
-            coord_cartesian(xlim = range(tsne_dt$tx), ylim = range(tsne_dt$ty)) +
-            scale_fill_gradient2(low = "gray", high = "black") +
-            labs(x = "x", y = "y", fill = "density") +
-            scale_size_continuous(range = c(.5, 2),
-                                  breaks = range(av_dt$N)) +
-            theme_classic()
+        if (angle_as_color) {
+            av_dt[, angle := xy2deg(tx_cell_a, ty_cell_a, tx_cell_b, ty_cell_b)]
+            p = p + geom_segment(
+                data = av_dt,
+                aes(
+                    x = tx_cell_a,
+                    xend = tx_cell_b,
+                    y = ty_cell_a,
+                    yend = ty_cell_b,
+                    color = angle
+                ),
+                arrow = arrow(length = unit(x = .02, units = "npc"))
+            ) +
+                coord_cartesian(xlim = range(tsne_dt$tx),
+                                ylim = range(tsne_dt$ty)) +
+                scale_fill_gradient2(low = "gray", high = "black") +
+                scale_color_gradientn(
+                    colours = c("orange", "red", "purple", "blue",
+                                "green", "orange"),
+                    limits = c(0, 360),
+                    breaks = 0:4 * 90
+                ) +
+                labs(x = "x",
+                     y = "y",
+                     fill = "density") +
+                theme_classic()
+        } else{
+            p = p + geom_segment(
+                data = av_dt,
+                aes(
+                    x = tx_cell_a,
+                    xend = tx_cell_b,
+                    y = ty_cell_a,
+                    yend = ty_cell_b
+                ),
+                arrow = arrow(length = unit(x = .02, units = "npc"))
+            ) +
+                coord_cartesian(xlim = range(tsne_dt$tx),
+                                ylim = range(tsne_dt$ty)) +
+                scale_fill_gradient2(low = "gray", high = "black") +
+                labs(x = "x",
+                     y = "y",
+                     fill = "density") +
+                theme_classic()
+        }
+    } else{
+        if (angle_as_color) {
+            av_dt[, angle := xy2deg(tx_cell_a, ty_cell_a, tx_cell_b, ty_cell_b)]
+            p = p + geom_segment(
+                data = av_dt[N >= min_N],
+                aes(
+                    x = tx_cell_a,
+                    xend = tx_cell_b,
+                    y = ty_cell_a,
+                    yend = ty_cell_b,
+                    size = N,
+                    color = angle
+                ),
+                arrow = arrow(length = unit(x = .02, units = "npc"))
+            ) +
+                coord_cartesian(xlim = range(tsne_dt$tx),
+                                ylim = range(tsne_dt$ty)) +
+                scale_fill_gradient2(low = "gray", high = "black") +
+                labs(x = "x",
+                     y = "y",
+                     fill = "density") +
+                scale_size_continuous(range = c(.5, 2),
+                                      breaks = range(av_dt$N)) +
+                scale_color_gradientn(
+                    colours = c("orange", "red", "purple", "blue",
+                                "green", "orange"),
+                    limits = c(0, 360),
+                    breaks = 0:4 * 90
+                ) +
+                theme_classic()
+        } else{
+            p = p + geom_segment(
+                data = av_dt[N >= min_N],
+                aes(
+                    x = tx_cell_a,
+                    xend = tx_cell_b,
+                    y = ty_cell_a,
+                    yend = ty_cell_b,
+                    size = N
+                ),
+                arrow = arrow(length = unit(x = .02, units = "npc"))
+            ) +
+                coord_cartesian(xlim = range(tsne_dt$tx),
+                                ylim = range(tsne_dt$ty)) +
+                scale_fill_gradient2(low = "gray", high = "black") +
+                labs(x = "x",
+                     y = "y",
+                     fill = "density") +
+                scale_size_continuous(range = c(.5, 2),
+                                      breaks = range(av_dt$N)) +
+                theme_classic()
+        }
     }
 
     # p_velocity = ggplot() +
