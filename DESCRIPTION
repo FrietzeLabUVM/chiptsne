@@ -4,13 +4,17 @@ Title: Application of t-sne to NGS Genomic Signal Profiles
 Version: 0.1.0
 Authors@R: person("Joseph R", "Boyd", email = "jrboyd@uvm.edu",
                   role = c("aut", "cre"))
-Description: Supports all stages of analysis of NGS data using t-sne.  This 
-includes data retrieval from .bam and .bigWig files, normalization, running 
-t-sne, figure generation, and interactive analysis.
+Description: 
+    Supports all stages of analysis of NGS data using t-sne.  This 
+    includes data retrieval from .bam and .bigWig files, normalization, running 
+    t-sne, figure generation, and interactive analysis.
 License:  MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-Depends: R (>= 3.5), data.table, ggplot2
+Depends: 
+    R (>= 3.5), 
+    data.table, 
+    ggplot2
 Imports: 
     BiocFileCache,
     digest,
