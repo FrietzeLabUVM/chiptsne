@@ -113,7 +113,7 @@ rescale_capped = function(x, to = c(0,1), from = range(x, na.rm = TRUE, finite =
 #'   for. Defaults to range(x).
 #'
 #' @return bin assignments parall to x.
-#'
+#' @export
 #' @examples
 #' bin_values(0:10, 3)
 bin_values = function(x, n_bins, xrng = range(x)){
@@ -129,7 +129,7 @@ bin_values = function(x, n_bins, xrng = range(x)){
 #'   for. Defaults to range(x).
 #'
 #' @return numeric of length n_bins containing centers of bins.
-#'
+#' @export
 #' @examples
 #' bin_values_centers(0:10, 3)
 bin_values_centers = function(x, n_bins, xrng = range(x)){

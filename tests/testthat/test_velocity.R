@@ -76,3 +76,4 @@ plot_recentered_velocity(
 
 plot_velocity_bins(velocity_dt = vel_dt, bins = 2)
 plot_velocity_bins(velocity_dt = vel_dt, bins = 36, bin_FUN = sum)
+
