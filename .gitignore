@@ -2,6 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
+*Rcheck
 seqtsne.Rproj
 vignettes/tsne_images
 tsne_images

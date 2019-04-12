@@ -1,7 +1,3 @@
-.datatable.aware=TRUE
-setOldClass(c('data.frame'))
-setOldClass(c('data.table', 'data.frame'))
-
 setClass(Class = "ChIPtsne",
 
          slots = c(
