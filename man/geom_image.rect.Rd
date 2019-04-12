@@ -42,7 +42,10 @@ d <- data.frame(x = rnorm(10),
                                 "https://jeroenooms.github.io/images/frink.png"),
                               size=10, replace = TRUE)
                )
-ggplot(d, aes(x, y)) + geom_image.rect(aes(image=image))
+ggplot(d, aes(xmin = x, xmax = 2*x, ymin = y, ymax = 2*y, image=image)) +
+    geom_rect(fill = "blue") +
+    geom_image.rect()
+
 }
 \author{
 guangchuang yu

@@ -73,34 +73,37 @@ draw_key_image = function (data, params, size)
     return(keyGrob)
 }
 
-##' geom layer for visualizing image files
-##'
-##'
-##' @title geom_image.rect
-##' @param mapping aes mapping
-##' @param data data
-##' @param stat stat
-##' @param position position
-##' @param inherit.aes logical, whether inherit aes from ggplot()
-##' @param na.rm logical, whether remove NA values
-##' @param by one of 'width' or 'height'
-##' @param nudge_x horizontal adjustment to nudge image
-##' @param ... additional parameters
-##' @return geom layer
-##' @importFrom ggplot2 layer
-##' @export
-##' @examples
-##' library("ggplot2")
-##' library("ggimage")
-##' set.seed(2017-02-21)
-##' d <- data.frame(x = rnorm(10),
-##'                 y = rnorm(10),
-##'                 image = sample(c("https://www.r-project.org/logo/Rlogo.png",
-##'                                 "https://jeroenooms.github.io/images/frink.png"),
-##'                               size=10, replace = TRUE)
-##'                )
-##' ggplot(d, aes(x, y)) + geom_image.rect(aes(image=image))
-##' @author guangchuang yu
+#' geom layer for visualizing image files
+#'
+#'
+#' @title geom_image.rect
+#' @param mapping aes mapping
+#' @param data data
+#' @param stat stat
+#' @param position position
+#' @param inherit.aes logical, whether inherit aes from ggplot()
+#' @param na.rm logical, whether remove NA values
+#' @param by one of 'width' or 'height'
+#' @param nudge_x horizontal adjustment to nudge image
+#' @param ... additional parameters
+#' @return geom layer
+#' @importFrom ggplot2 layer
+#' @export
+#' @examples
+#' library("ggplot2")
+#' library("ggimage")
+#' set.seed(2017-02-21)
+#' d <- data.frame(x = rnorm(10),
+#'                 y = rnorm(10),
+#'                 image = sample(c("https://www.r-project.org/logo/Rlogo.png",
+#'                                 "https://jeroenooms.github.io/images/frink.png"),
+#'                               size=10, replace = TRUE)
+#'                )
+#' ggplot(d, aes(xmin = x, xmax = 2*x, ymin = y, ymax = 2*y, image=image)) +
+#'     geom_rect(fill = "blue") +
+#'     geom_image.rect()
+#'
+#' @author guangchuang yu
 geom_image.rect <- function(mapping=NULL, data=NULL, stat="identity",
                             position="identity", inherit.aes=TRUE,
                             na.rm=FALSE,
