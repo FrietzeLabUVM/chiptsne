@@ -205,7 +205,8 @@ fetch_bam_dt = function(qdt,
         seqsetvis::ssvFetchBam(qdt[, 1:3], qgr,
                                return_data.table = TRUE,
                                win_method = qmet,
-                               win_size = qwin, n_cores = n_cores)
+                               win_size = qwin,
+                               n_cores = n_cores)
     }
     # bam_dt = bfcif(bfc, rname, FUN = bam_fetch, force_overwrite = force_overwrite)
     bam_dt = bam_fetch()
