@@ -47,6 +47,8 @@ img_rect = set_image_rects(img_res$image_dt,
                            y_points = img_res$y_points,
                            xrng = img_res$xrng,
                            yrng = img_res$yrng)
-ggplot(img_rect, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax)) + geom_rect()
-ggplot(img_rect, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, image = png_file)) + geom_image.rect()
+ggplot(img_rect, aes(xmin = xmin, xmax = xmax,
+    ymin = ymin, ymax = ymax)) + geom_rect()
+ggplot(img_rect, aes(xmin = xmin, xmax = xmax,
+    ymin = ymin, ymax = ymax, image = png_file)) + geom_image.rect()
 }

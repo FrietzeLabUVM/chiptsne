@@ -6,7 +6,7 @@ library(testthat)
 
 data("query_gr")
 
-options("mc.cores" = 4)
+options("mc.cores" = 2)
 
 bam_files = dir(system.file('extdata', package = "seqtsne"), pattern = ".bam$", full.names = TRUE)
 cfg_dt = data.table(file = bam_files)

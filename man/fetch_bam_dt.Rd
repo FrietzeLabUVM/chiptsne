@@ -9,7 +9,8 @@ fetch_bam_dt(qdt, qgr, qwin = 50, qmet = "summary", agg_FUN = sum,
   force_overwrite = FALSE)
 }
 \arguments{
-\item{qdt}{data.table containing, file, cell, mark, and optionally norm_factor}
+\item{qdt}{data.table containing, file, cell, mark, and optionally
+norm_factor}
 
 \item{qgr}{GRanges of regions to fetch}
 
@@ -17,15 +18,16 @@ fetch_bam_dt(qdt, qgr, qwin = 50, qmet = "summary", agg_FUN = sum,
 
 \item{qmet}{strategy to use in each region, summary or sample}
 
-\item{agg_FUN}{used to aggregate any duplicate cell+mark mappings in qdt.}
+\item{agg_FUN}{function used to aggregate any duplicate cell+mark mappings in
+qdt. Should accept a numeric vector and return a single value.}
 
 \item{bfc}{BiocFileCache object to use to cache data}
 
 \item{n_cores}{number of cores to use. Defaults to value of mc.cores or 1 if
 mc.cores is not set.}
 
-\item{rname}{rname to use with cache.  Default is a digest of arguments
-used to fetch data.}
+\item{rname}{rname to use with cache.  Default is a digest of arguments used
+to fetch data.}
 
 \item{force_overwrite}{if TRUE, any contents of cache are overwritten.}
 }
@@ -33,12 +35,12 @@ used to fetch data.}
 a tidy data.table of profile data.
 }
 \description{
-fetches a tidy data.table of scores from bigwigs, automatically uses
-cache.
+fetches a tidy data.table of scores from bigwigs, automatically uses cache.
 }
 \examples{
 data("query_gr")
-bam_files = dir(system.file('extdata', package = "seqtsne"), pattern = ".bam$", full.names = TRUE)
+bam_files = dir(system.file('extdata', package = "seqtsne"),
+    pattern = ".bam$", full.names = TRUE)
 cfg_dt = data.table(file = bam_files)
 cfg_dt[, c("cell", "mark") := tstrsplit(basename(file), "_", keep = 1:2)]
 cfg_dt = cfg_dt[cell \%in\% c("ESH1", "HUES48", "HUES64")]

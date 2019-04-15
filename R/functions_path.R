@@ -24,6 +24,8 @@
 #'
 #' @return ggplot showing how individual ids behave across qcells.
 #' @export
+#' @importFrom stats spline
+#' @importFrom ggrepel geom_text_repel geom_label_repel
 #'
 #' @examples
 #' data(tsne_dt)
@@ -123,10 +125,10 @@ plot_path = function(tsne_dt,
            },
            spline = {
                n = 20
-               sp_y = lines_dt[, spline(x = cell_o,
+               sp_y = lines_dt[, stats::spline(x = cell_o,
                                         y = ty,
                                         n = n * (length(qcells) - 1)), by = id][, list(pid = seq(.N), ty = y), by = list(id)]
-               sp_x = lines_dt[, spline(x = cell_o,
+               sp_x = lines_dt[, stats::spline(x = cell_o,
                                         y = tx,
                                         n = n * (length(qcells) - 1)), by = id][, list(pid = seq(.N), tx = y), by = list(id)]
                sp_dt = merge(sp_x, sp_y, by = c("id", "pid"))
@@ -285,6 +287,7 @@ plot_path = function(tsne_dt,
 #'
 #' @return a ggplot
 #' @export
+#' @importFrom grDevices chull
 #'
 #' @examples
 #' data(tsne_dt)
@@ -349,10 +352,10 @@ plot_outline = function(tsne_dt,
                  y = tsne_dt[id %in% id_tp,]$ty,
                  color = bg_color)
 
-    ch_dt = lines_dt[, .(ch_i  = chull(tx, ty)), .(id)]
+    ch_dt = lines_dt[, .(ch_i  = grDevices::chull(tx, ty)), .(id)]
 
     lines_dt[, ch_i := seq(.N), by = .(id)]
-    ch_res = lines_dt[, .(ch_i  = chull(tx, ty)), by = .(id)]
+    ch_res = lines_dt[, .(ch_i  = grDevices::chull(tx, ty)), by = .(id)]
     ch_res$o = seq(nrow(ch_res))
     poly_dt = merge(lines_dt, ch_res)
     poly_dt = poly_dt[order(o)]

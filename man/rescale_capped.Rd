@@ -22,10 +22,10 @@ wraps scales::rescale to enforce range of \code{to} on output
 }
 \examples{
 #behaves identically to scales::rescale when x is within 'from' domain
-rescale_capped(0:10, to = c(0, 1), c(0, 10))
+seqtsne:::rescale_capped(0:10, to = c(0, 1), c(0, 10))
 scales::rescale(0:10, to = c(0, 1), c(0, 10))
 #when x exceeds 'from' domain, results are still within 'to' domain
-rescale_capped(0:10, to = c(0,1), c(0,5))
+seqtsne:::rescale_capped(0:10, to = c(0,1), c(0,5))
 #not true for scales::rescale
 scales::rescale(0:10, to = c(0,1), c(0,5))
 }

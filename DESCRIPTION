@@ -1,7 +1,7 @@
 Package: seqtsne
 Type: Package
 Title: Application of t-sne to NGS Genomic Signal Profiles
-Version: 0.1.0
+Version: 0.0.0
 Authors@R: person("Joseph R", "Boyd", email = "jrboyd@uvm.edu",
                   role = c("aut", "cre"))
 Description: 
@@ -20,19 +20,24 @@ Imports:
     digest,
     GenomicRanges,
     ggimage,
-    IRanges,
+    ggrepel,
+    grDevices,
+    grid,
     magick,
     methods,
     Rtsne,
     scales,
-    seqsetvis
-RoxygenNote: 6.1.1
+    stats,
+    tools,
+    seqsetvis (>= 1.3.7)
 Suggests: 
     covr,
+    knitr,
     testthat
+RoxygenNote: 6.1.1
+VignetteBuilder: knitr
 biocViews: 
     Software, 
     ChIPSeq, 
-    HighThroughputSequencing, 
     Sequencing, 
     Visualization

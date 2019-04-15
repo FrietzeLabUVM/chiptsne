@@ -1,28 +1,29 @@
 # these methods are slight alteration of ggimage::geom_image to behave like
 # geom_rect
 
-# grid::grobName
-grobName = function (grob = NULL, prefix = "GRID")
-{
-    if (is.null(grob))
-        grobAutoName(prefix)
-    else {
-        if (!is.grob(grob))
-            stop("invalid 'grob' argument")
-        else grobAutoName(prefix, class(grob)[1L])
-    }
-}
-# grid::grobAutoName
-grobAutoName = function (prefix = "GRID", suffix = "GROB")
-{
-    index <<- index + 1
-    paste(prefix, suffix, index, sep = ".")
-}
+# # grid::grobName
+# grobName = function (grob = NULL, prefix = "GRID")
+# {
+#     if (is.null(grob))
+#         grobAutoName(prefix)
+#     else {
+#         if (!is.grob(grob))
+#             stop("invalid 'grob' argument")
+#         else grobAutoName(prefix, class(grob)[1L])
+#     }
+# }
+# # grid::grobAutoName
+# grobAutoName = function (prefix = "GRID", suffix = "GROB")
+# {
+#     index <<- index + 1
+#     paste(prefix, suffix, index, sep = ".")
+# }
 
 
 # library(magick)
 # library(grid)
 # ggname = ggimage:::ggname
+#' @importFrom grid grobName
 ggname = function (prefix, grob)
 {
     grob$name <- grid::grobName(grob, prefix)
@@ -45,7 +46,11 @@ color_image = function (img, color, alpha = NULL)
         bitmap[4, , ] <- as.raw(as.integer(bitmap[4, , ]) * alpha)
     image_read(bitmap)
 }
-# draw_key_image = ggimage:::draw_key_image
+
+#' @import ggimage
+#' @importFrom grid gpar
+NULL
+
 draw_key_image = function (data, params, size)
 {
     kt <- getOption("ggimage.keytype")
@@ -53,19 +58,34 @@ draw_key_image = function (data, params, size)
         kt <- "point"
     }
     if (kt == "point") {
-        keyGrob <- pointsGrob(0.5, 0.5, pch = 19, gp = gpar(col = alpha(data$colour,
-                                                                        data$alpha), fill = alpha(data$colour, data$alpha),
-                                                            fontsize = 3 * ggplot2::.pt, lwd = 0.94))
+        keyGrob <-
+            pointsGrob(
+                0.5,
+                0.5,
+                pch = 19,
+                gp = grid::gpar(
+                    col = alpha(data$colour,
+                                data$alpha),
+                    fill = alpha(data$colour, data$alpha),
+                    fontsize = 3 * ggplot2::.pt,
+                    lwd = 0.94
+                )
+            )
     }
     else if (kt == "rect") {
-        keyGrob <- rectGrob(gp = gpar(col = NA, fill = alpha(data$colour,
+        keyGrob <- rectGrob(gp = grid::gpar(col = NA, fill = alpha(data$colour,
                                                              data$alpha)))
     }
     else if (kt == "image") {
-        img <- image_read(system.file("extdata/Rlogo.png", package = "ggimage"))
+        img <-
+            image_read(system.file("extdata/Rlogo.png", package = "ggimage"))
         grobs <- lapply(seq_along(data$colour), function(i) {
             img <- color_image(img, data$colour[i], data$alpha[i])
-            rasterGrob(0.5, 0.5, image = img, width = 1, height = 1)
+            rasterGrob(0.5,
+                       0.5,
+                       image = img,
+                       width = 1,
+                       height = 1)
         })
         class(grobs) <- "gList"
         keyGrob <- ggname("image_key", gTree(children = grobs))
@@ -83,8 +103,6 @@ draw_key_image = function (data, params, size)
 #' @param position position
 #' @param inherit.aes logical, whether inherit aes from ggplot()
 #' @param na.rm logical, whether remove NA values
-#' @param by one of 'width' or 'height'
-#' @param nudge_x horizontal adjustment to nudge image
 #' @param ... additional parameters
 #' @return geom layer
 #' @importFrom ggplot2 layer
@@ -93,22 +111,24 @@ draw_key_image = function (data, params, size)
 #' library("ggplot2")
 #' library("ggimage")
 #' set.seed(2017-02-21)
-#' d <- data.frame(x = rnorm(10),
-#'                 y = rnorm(10),
-#'                 image = sample(c("https://www.r-project.org/logo/Rlogo.png",
-#'                                 "https://jeroenooms.github.io/images/frink.png"),
-#'                               size=10, replace = TRUE)
+#' d <- data.frame(
+#'     x = rnorm(10),
+#'     y = rnorm(10),
+#'     image = sample(c("https://www.r-project.org/logo/Rlogo.png",
+#'                      "https://jeroenooms.github.io/images/frink.png"),
+#'     size=10, replace = TRUE)
 #'                )
 #' ggplot(d, aes(xmin = x, xmax = 2*x, ymin = y, ymax = 2*y, image=image)) +
 #'     geom_rect(fill = "blue") +
 #'     geom_image.rect()
 #'
 #' @author guangchuang yu
-geom_image.rect <- function(mapping=NULL, data=NULL, stat="identity",
-                            position="identity", inherit.aes=TRUE,
-                            na.rm=FALSE,
-                            # by="width",
-                            # nudge_x = 0,
+geom_image.rect <- function(mapping = NULL,
+                            data = NULL,
+                            stat = "identity",
+                            position = "identity",
+                            inherit.aes = TRUE,
+                            na.rm = FALSE,
                             ...) {
 
     # by <- match.arg(by, c("width", "height"))
@@ -123,9 +143,6 @@ geom_image.rect <- function(mapping=NULL, data=NULL, stat="identity",
         inherit.aes=inherit.aes,
         params = list(
             na.rm = na.rm,
-            # by = by,
-            # nudge_x = nudge_x,
-            ##angle = angle,
             ...),
         check.aes = FALSE
     )
@@ -137,49 +154,72 @@ geom_image.rect <- function(mapping=NULL, data=NULL, stat="identity",
 ##' @importFrom ggplot2 draw_key_blank
 ##' @importFrom grid gTree
 ##' @importFrom grid gList
-GeomImage.rect <- ggplot2::ggproto("GeomImage.rect", Geom,
-                          setup_data = function(data, params) {
-                              if (is.null(data$subset))
-                                  return(data)
-                              data[which(data$subset),]
-                          },
+GeomImage.rect <- ggplot2::ggproto(
+    "GeomImage.rect",
+    Geom,
+    setup_data = function(data, params) {
+        if (is.null(data$subset))
+            return(data)
+        data[which(data$subset), ]
+    },
 
-                          default_aes = ggplot2::aes(image=system.file("extdata/Rlogo.png", package="ggimage"),
-                                            #size=0.05,
-                                            colour = NULL, #angle = 0,
-                                            alpha=1),
+    default_aes = ggplot2::aes(
+        image = system.file("extdata/Rlogo.png", package = "ggimage"),
+        #size=0.05,
+        colour = NULL,
+        #angle = 0,
+        alpha = 1
+    ),
 
-                          draw_panel = function(data, panel_params, coord, by, na.rm=FALSE,
-                                                .fun = NULL, height, image_fun = NULL,
-                                                # hjust=0.5,
-                                                # nudge_x = 0, nudge_y = 0,
-                                                asp=1) {
-                              # data$x <- data$x + nudge_x
-                              # data$y <- data$y + nudge_y
-                              data <- coord$transform(data, panel_params)
+    draw_panel = function(data,
+                          panel_params,
+                          coord,
+                          by,
+                          na.rm = FALSE,
+                          .fun = NULL,
+                          height,
+                          image_fun = NULL,
+                          # hjust=0.5,
+                          # nudge_x = 0, nudge_y = 0,
+                          asp = 1) {
+        # data$x <- data$x + nudge_x
+        # data$y <- data$y + nudge_y
+        data <-
+            coord$transform(data, panel_params)
 
-                              if (!is.null(.fun) && is.function(.fun))
-                                  data$image <- .fun(data$image)
+        if (!is.null(.fun) &&
+            is.function(.fun))
+            data$image <- .fun(data$image)
 
-                              groups <- split(data, factor(data$image))
-                              imgs <- names(groups)
-                              grobs <- lapply(seq_along(groups), function(i) {
-                                  d <- groups[[i]]
-                                  imageGrob.rect(d$xmin, d$xmax, d$ymin, d$ymax, imgs[i], #by,
-                                                 # hjust,
-                                                 d$colour, d$alpha, image_fun, #d$angle,
-                                                 asp)
-                              })
-                              grobs <- do.call("c", grobs)
-                              class(grobs) <- "gList"
+        groups <-
+            split(data, factor(data$image))
+        imgs <- names(groups)
+        grobs <-
+            lapply(seq_along(groups), function(i) {
+                d <- groups[[i]]
+                imageGrob.rect(d$xmin,
+                               d$xmax,
+                               d$ymin,
+                               d$ymax,
+                               imgs[i],
+                               #by,
+                               # hjust,
+                               d$colour,
+                               d$alpha,
+                               image_fun,
+                               #d$angle,
+                               asp)
+            })
+        grobs <- do.call("c", grobs)
+        class(grobs) <- "gList"
 
-                              ggname("geom_image.rect",
-                                     gTree(children = grobs))
-                          },
-                          non_missing_aes = c(#"size",
-                              "image"),
-                          required_aes = c("xmin", "xmax", "ymin", "ymax"),
-                          draw_key = draw_key_image ## draw_key_blank ## need to write the `draw_key_image` function.
+        ggname("geom_image.rect",
+               gTree(children = grobs))
+    },
+    non_missing_aes = c(#"size",
+        "image"),
+    required_aes = c("xmin", "xmax", "ymin", "ymax"),
+    draw_key = draw_key_image
 )
 
 

@@ -82,6 +82,11 @@ N_floor to N_ceiling.}
 \item{return_data}{if TRUE, data.table that would have been used to create
 ggplot is returned instead.}
 }
+\value{
+returns a ggplot containing images summarizing t-sne space
+at resolution determined by x_points and y_points with the space density
+mapped to size.
+}
 \description{
 stsPlotSummaryProfiles
 }

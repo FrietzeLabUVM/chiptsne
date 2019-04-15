@@ -4,8 +4,8 @@
 \alias{plot_tsne_img_byCell}
 \title{plot_tsne_img}
 \usage{
-plot_tsne_img_byCell(image_dt, tsne_dt, x_points, y_points = x_points,
-  p = NULL, xrng = c(-0.5, 0.5), yrng = c(-0.5, 0.5), N_floor = 0,
+plot_tsne_img_byCell(image_dt, x_points, y_points = x_points, p = NULL,
+  xrng = c(-0.5, 0.5), yrng = c(-0.5, 0.5), N_floor = 0,
   N_ceiling = NULL, min_size = 0.3, return_data = FALSE)
 }
 \arguments{
@@ -47,7 +47,8 @@ data("profile_dt")
 data("tsne_dt")
 img_res = prep_images(profile_dt, tsne_dt, 4, facet_by = "cell")
 #zoom on top-right quadrant
-img_res.zoom = prep_images(profile_dt, tsne_dt, 4, xrng = c(0, .5), yrng = c(0, .5))
+img_res.zoom = prep_images(profile_dt, tsne_dt, 4, facet_by = "cell",
+    xrng = c(0, .5), yrng = c(0, .5))
 plot_tsne_img_byCell(img_res$image_dt,
               x_points = img_res$x_points)
 plot_tsne_img_byCell(img_res.zoom$image_dt,

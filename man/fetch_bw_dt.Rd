@@ -39,7 +39,8 @@ cache.
 }
 \examples{
 data("query_gr")
-bw_files = dir(system.file('extdata', package = "seqtsne"), pattern = ".bw$", full.names = TRUE)
+bw_files = dir(system.file('extdata', package = "seqtsne"),
+    pattern = ".bw$", full.names = TRUE)
 cfg_dt = data.table(file = bw_files)
 cfg_dt[, c("cell", "mark") := tstrsplit(basename(file), "_", keep = 1:2)]
 cfg_dt = cfg_dt[cell \%in\% c("ESH1", "HUES48", "HUES64")]

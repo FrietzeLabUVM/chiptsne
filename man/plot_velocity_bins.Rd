@@ -23,7 +23,11 @@ Title
 }
 \examples{
 data("tsne_dt")
-vel_dt = prep_velocity(tsne_dt, unique(tsne_dt$cell)[1], unique(tsne_dt$cell)[2])
+vel_dt = prep_velocity(
+    tsne_dt,
+    unique(tsne_dt$cell)[1],
+    unique(tsne_dt$cell)[2]
+    )
 plot_velocity_bins(vel_dt, bins = 18, bin_FUN = sum)
 plot_velocity_bins(vel_dt, bins = 8, bin_FUN = median)
 }

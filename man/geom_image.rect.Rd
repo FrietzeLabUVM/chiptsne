@@ -21,10 +21,6 @@ geom_image.rect(mapping = NULL, data = NULL, stat = "identity",
 \item{na.rm}{logical, whether remove NA values}
 
 \item{...}{additional parameters}
-
-\item{by}{one of 'width' or 'height'}
-
-\item{nudge_x}{horizontal adjustment to nudge image}
 }
 \value{
 geom layer
@@ -36,11 +32,12 @@ geom layer for visualizing image files
 library("ggplot2")
 library("ggimage")
 set.seed(2017-02-21)
-d <- data.frame(x = rnorm(10),
-                y = rnorm(10),
-                image = sample(c("https://www.r-project.org/logo/Rlogo.png",
-                                "https://jeroenooms.github.io/images/frink.png"),
-                              size=10, replace = TRUE)
+d <- data.frame(
+    x = rnorm(10),
+    y = rnorm(10),
+    image = sample(c("https://www.r-project.org/logo/Rlogo.png",
+                     "https://jeroenooms.github.io/images/frink.png"),
+    size=10, replace = TRUE)
                )
 ggplot(d, aes(xmin = x, xmax = 2*x, ymin = y, ymax = 2*y, image=image)) +
     geom_rect(fill = "blue") +

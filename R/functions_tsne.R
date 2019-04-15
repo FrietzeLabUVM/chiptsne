@@ -22,6 +22,9 @@
 #' are tx, ty, id, and cell.
 #' @export
 #' @importFrom Rtsne Rtsne
+#' @importFrom stats var
+#' @rawNamespace import(data.table, except = c(shift, first, second, last))
+#'
 #' @examples
 #' data("query_gr")
 #' bw_files = dir(system.file('extdata', package = "seqtsne"), pattern = ".bw$", full.names = TRUE)
@@ -32,7 +35,6 @@
 #' profile_dt = stsFetchTsneInput(cfg_dt, query_gr)
 #' tsne_dt = stsRunTsne(profile_dt$bw_dt, perplexity = 15)
 #' tsne_dt
-#'
 stsRunTsne = function(profile_dt,
                       perplexity = 100,
                       n_cores = getOption("mc.cores", 1),
@@ -45,19 +47,20 @@ stsRunTsne = function(profile_dt,
     stopifnot(c("id", "cell", "mark", "x", "y") %in% colnames(profile_dt))
     # cast from tidy to wide matrix
     tsne_mat = dt2mat(profile_dt, unique(profile_dt$mark))
-    bad_col = apply(tsne_mat, 2, var) == 0
+    bad_col = apply(tsne_mat, 2, stats::var) == 0
     if(any(bad_col)){
         stop("zero variance columns detected in tsne matrix input.",
              "\n", round(sum(bad_col) / length(bad_col)*100, 2), "% of columns affected.")
 
     }
-    set.seed(0)
     if(is.null(rname)){
-        nr = min(nrow(tsne_mat), 20)
-        nc = min(ncol(tsne_mat), 20)
+        nr = min(nrow(tsne_mat), 50)
+        nc = min(ncol(tsne_mat), 50)
+        sel_r = floor(seq(0, nr)/nr*(nrow(tsne_mat)-1)+1)
+        sel_c = floor(seq(0, nc)/nc*(ncol(tsne_mat)-1)+1)
+        seq(nrow(tsne_mat))/nr
         rname = digest::digest(list(
-            tsne_mat[sample(1:nrow(tsne_mat), nr),
-                     sample(1:ncol(tsne_mat), nc)],
+            tsne_mat[sel_r, sel_c],
             perplexity
         ))
     }
@@ -72,7 +75,7 @@ stsRunTsne = function(profile_dt,
     tdt = as.data.table(res_tsne$Y)
     colnames(tdt) = c("tx", "ty")
     tdt$rn = rownames(tsne_mat)
-    tdt[, c("id", "cell") := tstrsplit(rn, " ", keep = 1:2)]
+    tdt[, c("id", "cell") := tstrsplit(rn, " ", keep = seq(2))]
 
     if(norm1){
         tdt$tx = rescale_capped(tdt$tx)-.5
@@ -117,14 +120,15 @@ stsRunTsne = function(profile_dt,
 #' @return list of two items.  prepared version of prof_dt and query_gr modified
 #'   to reflect any flipping required by high_on_right.
 #' @export
+#' @rawNamespace import(data.table, except = c(shift, first, second, last))
 #' @examples
-#' data(profile_datatable)
+#' data(profile_dt)
 #' data(query_gr)
 #' #typically, norm_dt is the same configuration table used to fetch prof_dt
 #' #here we derive a new norm_dt that will reduce H3K4me3 to 30% of H3K27me3.
-#' norm_dt = unique(profile_datatable[, list(cell, mark)])
+#' norm_dt = unique(profile_dt[, list(cell, mark)])
 #' norm_dt[, norm_factor := ifelse(mark == "H3K4me3", .3, 1)]
-#' prep_profile_dt(profile_datatable, norm_dt, query_gr)
+#' prep_profile_dt(profile_dt, norm_dt, query_gr)
 prep_profile_dt = function(prof_dt,
                            norm_dt,
                            qgr,
@@ -174,7 +178,7 @@ prep_profile_dt = function(prof_dt,
 #' @return a wide matrix with dimensions of nrows = (length(unique(id)) * number
 #'   of cells) and ncols = (numbers of viewing bins * number of marks)
 #' @export
-#'
+#' @rawNamespace import(data.table, except = c(shift, first, second, last))
 #' @examples
 #' n_bins = 5
 #' n_cells = 3
@@ -197,12 +201,12 @@ dt2mat = function(prof_dt, marks){
     for(m in marks){
         if(m == marks[1]){
             dt = dcast( prof_dt[mark == m], id+cell~x, value.var = "y")
-            wide_mat = as.matrix(dt[, -1:-2])
+            wide_mat = as.matrix(dt[, -seq_len(2)])
             rn = paste(dt$id, dt$cell)
         }else{
             dt = dcast( prof_dt[mark == m], id+cell~x, value.var = "y")
             stopifnot(all(paste(dt$id, dt$cell) == rn))
-            wide_mat = cbind(wide_mat, as.matrix(dt[, -1:-2]))
+            wide_mat = cbind(wide_mat, as.matrix(dt[, -seq_len(2)]))
 
 
         }

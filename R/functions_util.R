@@ -92,10 +92,10 @@ sampleCap = function(x, n = 500){
 #' @importFrom scales rescale
 #' @examples
 #' #behaves identically to scales::rescale when x is within 'from' domain
-#' rescale_capped(0:10, to = c(0, 1), c(0, 10))
+#' seqtsne:::rescale_capped(0:10, to = c(0, 1), c(0, 10))
 #' scales::rescale(0:10, to = c(0, 1), c(0, 10))
 #' #when x exceeds 'from' domain, results are still within 'to' domain
-#' rescale_capped(0:10, to = c(0,1), c(0,5))
+#' seqtsne:::rescale_capped(0:10, to = c(0,1), c(0,5))
 #' #not true for scales::rescale
 #' scales::rescale(0:10, to = c(0,1), c(0,5))
 rescale_capped = function(x, to = c(0,1), from = range(x, na.rm = TRUE, finite = TRUE)){

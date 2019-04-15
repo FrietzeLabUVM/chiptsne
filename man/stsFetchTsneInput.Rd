@@ -8,7 +8,7 @@ stsFetchTsneInput(qdt, qgr, region_size = NULL, file_format = NULL,
   qwin = 50, qmet = "summary", cap_value = 20, agg_FUN = NULL,
   high_on_right = TRUE, bfc = BiocFileCache::BiocFileCache(),
   n_cores = getOption("mc.cores", 1), rname = digest::digest(list(qgr,
-  qdt[, 1:3], qwin, qmet)), force_overwrite = FALSE)
+  qdt[, seq(3), with = FALSE], qwin, qmet)), force_overwrite = FALSE)
 }
 \arguments{
 \item{qdt}{data.table containing, file, cell, mark, and optionally
@@ -16,11 +16,20 @@ norm_factor}
 
 \item{qgr}{GRanges of regions to fetch}
 
+\item{region_size}{numeric, if provided will be used to set all widths on
+qgr.}
+
+\item{file_format}{character, describing file format. must be one of bam or
+bw.  Will be automatically determined from file extension if NULL.}
+
 \item{qwin}{number of datapoints to use to view each region}
 
 \item{qmet}{strategy to use in each region, summary or sample}
 
 \item{cap_value}{maximum allowed value.  useful for outlier handling.}
+
+\item{agg_FUN}{function used to aggregate any duplicate cell+mark mappings in
+qdt.  Should accept a numeric vector and return a single value.}
 
 \item{high_on_right}{if TRUE, profiles where highest signal is on the left
 are flipped.}
@@ -30,8 +39,8 @@ are flipped.}
 \item{n_cores}{number of cores to use. Defaults to value of mc.cores or 1 if
 mc.cores is not set.}
 
-\item{rname}{rname to use with cache.  Default is a digest of arguments
-used to fetch data.}
+\item{rname}{rname to use with cache.  Default is a digest of arguments used
+to fetch data.}
 
 \item{force_overwrite}{if TRUE, any contents of cache are overwritten.}
 }

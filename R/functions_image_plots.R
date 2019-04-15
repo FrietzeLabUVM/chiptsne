@@ -42,6 +42,9 @@
 #' @param return_data if TRUE, data.table that would have been used to create
 #'   ggplot is returned instead.
 #'
+#' @return returns a ggplot containing images summarizing t-sne space
+#' at resolution determined by x_points and y_points with the space density
+#' mapped to size.
 #' @export
 #' @examples
 #' data("profile_dt")
@@ -154,7 +157,6 @@ stsPlotSummaryProfiles = function(## basic inputs
     } else{
         plot_tsne_img_byCell(
             image_dt = img_res$image_dt,
-            tsne_dt = img_res$tsne_dt,
             xrng = xrng,
             yrng = yrng,
             x_points = x_points,
@@ -206,6 +208,7 @@ stsPlotSummaryProfiles = function(## basic inputs
 #' @return data.table with variables
 #' @export
 #' @importFrom seqsetvis applySpline
+#' @importFrom stats quantile
 #'
 #' @examples
 #' data("profile_dt")
@@ -305,7 +308,7 @@ prep_images = function(profile_dt,
 
 
     if (apply_norm) {
-        mdt[, ynorm := y / quantile(y, .95), by = list(mark)]
+        mdt[, ynorm := y / stats::quantile(y, .95), by = list(mark)]
         mdt[ynorm > 1, ynorm := 1]
     } else{
         mdt[, ynorm := y]
@@ -458,8 +461,10 @@ prep_images = function(profile_dt,
 #'                            y_points = img_res$y_points,
 #'                            xrng = img_res$xrng,
 #'                            yrng = img_res$yrng)
-#' ggplot(img_rect, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax)) + geom_rect()
-#' ggplot(img_rect, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, image = png_file)) + geom_image.rect()
+#' ggplot(img_rect, aes(xmin = xmin, xmax = xmax,
+#'     ymin = ymin, ymax = ymax)) + geom_rect()
+#' ggplot(img_rect, aes(xmin = xmin, xmax = xmax,
+#'     ymin = ymin, ymax = ymax, image = png_file)) + geom_image.rect()
 set_image_rects = function(image_dt,
                            x_points,
                            y_points,
@@ -604,7 +609,8 @@ plot_tsne_img = function(image_dt,
 #' data("tsne_dt")
 #' img_res = prep_images(profile_dt, tsne_dt, 4, facet_by = "cell")
 #' #zoom on top-right quadrant
-#' img_res.zoom = prep_images(profile_dt, tsne_dt, 4, xrng = c(0, .5), yrng = c(0, .5))
+#' img_res.zoom = prep_images(profile_dt, tsne_dt, 4, facet_by = "cell",
+#'     xrng = c(0, .5), yrng = c(0, .5))
 #' plot_tsne_img_byCell(img_res$image_dt,
 #'               x_points = img_res$x_points)
 #' plot_tsne_img_byCell(img_res.zoom$image_dt,
@@ -612,7 +618,6 @@ plot_tsne_img = function(image_dt,
 #'               xrng = img_res.zoom$xrng,
 #'               yrng = img_res.zoom$yrng)
 plot_tsne_img_byCell = function(image_dt,
-                                tsne_dt,
                                 x_points,
                                 y_points = x_points,
                                 p = NULL,
@@ -625,7 +630,7 @@ plot_tsne_img_byCell = function(image_dt,
     cell = bx = by = NULL
 
     # image_dt = merge(image_dt[, list(bx, by, plot_id, png_file, tx, ty)],
-    #                  tsne_dt[, list(N = .N), list(cell, bx, by)], by = c("bx", "by"), allow.cartesian = TRUE)
+    #                  postion[, list(N = .N), list(cell, bx, by)], by = c("bx", "by"), allow.cartesian = TRUE)
     image_dt = set_image_rects(
         image_dt,
         x_points = x_points,

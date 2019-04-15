@@ -7,7 +7,7 @@ library(testthat)
 data("query_gr")
 data("profile_dt")
 data("tsne_dt")
-options("mc.cores" = 4)
+options("mc.cores" = 2)
 
 npx = 4
 npy = 3

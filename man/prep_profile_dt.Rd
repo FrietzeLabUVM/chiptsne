@@ -33,11 +33,11 @@ applies normalizations and transformations to prof_dt, a tidy data.table of
 profiles.
 }
 \examples{
-data(profile_datatable)
+data(profile_dt)
 data(query_gr)
 #typically, norm_dt is the same configuration table used to fetch prof_dt
 #here we derive a new norm_dt that will reduce H3K4me3 to 30\% of H3K27me3.
-norm_dt = unique(profile_datatable[, list(cell, mark)])
+norm_dt = unique(profile_dt[, list(cell, mark)])
 norm_dt[, norm_factor := ifelse(mark == "H3K4me3", .3, 1)]
-prep_profile_dt(profile_datatable, norm_dt, query_gr)
+prep_profile_dt(profile_dt, norm_dt, query_gr)
 }

@@ -8,6 +8,7 @@ vignette: >
     %\VignetteIndexEntry{Overview and Use Cases}
     %\VignetteEngine{knitr::rmarkdown}
     %\VignetteEncoding{UTF-8}
+    %\usepackage[UTF-8]{inputenc}
 ---
 
 <style type = "text/css"> em { font-weight: bold; } </style>
@@ -58,11 +59,7 @@ library(seqtsne)
 
 ## Load optional useful libraries
 ```{r load optional libs, message = FALSE}
-library(GenomicRanges)
-library(data.table)
-library(cowplot)
-library(seqsetvis)
-theme_set(cowplot::theme_cowplot())
+theme_set(theme_classic())
 ```
 
 # Running t-sne
@@ -73,12 +70,10 @@ These parameters will determine how multiple functions behave
 
 ```{r parameters}
 n_points = 6
-color_mapping = c("H3K4ME3" = "forestgreen",
-                  "H3K27ME3" = "firebrick1", 
-                  "H3K4AC" = "blue", 
-                  "H3K27AC" = "purple")
-options("mc.cores" = 20)
-perplexity = 500
+color_mapping = c("H3K4me3" = "forestgreen",
+                  "H3K27me3" = "firebrick1")
+options("mc.cores" = 2)
+perplexity = 15
 ```
 
 The two critical inputs are:
@@ -88,25 +83,28 @@ cell and mark metadata.
 2. GRanges of regions to retrieve data for and perform t-sne on.
 
 ```{r setup files and configure}
-input_dirs = c(
-    dir("/slipstream/galaxy/uploads/working/qc_framework/output/", 
-        pattern = "K4.+_pooled$", full.names = TRUE),
-    dir("/slipstream/galaxy/uploads/working/qc_framework/output/", 
-        pattern = "K27.+_pooled$", full.names = TRUE)
-)
-#assemble peak calls and sample
-peaks = dir(input_dirs, pattern = "pooled_peaks.narrowPeak", full.names = TRUE)
-olaps = ssvOverlapIntervalSets(easyLoad_narrowPeak(peaks), ext = 100)
-olaps = olaps[rowSums(as.data.frame(mcols(olaps))) > 3] 
-length(olaps)
-set.seed(0)
-# query_gr = sample(olaps, 100)
-query_gr = olaps
-query_gr = resize(query_gr, 5000, fix = "center")
-query_gr$id = names(query_gr)
-#create config from bws
-bws = dir(input_dirs, pattern = "pooled_FE.bw", full.names = TRUE)
-cfg_dt = data.table(file = bws)
+# input_dirs = c(
+#     dir("/slipstream/galaxy/uploads/working/qc_framework/output/", 
+#         pattern = "K4.+_pooled$", full.names = TRUE),
+#     dir("/slipstream/galaxy/uploads/working/qc_framework/output/", 
+#         pattern = "K27.+_pooled$", full.names = TRUE)
+# )
+# #assemble peak calls and sample
+# peaks = dir(input_dirs, pattern = "pooled_peaks.narrowPeak", full.names = TRUE)
+# olaps = ssvOverlapIntervalSets(easyLoad_narrowPeak(peaks), ext = 100)
+# olaps = olaps[rowSums(as.data.frame(mcols(olaps))) > 3] 
+# length(olaps)
+# set.seed(0)
+# # query_gr = sample(olaps, 100)
+# query_gr = olaps
+# query_gr = resize(query_gr, 5000, fix = "center")
+# query_gr$id = names(query_gr)
+# #create config from bws
+# bws = dir(input_dirs, pattern = "pooled_FE.bw", full.names = TRUE)
+data("query_gr")
+bw_files = dir(system.file('extdata', package = "seqtsne"), 
+               full.names = TRUE, pattern = ".bw$")
+cfg_dt = data.table(file = bw_files)
 cfg_dt[, c("cell", "mark") := tstrsplit(basename(file), "_", keep = 1:2)]
 ```
 
@@ -124,7 +122,7 @@ Be sure to set `mc.cores` using `options()` or provide the `n_cores`
 parameter to speed up processing time.
 
 ```{r run tsne}
-tsne_res = stsRunTsne(tsne_input$tsne_mat, perplexity = perplexity)
+tsne_res = stsRunTsne(tsne_input$bw_dt, perplexity = perplexity)
 ```
 
 # Plotting
@@ -149,24 +147,22 @@ The resolution of these images is controlled by `n_points`.  Use `xrng` and
 it maps both broad trends and finer relationships effectively.
 
 ```{r, fig.width=5, fig.height=5}
-img = make_tsne_img(tsne_input$bw_dt, tsne_res, n_points = n_points, 
-                    line_colors = color_mapping)
-img_res = plot_tsne_img(img$images_dt, n_points = n_points, min_size = 0)
-img_res$plot
+img = prep_images(tsne_input$bw_dt, tsne_res, x_points = n_points,
+                    line_color_mapping = color_mapping)
+img_res = plot_tsne_img(img$image_dt, x_points = n_points, min_size = 0)
+img_res
 ```
 
 The same idea as before but now facetted by cell.
 
 ```{r, fig.width=7.5, fig.height=3}
-img_byCell = make_tsne_img(tsne_input$bw_dt, tsne_res, n_points = n_points, 
-                    line_colors = c("H3K4ME3" = "forestgreen",
-                                    "H3K27ME3" = "firebrick1", 
-                                    "H3K4AC" = "blue", 
-                                    "H3K27AC" = "purple"), 
-                    facet_by = "cell")
-img_byCell_res = plot_tsne_img_byCell(img_byCell$images_dt, img_byCell$tsne_dt, n_points = n_points)
-img_byCell_res$plot
-
+img_byCell = prep_images(tsne_input$bw_dt, 
+                         tsne_res, 
+                         x_points = n_points,
+                         line_color_mapping = color_mapping, 
+                         facet_by = "cell")
+img_byCell_res = plot_tsne_img_byCell(img_byCell$image_dt, x_points = n_points)
+img_byCell_res
 ```
 
 ## Velocity
@@ -176,8 +172,9 @@ from the postion in `cell_a` to position in `cell_b` with color mapped to
 angle to aid in pattern detection.
 
 ```{r, fig.width=8, fig.height=4}
-vel_res = plot_velocity_arrows(tsne_res = tsne_res, cell_a = "MCF10A", cell_b = "MCF7")
-plot_grid(plotlist = vel_res)
+vel_dt = prep_velocity(tsne_res, cell_a = "HUES48", cell_b = "HUES64")
+vel_res = plot_velocity_arrows(vel_dt)
+vel_res
 ```
 
 Individual arrows can be overwhelming, we can also employ a binning strategy
@@ -186,15 +183,14 @@ Each arrow here is drawn to the average desination (`cell_b`) for all nearby
 points (`cell_a`).
 
 ```{r, fig.width=4, fig.height=3}
-plot_velocity_arrows_binned(tsne_res, cell_a = "MCF10A", cell_b = "MCF7", n_points = n_points)
+plot_regional_velocity(tsne_dt, cell_a = "HUES48", cell_b = "HUES64", x_points = n_points)
 ```
 
 We can also layer the binned arrows on top of the binned profiles.
 
 ```{r, fig.width=4, fig.height=3}
-plot_velocity_arrows_binned(tsne_res, points_as_background = FALSE,
-                            cell_a = "MCF10A", cell_b = "MCF7", 
-                            n_points = n_points, p = img_res$plot)
+plot_regional_velocity(tsne_dt, cell_a = "HUES48", cell_b = "HUES64", 
+                       x_points = n_points, p = img_res)#, p = img_res$plot)
 ```
 
 ## Other
@@ -203,9 +199,8 @@ Individual profiles can also be viewed.
 
 ```{r, fig.width=6, fig.height=3}
 plot_profiles_selected(tsne_input$bw_dt, 
-                       qgr = query_gr[1], 
-                       qcells = c("MCF10A", "MCF7"), 
-                       tss_ids = names(query_gr)[1], 
+                       qcells = c("HUES48", "HUES64"), 
+                       id_to_plot = query_gr$id[1:5], 
                        color_mapping = color_mapping)
 ```
 

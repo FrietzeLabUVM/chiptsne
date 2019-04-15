@@ -10,21 +10,27 @@
 #' @param qdt data.table containing, file, cell, mark, and optionally
 #'   norm_factor
 #' @param qgr GRanges of regions to fetch
+#' @param region_size numeric, if provided will be used to set all widths on
+#'   qgr.
+#' @param file_format character, describing file format. must be one of bam or
+#'   bw.  Will be automatically determined from file extension if NULL.
 #' @param qwin number of datapoints to use to view each region
 #' @param qmet strategy to use in each region, summary or sample
 #' @param cap_value maximum allowed value.  useful for outlier handling.
+#' @param agg_FUN function used to aggregate any duplicate cell+mark mappings in
+#'   qdt.  Should accept a numeric vector and return a single value.
 #' @param high_on_right if TRUE, profiles where highest signal is on the left
 #'   are flipped.
 #' @param bfc BiocFileCache object to use to cache data
 #' @param n_cores number of cores to use. Defaults to value of mc.cores or 1 if
-#' mc.cores is not set.
-#' @param rname rname to use with cache.  Default is a digest of arguments
-#' used to fetch data.
+#'   mc.cores is not set.
+#' @param rname rname to use with cache.  Default is a digest of arguments used
+#'   to fetch data.
 #' @param force_overwrite if TRUE, any contents of cache are overwritten.
 #' @return a tidy data.table of profile data.
 #' @export
 #' @importFrom seqsetvis ssvFetchBigwig ssvFetchBam
-#'
+#' @rawNamespace import(data.table, except = c(shift, first, second, last))
 #' @examples
 #' data("query_gr")
 #' bw_files = dir(system.file('extdata', package = "seqtsne"), pattern = ".bw$", full.names = TRUE)
@@ -46,7 +52,7 @@ stsFetchTsneInput = function(qdt,
                              bfc = BiocFileCache::BiocFileCache(),
                              n_cores = getOption("mc.cores", 1),
                              rname = digest::digest(list(qgr,
-                                                         qdt[, 1:3],
+                                                         qdt[, seq(3), with = FALSE],
                                                          qwin,
                                                          qmet)),
                              force_overwrite = FALSE){
@@ -100,11 +106,13 @@ stsFetchTsneInput = function(qdt,
     if(is.null(agg_FUN)){
         agg_FUN = switch(file_format,
                          bam = {
-                             message("for bam input, choosing sum() to aggregate any cell/mark duplicates.")
+                             message("for bam input, choosing sum() ",
+                                     "to aggregate any cell/mark duplicates.")
                              sum
                          },
                          bw = {
-                             message("for bigwig input, choosing mean() to aggregate any cell/mark duplicates.")
+                             message("for bigwig input, choosing mean() ",
+                                     "to aggregate any cell/mark duplicates.")
                              mean
                          })
 
@@ -134,19 +142,20 @@ stsFetchTsneInput = function(qdt,
 
 #' fetch_bam_dt
 #'
-#' fetches a tidy data.table of scores from bigwigs, automatically uses
-#' cache.
+#' fetches a tidy data.table of scores from bigwigs, automatically uses cache.
 #'
-#' @param qdt data.table containing, file, cell, mark, and optionally norm_factor
+#' @param qdt data.table containing, file, cell, mark, and optionally
+#'   norm_factor
 #' @param qgr GRanges of regions to fetch
 #' @param qwin number of datapoints to use to view each region
 #' @param qmet strategy to use in each region, summary or sample
-#' @param agg_FUN used to aggregate any duplicate cell+mark mappings in qdt.
+#' @param agg_FUN function used to aggregate any duplicate cell+mark mappings in
+#'   qdt. Should accept a numeric vector and return a single value.
 #' @param bfc BiocFileCache object to use to cache data
 #' @param n_cores number of cores to use. Defaults to value of mc.cores or 1 if
-#' mc.cores is not set.
-#' @param rname rname to use with cache.  Default is a digest of arguments
-#' used to fetch data.
+#'   mc.cores is not set.
+#' @param rname rname to use with cache.  Default is a digest of arguments used
+#'   to fetch data.
 #' @param force_overwrite if TRUE, any contents of cache are overwritten.
 #'
 #' @return a tidy data.table of profile data.
@@ -154,10 +163,11 @@ stsFetchTsneInput = function(qdt,
 #' @importFrom BiocFileCache BiocFileCache
 #' @importFrom digest digest
 #' @importFrom seqsetvis ssvFetchBam
-#'
+#' @rawNamespace import(data.table, except = c(shift, first, second, last))
 #' @examples
 #' data("query_gr")
-#' bam_files = dir(system.file('extdata', package = "seqtsne"), pattern = ".bam$", full.names = TRUE)
+#' bam_files = dir(system.file('extdata', package = "seqtsne"),
+#'     pattern = ".bam$", full.names = TRUE)
 #' cfg_dt = data.table(file = bam_files)
 #' cfg_dt[, c("cell", "mark") := tstrsplit(basename(file), "_", keep = 1:2)]
 #' cfg_dt = cfg_dt[cell %in% c("ESH1", "HUES48", "HUES64")]
@@ -183,7 +193,7 @@ fetch_bam_dt = function(qdt,
     }
     if(is.null(rname)){
         rname = digest::digest(list(qgr,
-                                    qdt[, 1:3],
+                                    qdt[, seq(3), with = FALSE],
                                     qwin,
                                     qmet))
     }
@@ -202,13 +212,12 @@ fetch_bam_dt = function(qdt,
     }
 
     bam_fetch = function(){
-        seqsetvis::ssvFetchBam(qdt[, 1:3], qgr,
+        seqsetvis::ssvFetchBam(qdt[, seq(3), with = FALSE], qgr,
                                return_data.table = TRUE,
                                win_method = qmet,
                                win_size = qwin,
                                n_cores = n_cores)
     }
-    # bam_dt = bfcif(bfc, rname, FUN = bam_fetch, force_overwrite = force_overwrite)
     bam_dt = bam_fetch()
     bam_dt$sample = NULL
     bam_dt = bam_dt[, list(y = agg_FUN(y)), list(cell, id, mark, x)]
@@ -240,7 +249,8 @@ fetch_bam_dt = function(qdt,
 #' @importFrom GenomicRanges width
 #' @examples
 #' data("query_gr")
-#' bw_files = dir(system.file('extdata', package = "seqtsne"), pattern = ".bw$", full.names = TRUE)
+#' bw_files = dir(system.file('extdata', package = "seqtsne"),
+#'     pattern = ".bw$", full.names = TRUE)
 #' cfg_dt = data.table(file = bw_files)
 #' cfg_dt[, c("cell", "mark") := tstrsplit(basename(file), "_", keep = 1:2)]
 #' cfg_dt = cfg_dt[cell %in% c("ESH1", "HUES48", "HUES64")]
@@ -261,7 +271,7 @@ fetch_bw_dt = function(qdt,
     }
     if(is.null(rname)){
         rname = digest::digest(list(qgr,
-                                    qdt[, 1:3],
+                                    qdt[, seq(3), with = FALSE],
                                     qwin,
                                     qmet))
     }
@@ -281,22 +291,12 @@ fetch_bw_dt = function(qdt,
     }
 
     bw_fetch = function(){
-        seqsetvis::ssvFetchBigwig(qdt[, 1:3], qgr,
+        seqsetvis::ssvFetchBigwig(qdt[, seq(3), with = FALSE], qgr,
                                   return_data.table = TRUE,
                                   win_method = qmet,
                                   win_size = qwin, n_cores = n_cores)
     }
-    #
     bw_dt = bfcif(bfc, rname, bw_fetch, force_overwrite = force_overwrite)
-    # bw_dt = bw_fetch()
-    #
-    # save(qdt, qgr, qmet, qwin, n_cores, file = "ssv_param.save")
-    # bw_dt = seqsetvis::ssvFetchBigwig(qdt[, 1:3], qgr,
-    #                                                                 return_data.table = TRUE,
-    #                                                                 win_method = qmet,
-    #                                                                 win_size = qwin, n_cores = n_cores)
-
-    #
     bw_dt = bw_dt[, list(y = agg_FUN(y)), list(cell, id, mark, x)]
     bw_dt
 }

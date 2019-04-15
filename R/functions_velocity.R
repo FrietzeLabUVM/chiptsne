@@ -302,12 +302,17 @@ plot_velocity_centered = function(velocity_dt, line_alpha = .5, line_size = 1){
 #'
 #' @examples
 #' data("tsne_dt")
-#' vel_dt = prep_velocity(tsne_dt, unique(tsne_dt$cell)[1], unique(tsne_dt$cell)[2])
+#' vel_dt = prep_velocity(
+#'     tsne_dt,
+#'     unique(tsne_dt$cell)[1],
+#'     unique(tsne_dt$cell)[2]
+#'     )
 #' plot_velocity_bins(vel_dt, bins = 18, bin_FUN = sum)
 #' plot_velocity_bins(vel_dt, bins = 8, bin_FUN = median)
 plot_velocity_bins = function(velocity_dt,
                               bins = 36,
                               bin_FUN = sum) {
+    bin_value = NULL #data.table bindin
     velocity_dt[, angle_bin := floor((ang_cap(angle)) / (360 / bins))]
     if(is.null(bin_FUN)){
         bin_FUN = length
@@ -317,13 +322,25 @@ plot_velocity_bins = function(velocity_dt,
     b_dt[, xmin := angle_bin*ang_per_bin]
     b_dt[, xmax := (angle_bin + 1)*ang_per_bin]
 
-    p_key = ggplot(b_dt, aes(xmin = xmin, xmax = xmax, ymin = 0, ymax = bin_value, fill = angle_bin)) +
+    p_key = ggplot(b_dt,
+                   aes(
+                       xmin = xmin,
+                       xmax = xmax,
+                       ymin = 0,
+                       ymax = bin_value,
+                       fill = angle_bin
+                   )) +
         geom_rect() +
         coord_polar() +
-        scale_fill_gradientn(colours = c("orange", "red", "purple", "blue",
-                                         "green", "orange"), limits = c(0, 360)/(360/bins),
-                             breaks = 0:4*90/(360/bins), labels = function(x)x*360/bins) +
-        scale_x_continuous(breaks = 0:4*90, limits = c(0, 360))
+        scale_fill_gradientn(
+            colours = c("orange", "red", "purple", "blue",
+                        "green", "orange"),
+            limits = c(0, 360) / (360 / bins),
+            breaks = 0:4 * 90 / (360 / bins),
+            labels = function(x)
+                x * 360 / bins
+        ) +
+        scale_x_continuous(breaks = 0:4 * 90, limits = c(0, 360))
     p_key
 }
 
