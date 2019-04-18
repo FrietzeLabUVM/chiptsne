@@ -24,7 +24,7 @@ test_that("prep_images variables of image_dt", {
 })
 
 test_that("prep_images variables of summary_profile_dt", {
-    expect_equal(colnames(img_res$summary_profile_dt), c("bx", "by", "x", "mark", "y", "plot_id", "ynorm", "group"))
+    expect_equal(colnames(img_res$summary_profile_dt), c("bx", "by", "x", "mark", "y", "N", "plot_id", "ynorm", "group"))
 })
 
 test_that("prep_images variables of tsne_dt", {
@@ -52,10 +52,26 @@ test_that("set_image_rects variables", {
 
 
 test_that("set_image_rects variables", {
-    p = plot_tsne_img(img_res$image_dt,
+    p = plot_summary_raster(img_res$image_dt,
                       x_points = img_res$x_points, y_points = img_res$y_points,
                       xrng = img_res$xrng, yrng = img_res$yrng)
     expect_s3_class(p, "gg")
 })
 
-stsPlotSummaryProfiles(profile_dt = profile_dt, position_dt = tsne_dt, x_points = 4)
+
+xrng = c(-.5, 0)
+yrng = c(-.5, 0)
+
+xrng = c(-.5, .5)
+yrng = c(-.5, .5)
+
+x_points = y_points = 6
+
+mdt = prep_summary(profile_dt, tsne_dt, xrng = xrng, yrng = yrng,
+                   x_points = x_points, y_points = y_points)
+plot_summary_glyph(mdt, xrng = xrng, yrng = yrng,
+                   x_points = x_points, y_points = y_points,
+                   min_size = 0, N_ceiling = 4)
+
+stsPlotSummaryProfiles(profile_dt, tsne_dt, 6, plot_type = "glyph", facet_byCell = TRUE)
+stsPlotSummaryProfiles(profile_dt, tsne_dt, 6, plot_type = "glyph", facet_byCell = FALSE)

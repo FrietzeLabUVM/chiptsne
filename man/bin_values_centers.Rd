@@ -4,14 +4,12 @@
 \alias{bin_values_centers}
 \title{bin_values_centers}
 \usage{
-bin_values_centers(x, n_bins, xrng = range(x))
+bin_values_centers(n_bins, rng)
 }
 \arguments{
-\item{x}{Values to assign to bins}
-
 \item{n_bins}{Number of bins to assign values to}
 
-\item{xrng}{Optional numeric of length 2. Defines the domain to define bins
+\item{rng}{Numeric to define bins
 for. Defaults to range(x).}
 }
 \value{
@@ -21,5 +19,6 @@ numeric of length n_bins containing centers of bins.
 bin_values_centers
 }
 \examples{
-bin_values_centers(0:10, 3)
+bin_values_centers(3, 0:10)
+bin_values_centers(3, range(0:10))
 }

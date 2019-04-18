@@ -7,14 +7,13 @@
 stsPlotSummaryProfiles(profile_dt, position_dt, x_points,
   y_points = x_points, q_cells = NULL, q_marks = NULL,
   xrng = range(position_dt$tx), yrng = range(position_dt$ty),
-  rname = digest::digest(list(profile_dt, position_dt, x_points,
-  y_points, apply_norm, ylim, line_color_mapping, n_splines, ma_size,
-  facet_by)), odir = file.path(tempdir(), rname),
-  force_rewrite = FALSE, n_cores = getOption("mc.cores", 1),
-  apply_norm = TRUE, ylim = c(0, 1), ma_size = 2, n_splines = 10,
-  p = NULL, facet_by = NULL, line_color_mapping = NULL,
-  vertical_facet_mapping = NULL, N_floor = 0, N_ceiling = NULL,
-  min_size = 0.3, return_data = FALSE)
+  plot_type = c("glyph", "raster")[1], rname = NULL,
+  odir = file.path(tempdir(), rname), force_rewrite = FALSE,
+  n_cores = getOption("mc.cores", 1), apply_norm = TRUE, ylim = c(0,
+  1), ma_size = 2, n_splines = 10, p = NULL, facet_byCell = FALSE,
+  line_color_mapping = NULL, vertical_facet_mapping = NULL,
+  N_floor = 0, N_ceiling = NULL, min_size = 0.3,
+  return_data = FALSE)
 }
 \arguments{
 \item{profile_dt}{a tidy data.table for profile data as retrieved by
@@ -35,6 +34,9 @@ Defaults to same value as x_points.}
 \item{xrng}{view domain in x dimension, default is range of position_dt$tx.}
 
 \item{yrng}{view domain in y dimension, default is range of position_dt$ty.}
+
+\item{plot_type}{character, must be one of "glyph" or "raster".  raster
+uses ggimage::geom_image to embed images where glyph uses GGally::glyphs}
 
 \item{rname}{prefix for image files.  existing image files are used if
 present.}
@@ -59,15 +61,14 @@ compatible with apply_norm = TRUE.}
 \item{p}{an existing ggplot to overlay images onto.  Default of NULL starts a
 new plot.}
 
-\item{facet_by}{character. varaible name to facet profile_dt by when
-constructing images. The only valid non-null value with seqtsne functions
-is "cell".}
+\item{facet_byCell}{boolean. If TRUE, plots are facetted by cell.}
 
-\item{line_color_mapping}{named vector of line color.  Names correspond to values of
-profile_dt 'mark' variable and values are colors.}
+\item{line_color_mapping}{named vector of line color.  Names correspond to
+values of profile_dt 'mark' variable and values are colors.}
 
-\item{vertical_facet_mapping}{named vector of groups.  vertical_facet_mapping names are marks and order
-of first occurence determines vertical position top to bottom.}
+\item{vertical_facet_mapping}{named vector of groups.  vertical_facet_mapping
+names are marks and order of first occurence determines vertical position
+top to bottom.}
 
 \item{N_floor}{The value of N to consider 0.  bins with N values <= N_floor
 will be ignored.}
@@ -83,9 +84,9 @@ N_floor to N_ceiling.}
 ggplot is returned instead.}
 }
 \value{
-returns a ggplot containing images summarizing t-sne space
-at resolution determined by x_points and y_points with the space density
-mapped to size.
+returns a ggplot containing images summarizing t-sne space at
+  resolution determined by x_points and y_points with the space density
+  mapped to size.
 }
 \description{
 stsPlotSummaryProfiles

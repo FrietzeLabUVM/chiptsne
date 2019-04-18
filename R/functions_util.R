@@ -123,20 +123,21 @@ bin_values = function(x, n_bins, xrng = range(x)){
 
 #' bin_values_centers
 #'
-#' @param x Values to assign to bins
 #' @param n_bins Number of bins to assign values to
-#' @param xrng Optional numeric of length 2. Defines the domain to define bins
+#' @param rng Numeric to define bins
 #'   for. Defaults to range(x).
 #'
 #' @return numeric of length n_bins containing centers of bins.
 #' @export
 #' @examples
-#' bin_values_centers(0:10, 3)
-bin_values_centers = function(x, n_bins, xrng = range(x)){
-    stopifnot(length(xrng) == 2)
-    # xrng = range(x)
-    xspc = diff(xrng)/n_bins/2
-    xs = seq(min(xrng)+xspc, max(xrng)-xspc, diff(xrng)/(n_bins))
+#' bin_values_centers(3, 0:10)
+#' bin_values_centers(3, range(0:10))
+bin_values_centers = function(n_bins, rng){
+    if(length(rng) != 2)
+        rng = range(rng)
+    stopifnot(length(rng) == 2)
+    xspc = diff(rng)/n_bins/2
+    xs = seq(min(rng)+xspc, max(rng)-xspc, diff(rng)/(n_bins))
     xs
 }
 
@@ -281,46 +282,46 @@ calc_delta = function(tsne_dt, cell_a, cell_b, x_points, y_points = x_points, st
     colnames(v_dt) = sub(cell_b, "cell_b", colnames(v_dt))
 
     v_dt$bx_cell_a = bin_values(v_dt$tx_cell_a, n_bins = x_points, xrng = range(tsne_dt$tx))
-    xs = bin_values_centers(v_dt$tx_cell_a, n_bins = x_points, xrng = range(tsne_dt$tx))
+    xs = bin_values_centers(n_bins = x_points, rng = range(tsne_dt$tx))
     v_dt$btx_cell_a = xs[v_dt$bx_cell_a]
 
     v_dt$by_cell_a = bin_values(v_dt$ty_cell_a, n_bins = y_points, xrng = range(tsne_dt$ty))
-    ys = bin_values_centers(v_dt$ty_cell_a, n_bins = y_points, xrng = range(tsne_dt$ty))
+    ys = bin_values_centers(n_bins = y_points, rng = range(tsne_dt$ty))
     v_dt$bty_cell_a = ys[v_dt$by_cell_a]
     # strategy = "by_destination"
     # strategy = "by_direction"
 
     v_dt = switch(strategy,
-           "by_destination" = {
-               v_dt = v_dt[, list(tx_cell_b = mean(tx_cell_b), ty_cell_b = mean(ty_cell_b), N = .N), list(bx_cell_a, by_cell_a)]
-               v_dt$tx_cell_a = xs[v_dt$bx_cell_a]
-               v_dt$ty_cell_a = ys[v_dt$by_cell_a]
-               v_dt
-           },
-           "by_direction" = {
-               v_dt = v_dt[, list(tx_cell_b = mean(tx_cell_b - tx_cell_a), ty_cell_b = mean(ty_cell_b - ty_cell_a), N = .N), list(bx_cell_a, by_cell_a)]
-               v_dt$tx_cell_b = xs[v_dt$bx_cell_a] + v_dt$tx_cell_b
-               v_dt$ty_cell_b = ys[v_dt$by_cell_a] + v_dt$ty_cell_b
-               v_dt$tx_cell_a = xs[v_dt$bx_cell_a]
-               v_dt$ty_cell_a = ys[v_dt$by_cell_a]
-               v_dt
-           },
-           "individual_recentered" = {
-               v_dt = copy(v_dt)
-               v_dt = v_dt[, tx_cell_b := tx_cell_b - tx_cell_a]
-               v_dt = v_dt[, ty_cell_b := ty_cell_b - ty_cell_a]
-               v_dt$tx_cell_b = xs[v_dt$bx_cell_a] + v_dt$tx_cell_b
-               v_dt$ty_cell_b = ys[v_dt$by_cell_a] + v_dt$ty_cell_b
-               v_dt$tx_cell_a = xs[v_dt$bx_cell_a]
-               v_dt$ty_cell_a = ys[v_dt$by_cell_a]
-               v_dt
-           },
-           "normal" = {
-               v_dt
-           },
-           {
-               stop("unrecognized delta strategy ", strategy)
-           })
+                  "by_destination" = {
+                      v_dt = v_dt[, list(tx_cell_b = mean(tx_cell_b), ty_cell_b = mean(ty_cell_b), N = .N), list(bx_cell_a, by_cell_a)]
+                      v_dt$tx_cell_a = xs[v_dt$bx_cell_a]
+                      v_dt$ty_cell_a = ys[v_dt$by_cell_a]
+                      v_dt
+                  },
+                  "by_direction" = {
+                      v_dt = v_dt[, list(tx_cell_b = mean(tx_cell_b - tx_cell_a), ty_cell_b = mean(ty_cell_b - ty_cell_a), N = .N), list(bx_cell_a, by_cell_a)]
+                      v_dt$tx_cell_b = xs[v_dt$bx_cell_a] + v_dt$tx_cell_b
+                      v_dt$ty_cell_b = ys[v_dt$by_cell_a] + v_dt$ty_cell_b
+                      v_dt$tx_cell_a = xs[v_dt$bx_cell_a]
+                      v_dt$ty_cell_a = ys[v_dt$by_cell_a]
+                      v_dt
+                  },
+                  "individual_recentered" = {
+                      v_dt = copy(v_dt)
+                      v_dt = v_dt[, tx_cell_b := tx_cell_b - tx_cell_a]
+                      v_dt = v_dt[, ty_cell_b := ty_cell_b - ty_cell_a]
+                      v_dt$tx_cell_b = xs[v_dt$bx_cell_a] + v_dt$tx_cell_b
+                      v_dt$ty_cell_b = ys[v_dt$by_cell_a] + v_dt$ty_cell_b
+                      v_dt$tx_cell_a = xs[v_dt$bx_cell_a]
+                      v_dt$ty_cell_a = ys[v_dt$by_cell_a]
+                      v_dt
+                  },
+                  "normal" = {
+                      v_dt
+                  },
+                  {
+                      stop("unrecognized delta strategy ", strategy)
+                  })
 
 
     return(v_dt[])

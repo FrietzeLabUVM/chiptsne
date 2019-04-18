@@ -73,5 +73,5 @@ img_res = prep_images(profile_dt, tsne_dt, 4)
 #zoom on top-right quadrant
 img_res.zoom = prep_images(profile_dt, tsne_dt, 4,
     xrng = c(0, .5), yrng = c(0, .5))
-#use results with plot_tsne_img() to make plots
+#use results with plot_summary_raster() to make plots
 }

@@ -145,7 +145,7 @@ it maps both broad trends and finer relationships effectively.
 ```{r, fig.width=5, fig.height=5}
 img = prep_images(tsne_input$bw_dt, tsne_res, x_points = n_points,
                     line_color_mapping = color_mapping)
-img_res = plot_tsne_img(img$image_dt, x_points = n_points, min_size = 0)
+img_res = plot_summary_raster(img$image_dt, x_points = n_points, min_size = 0)
 img_res
 ```
 
@@ -156,8 +156,8 @@ img_byCell = prep_images(tsne_input$bw_dt,
                          tsne_res, 
                          x_points = n_points,
                          line_color_mapping = color_mapping, 
-                         facet_by = "cell")
-img_byCell_res = plot_tsne_img_byCell(img_byCell$image_dt, x_points = n_points)
+                         facet_by  = "cell")
+img_byCell_res = plot_summary_raster_byCell(img_byCell$image_dt, x_points = n_points)
 img_byCell_res
 ```
 
