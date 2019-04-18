@@ -147,8 +147,15 @@ stsPlotSummaryProfiles = function(## basic inputs
         #prepare images
 
         if (!facet_byCell) {
+            summary_dt = prep_summary(prof_dt,
+                                      pos_dt,
+                                      x_points,
+                                      y_points,
+                                      xrng,
+                                      yrng,
+                                      NULL)
             img_res = prep_images(
-                profile_dt = prof_dt,
+                summary_dt = summary_dt,
                 position_dt = pos_dt,
                 xrng = xrng,
                 yrng = yrng,
@@ -177,9 +184,16 @@ stsPlotSummaryProfiles = function(## basic inputs
                 min_size = min_size,
                 return_data = return_data
             )
-        } else{
+        } else{#do facet by cell
+            summary_dt = prep_summary(prof_dt,
+                                      pos_dt,
+                                      x_points,
+                                      y_points,
+                                      xrng,
+                                      yrng,
+                                      "cell")
             img_res = prep_images(
-                profile_dt = prof_dt,
+                summary_dt = summary_dt,
                 position_dt = pos_dt,
                 xrng = xrng,
                 yrng = yrng,
@@ -213,12 +227,12 @@ stsPlotSummaryProfiles = function(## basic inputs
     }else if(plot_type == "glyph"){
         if (!facet_byCell) {
             summary_dt = prep_summary(prof_dt,
-                               pos_dt,
-                               x_points,
-                               y_points,
-                               xrng,
-                               yrng,
-                               NULL)
+                                      pos_dt,
+                                      x_points,
+                                      y_points,
+                                      xrng,
+                                      yrng,
+                                      NULL)
             plot_summary_glyph(summary_dt,
                                x_points = x_points, y_points = y_points,
                                xrng = xrng, yrng = yrng,
@@ -279,9 +293,10 @@ prep_summary = function(profile_dt,
                         xrng = range(position_dt$tx),
                         yrng = range(position_dt$ty),
                         facet_by = NULL){
-    position_dt = copy(position_dt)
-    position_dt = position_dt[tx >= min(xrng) &
-                                  tx <= max(xrng) & ty >= min(yrng) & ty <= max(yrng)]
+    position_dt = copy(position_dt[tx >= min(xrng) &
+                                       tx <= max(xrng) &
+                                       ty >= min(yrng) &
+                                       ty <= max(yrng)])
     #use positional info from position_dt to bin points
     if(is.null(position_dt$bx))
         position_dt[, bx := bin_values(tx, x_points, xrng = xrng)]
@@ -356,7 +371,7 @@ prep_summary = function(profile_dt,
 #' img_res.zoom = prep_images(profile_dt, tsne_dt, 4,
 #'     xrng = c(0, .5), yrng = c(0, .5))
 #' #use results with plot_summary_raster() to make plots
-prep_images = function(profile_dt,
+prep_images = function(summary_dt,
                        position_dt,
                        x_points,
                        y_points = x_points,
@@ -399,18 +414,10 @@ prep_images = function(profile_dt,
         )
     }
 
-    position_dt[, bx := bin_values(tx, x_points, xrng = xrng)]
-    position_dt[, by := bin_values(ty, y_points, xrng = yrng)]
-
-    summary_dt = prep_summary(profile_dt,
-                       position_dt,
-                       x_points,
-                       y_points,
-                       xrng,
-                       yrng,
-                       facet_by)
-    # stopifnot(is.list(view_rect))
-    # if(is.null(view_rect$xmin))
+    # position_dt = copy(position_dt[tx >= min(xrng) & tx <= max(xrng) &
+    #                                    ty >= min(yrng) & ty <= max(yrng)])
+    # position_dt[, bx := bin_values(tx, x_points, xrng = xrng)]
+    # position_dt[, by := bin_values(ty, y_points, xrng = yrng)]
 
     dir.create(odir, recursive = TRUE, showWarnings = FALSE)
 
@@ -444,13 +451,15 @@ prep_images = function(profile_dt,
     if (force_rewrite) {
         file.remove(img_dt$png_file[file.exists(img_dt$png_file)])
     }
+browser()
 
     if (is.null(facet_by)) {
-        img_dt = merge(img_dt, position_dt[, .N, list(bx, by)])
+        count_dt = unique(summary_dt[, .(bx, by, N)])
+        img_dt = merge(img_dt, count_dt, by = c("bx", "by"))
     } else{
-        tmp_dt = position_dt[, .N, list(bx, by, get(facet_by))]
-        colnames(tmp_dt)[colnames(tmp_dt) == "get"] = facet_by
-        img_dt = merge(img_dt, tmp_dt, by = c("bx", "by", facet_by))
+        count_dt = unique(summary_dt[, .(bx, by, get(facet_by))])
+        colnames(count_dt)[colnames(count_dt) == "get"] = facet_by
+        img_dt = merge(img_dt, count_dt, by = c("bx", "by", facet_by))
     }
 
     if (is.null(vertical_facet_mapping)) {
@@ -532,14 +541,14 @@ prep_images = function(profile_dt,
 
     img_dt[, png_file := normalizePath(png_file)]
 
-    if (is.factor(position_dt$cell)) {
-        if (!is.null(img_dt$cell)) {
-            img_dt$cell = factor(img_dt$cell, levels = levels(position_dt$cell))
-        }
-        if (!is.null(summary_dt$cell)) {
-            summary_dt$cell = factor(summary_dt$cell, levels = levels(position_dt$cell))
-        }
-    }
+    # if (is.factor(position_dt$cell)) {
+    #     if (!is.null(img_dt$cell)) {
+    #         img_dt$cell = factor(img_dt$cell, levels = levels(position_dt$cell))
+    #     }
+    #     if (!is.null(summary_dt$cell)) {
+    #         summary_dt$cell = factor(summary_dt$cell, levels = levels(position_dt$cell))
+    #     }
+    # }
 
     return(
         list(
@@ -662,15 +671,18 @@ set_image_rects = function(image_dt,
 #' @examples
 #' data("profile_dt")
 #' data("tsne_dt")
-#' img_res = prep_images(profile_dt, tsne_dt, 4)
+#' summary_dt = prep_summary(profile_dt, tsne_dt, 4)
+#' img_res = prep_images(summary_dt, tsne_dt, 4)
 #' #zoom on top-right quadrant
-#' img_res.zoom = prep_images(profile_dt, tsne_dt, 4, xrng = c(0, .5), yrng = c(0, .5))
+#'
+#' summary_dt.zoom = prep_summary(profile_dt, tsne_dt, 8, xrng = c(0, .5), yrng = c(0, .5))
+#' img_res.zoom = prep_images(summary_dt.zoom, tsne_dt, 8, xrng = c(0, .5), yrng = c(0, .5))
 #' plot_summary_raster(img_res$image_dt,
 #'               x_points = img_res$x_points)
 #' plot_summary_raster(img_res.zoom$image_dt,
 #'               x_points = img_res.zoom$x_points,
 #'               xrng = img_res.zoom$xrng,
-#'               yrng = img_res.zoom$yrng)
+#'               yrng = img_res.zoom$yrng, min_size = 0)
 plot_summary_raster = function(image_dt,
                                x_points,
                                y_points = x_points,

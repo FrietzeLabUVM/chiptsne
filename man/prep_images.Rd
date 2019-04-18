@@ -4,7 +4,7 @@
 \alias{prep_images}
 \title{prep_images}
 \usage{
-prep_images(profile_dt, position_dt, x_points, y_points = x_points,
+prep_images(summary_dt, position_dt, x_points, y_points = x_points,
   xrng = range(position_dt$tx), yrng = range(position_dt$ty),
   rname = digest::digest(list(profile_dt, position_dt, x_points,
   y_points, apply_norm, ylim, line_color_mapping, n_splines, ma_size,
@@ -15,9 +15,6 @@ prep_images(profile_dt, position_dt, x_points, y_points = x_points,
   vertical_facet_mapping = NULL)
 }
 \arguments{
-\item{profile_dt}{a tidy data.table for profile data as retrieved by
-stsFetchTsneInput.  Expected variable names are id, cell, mark, x, and y.}
-
 \item{position_dt}{a tidy data.table containing t-sne embedding.  Expected
 variable names are tx, ty, id, and cell.}
 
@@ -58,6 +55,9 @@ of mc.cores option if set or 1.}
 values of profile_dt 'mark' variable and values are colors.}
 
 \item{vertical_facet_mapping}{named vector of vertical facet for data}
+
+\item{profile_dt}{a tidy data.table for profile data as retrieved by
+stsFetchTsneInput.  Expected variable names are id, cell, mark, x, and y.}
 }
 \value{
 data.table with variables

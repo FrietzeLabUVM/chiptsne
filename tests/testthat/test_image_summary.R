@@ -11,7 +11,10 @@ options("mc.cores" = 2)
 
 npx = 4
 npy = 3
-img_res = prep_images(profile_dt, tsne_dt,
+summary_dt = prep_summary(profile_dt, tsne_dt,
+                          x_points = 4, y_points = 3,
+                          xrng = c(-.3, .4), yrng = c(-.45, .35))
+img_res = prep_images(summary_dt, tsne_dt,
                       x_points = 4, y_points = 3,
                       xrng = c(-.3, .4), yrng = c(-.45, .35))
 
