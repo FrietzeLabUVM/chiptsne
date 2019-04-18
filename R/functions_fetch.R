@@ -52,7 +52,7 @@ stsFetchTsneInput = function(qdt,
                              bfc = BiocFileCache::BiocFileCache(),
                              n_cores = getOption("mc.cores", 1),
                              rname = digest::digest(list(qgr,
-                                                         qdt[, seq(3), with = FALSE],
+                                                         qdt,
                                                          qwin,
                                                          qmet)),
                              force_overwrite = FALSE){

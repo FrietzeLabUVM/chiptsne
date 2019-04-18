@@ -181,6 +181,68 @@ stsPlotSummaryProfiles = function(## basic inputs
 
 }
 
+#' prep_summary
+#'
+#' @param profile_dt a tidy data.table for profile data as retrieved by
+#'   stsFetchTsneInput.  Expected variable names are id, cell, mark, x, and y.
+#' @param position_dt a tidy data.table containing t-sne embedding.  Expected
+#'   variable names are tx, ty, id, and cell.
+#' @param x_points numeric.  number of grid points to use in x dimension.
+#' @param y_points numeric.  number of grid points to use in y dimension.
+#'   Defaults to same value as x_points.
+#' @param xrng view domain in x dimension, default is range of position_dt$tx.
+#' @param yrng view domain in y dimension, default is range of position_dt$ty.
+#' @param facet_by character. varaible name to facet profile_dt by when
+#'   constructing images. The only valid non-null value with seqtsne functions
+#'   is "cell".
+#'
+#' @return summary of profiles binned across tsne space according to x_points,
+#'   y_points, and within xrng and yrng
+#' @export
+#'
+#' @examples
+#' data("profile_dt")
+#' data("tsne_dt")
+#' img_res = prep_images(profile_dt, tsne_dt, 4)
+#' #zoom on top-right quadrant
+#' img_res.zoom = prep_images(profile_dt, tsne_dt,
+#'     4, xrng = c(0, .5), yrng = c(0, .5))
+prep_summary = function(profile_dt,
+                        position_dt,
+                        x_points,
+                        y_points = x_points,
+                        xrng = range(position_dt$tx),
+                        yrng = range(position_dt$ty),
+                        facet_by = NULL){
+    position_dt = copy(position_dt)
+    position_dt = position_dt[tx >= min(xrng) &
+                                  tx <= max(xrng) & ty >= min(yrng) & ty <= max(yrng)]
+    #use positional info from position_dt to bin points
+    if(is.null(position_dt$bx))
+        position_dt[, bx := bin_values(tx, x_points, xrng = xrng)]
+    if(is.null(position_dt$by))
+        position_dt[, by := bin_values(ty, y_points, xrng = yrng)]
+    #merge binning info to profiles
+    mdt = merge(
+        profile_dt,
+        position_dt[, list(bx, by, cell, id)],
+        allow.cartesian = TRUE,
+        by = intersect(colnames(profile_dt), c("cell", "id"))
+    )#, by = c("cell", "id"))
+    if (is.null(mdt$mark))
+        mdt$mark = "signal"
+
+    if (is.null(facet_by)) {
+        mdt = mdt[, list(y = mean(y)), list(bx, by, x, mark)]
+    } else{
+        mdt = mdt[, list(y = mean(y)), list(bx, by, x, mark, get(facet_by))]
+        colnames(mdt)[colnames(mdt) == "get"] = facet_by
+    }
+    #each combination of bx and by is a unique plot_id
+    mdt[, plot_id := paste(bx, by, sep = "_")]
+    mdt
+}
+
 #' prep_images
 #'
 #' Prepares images summarizing profiles in t-sne regions and returns ggimage
@@ -208,10 +270,10 @@ stsPlotSummaryProfiles = function(## basic inputs
 #'   is "cell".
 #' @param n_splines number of points to interpolate with splines.
 #' @param ma_size moving average size when smoothing profiles.
-#' @param n_cores number of cores to use when writing images.  Default is
-#' value of mc.cores option if set or 1.
-#' @param line_color_mapping named vector of line color.  Names correspond to values
-#' of profile_dt 'mark' variable and values are colors.
+#' @param n_cores number of cores to use when writing images.  Default is value
+#'   of mc.cores option if set or 1.
+#' @param line_color_mapping named vector of line color.  Names correspond to
+#'   values of profile_dt 'mark' variable and values are colors.
 #' @param vertical_facet_mapping named vector of vertical facet for data
 #'
 #' @return data.table with variables
@@ -224,7 +286,8 @@ stsPlotSummaryProfiles = function(## basic inputs
 #' data("tsne_dt")
 #' img_res = prep_images(profile_dt, tsne_dt, 4)
 #' #zoom on top-right quadrant
-#' img_res.zoom = prep_images(profile_dt, tsne_dt, 4, xrng = c(0, .5), yrng = c(0, .5))
+#' img_res.zoom = prep_images(profile_dt, tsne_dt, 4,
+#'     xrng = c(0, .5), yrng = c(0, .5))
 #' #use results with plot_tsne_img() to make plots
 prep_images = function(profile_dt,
                        position_dt,
@@ -268,33 +331,20 @@ prep_images = function(profile_dt,
             paste(missing_colors, collapse = ", ")
         )
     }
-    stopifnot()
-    # stopifnot(is.list(view_rect))
-    # if(is.null(view_rect$xmin))
-    position_dt = copy(position_dt)
-    position_dt = position_dt[tx >= min(xrng) &
-                                  tx <= max(xrng) & ty >= min(yrng) & ty <= max(yrng)]
-    #use positional info from position_dt to bin points
+
     position_dt[, bx := bin_values(tx, x_points, xrng = xrng)]
     position_dt[, by := bin_values(ty, y_points, xrng = yrng)]
-    #merge binning info to profiles
-    mdt = merge(
-        profile_dt,
-        position_dt[, list(bx, by, cell, id)],
-        allow.cartesian = TRUE,
-        by = intersect(colnames(profile_dt), c("cell", "id"))
-    )#, by = c("cell", "id"))
-    if (is.null(mdt$mark))
-        mdt$mark = "signal"
 
-    if (is.null(facet_by)) {
-        mdt = mdt[, list(y = mean(y)), list(bx, by, x, mark)]
-    } else{
-        mdt = mdt[, list(y = mean(y)), list(bx, by, x, mark, get(facet_by))]
-        colnames(mdt)[colnames(mdt) == "get"] = facet_by
-    }
-    #each combination of bx and by is a unique plot_id
-    mdt[, plot_id := paste(bx, by, sep = "_")]
+    mdt = prep_summary(profile_dt,
+                       position_dt,
+                       x_points,
+                       y_points,
+                       xrng,
+                       yrng,
+                       facet_by)
+    # stopifnot(is.list(view_rect))
+    # if(is.null(view_rect$xmin))
+
     dir.create(odir, recursive = TRUE, showWarnings = FALSE)
 
     if (is.null(facet_by)) {

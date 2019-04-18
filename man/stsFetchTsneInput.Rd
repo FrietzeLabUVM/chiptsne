@@ -8,7 +8,7 @@ stsFetchTsneInput(qdt, qgr, region_size = NULL, file_format = NULL,
   qwin = 50, qmet = "summary", cap_value = 20, agg_FUN = NULL,
   high_on_right = TRUE, bfc = BiocFileCache::BiocFileCache(),
   n_cores = getOption("mc.cores", 1), rname = digest::digest(list(qgr,
-  qdt[, seq(3), with = FALSE], qwin, qmet)), force_overwrite = FALSE)
+  qdt, qwin, qmet)), force_overwrite = FALSE)
 }
 \arguments{
 \item{qdt}{data.table containing, file, cell, mark, and optionally

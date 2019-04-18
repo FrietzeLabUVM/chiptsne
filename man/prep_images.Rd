@@ -51,11 +51,11 @@ is "cell".}
 
 \item{n_splines}{number of points to interpolate with splines.}
 
-\item{n_cores}{number of cores to use when writing images.  Default is
-value of mc.cores option if set or 1.}
+\item{n_cores}{number of cores to use when writing images.  Default is value
+of mc.cores option if set or 1.}
 
-\item{line_color_mapping}{named vector of line color.  Names correspond to values
-of profile_dt 'mark' variable and values are colors.}
+\item{line_color_mapping}{named vector of line color.  Names correspond to
+values of profile_dt 'mark' variable and values are colors.}
 
 \item{vertical_facet_mapping}{named vector of vertical facet for data}
 }
@@ -71,6 +71,7 @@ data("profile_dt")
 data("tsne_dt")
 img_res = prep_images(profile_dt, tsne_dt, 4)
 #zoom on top-right quadrant
-img_res.zoom = prep_images(profile_dt, tsne_dt, 4, xrng = c(0, .5), yrng = c(0, .5))
+img_res.zoom = prep_images(profile_dt, tsne_dt, 4,
+    xrng = c(0, .5), yrng = c(0, .5))
 #use results with plot_tsne_img() to make plots
 }
