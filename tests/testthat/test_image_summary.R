@@ -18,8 +18,11 @@ img_res = prep_images(summary_dt,
                       x_points = 4, y_points = 3,
                       xrng = c(-.3, .4), yrng = c(-.45, .35))
 
+plot_summary_raster(img_res$image_dt, x_points = 4, y_points = 3,
+                    xrng = c(-.3, .4), yrng = c(-.45, .35))
+
 test_that("prep_images names of outputs", {
-    expect_equal(names(img_res), c("image_dt", "summary_profile_dt", "x_points", "y_points", "xrng", "yrng"))
+    expect_equal(names(img_res), c("image_dt", "summary_profile_dt", "x_points", "y_points", "xrng", "yrng", "line_color_mapping"))
 })
 
 test_that("prep_images variables of image_dt", {

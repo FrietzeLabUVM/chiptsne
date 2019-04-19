@@ -560,7 +560,8 @@ prep_images = function(summary_dt,
             x_points = x_points,
             y_points = y_points,
             xrng = xrng,
-            yrng = yrng
+            yrng = yrng,
+            line_color_mapping = line_color_mapping
         )
     )
 }
