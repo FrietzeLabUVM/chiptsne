@@ -234,7 +234,8 @@ stsPlotSummaryProfiles = function(## basic inputs
             plot_summary_glyph(summary_dt,
                                x_points = x_points, y_points = y_points,
                                xrng = xrng, yrng = yrng,
-                               N_floor = N_floor, N_ceiling = N_ceiling)
+                               N_floor = N_floor, N_ceiling = N_ceiling,
+                               color_mapping = line_color_mapping)
         }else{
             summary_dt_l = lapply(q_cells, function(cl){
                 prep_summary(prof_dt[cell == cl],
@@ -250,7 +251,8 @@ stsPlotSummaryProfiles = function(## basic inputs
             plot_summary_glyph(summary_dt,
                                x_points = x_points, y_points = y_points,
                                xrng = xrng, yrng = yrng,
-                               N_floor = N_floor, N_ceiling = N_ceiling) +
+                               N_floor = N_floor, N_ceiling = N_ceiling,
+                               color_mapping = line_color_mapping) +
                 facet_wrap("cell")
         }
 
@@ -389,13 +391,12 @@ prep_images = function(summary_dt,
                        n_cores = getOption("mc.cores", 1),
                        line_color_mapping = NULL,
                        vertical_facet_mapping = NULL) {
-    profile_dt = NULL # binding for data.table
     if(is.null(line_color_mapping)){
-        line_color_mapping = seqsetvis::safeBrew(length(unique(profile_dt$mark)))
-        names(line_color_mapping) = unique(profile_dt$mark)
+        line_color_mapping = seqsetvis::safeBrew(length(unique(summary_dt$mark)))
+        names(line_color_mapping) = unique(summary_dt$mark)
     }
-    if (!all(unique(profile_dt$mark) %in% names(line_color_mapping))) {
-        missing_colors = setdiff(unique(profile_dt$mark), names(line_color_mapping))
+    if (!all(unique(summary_dt$mark) %in% names(line_color_mapping))) {
+        missing_colors = setdiff(unique(summary_dt$mark), names(line_color_mapping))
         stop(
             "line_color_mapping is missing assignments for: ",
             paste(missing_colors, collapse = ", ")
