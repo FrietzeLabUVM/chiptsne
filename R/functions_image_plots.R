@@ -657,6 +657,7 @@ set_image_rects = function(image_dt,
 #' @param yrng view domain in y dimension.
 #' @param p an existing ggplot to overlay images onto.  Default of NULL starts a
 #'   new plot.
+#' @param line_color_mapping named character vector for scale_color_manual, recommend $line_color_mapping from prep_images()
 #' @param N_floor The value of N to consider 0.  bins with N values <= N_floor
 #'   will be ignored.
 #' @param N_ceiling The value of N to consider 1.  bins with N values >=
@@ -692,7 +693,7 @@ plot_summary_raster = function(image_dt,
                                xrng = c(-.5, .5),
                                yrng = c(-.5, .5),
                                p = NULL,
-
+                               line_color_mapping = NULL,
                                N_floor = 0,
                                N_ceiling = NULL,
                                min_size = .3,
@@ -713,6 +714,12 @@ plot_summary_raster = function(image_dt,
     }
     if (is.null(p))
         p = ggplot()
+    if(!is.null(line_color_mapping)){
+        col_dt = image_dt[, .(tx, ty, mark = rep(names(line_color_mapping), each = nrow(image_dt)))]
+        p = p + geom_point(data = col_dt,
+                       aes(x = tx, y = ty, color = mark)) +
+            scale_color_manual(values = line_color_mapping)
+    }
     p = p +
         geom_image.rect(data = image_dt,
                         aes(
@@ -746,6 +753,7 @@ plot_summary_raster = function(image_dt,
 #' @param yrng view domain in y dimension.
 #' @param p an existing ggplot to overlay images onto.  Default of NULL starts a
 #'   new plot.
+#' @param line_color_mapping named character vector for scale_color_manual, recommend $line_color_mapping from prep_images()
 #' @param N_floor The value of N to consider 0.  bins with N values <= N_floor
 #'   will be ignored.
 #' @param N_ceiling The value of N to consider 1.  bins with N values >=
@@ -780,6 +788,7 @@ plot_summary_raster_byCell = function(image_dt,
                                       x_points,
                                       y_points = x_points,
                                       p = NULL,
+                                      line_color_mapping = NULL,
                                       xrng = c(-.5, .5),
                                       yrng = c(-.5, .5),
                                       N_floor = 0,
@@ -804,6 +813,12 @@ plot_summary_raster_byCell = function(image_dt,
         return(image_dt)
     if (is.null(p))
         p = ggplot()
+    if(!is.null(line_color_mapping)){
+        col_dt = image_dt[, .(tx, ty, mark = rep(names(line_color_mapping), each = nrow(image_dt)))]
+        p = p + geom_point(data = col_dt,
+                           aes(x = tx, y = ty, color = mark)) +
+            scale_color_manual(values = line_color_mapping)
+    }
     p = p +
         geom_image.rect(data = image_dt,
                         aes(
