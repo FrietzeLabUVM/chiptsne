@@ -5,8 +5,9 @@
 \title{plot_summary_raster}
 \usage{
 plot_summary_raster(image_dt, x_points, y_points = x_points,
-  xrng = c(-0.5, 0.5), yrng = c(-0.5, 0.5), p = NULL, N_floor = 0,
-  N_ceiling = NULL, min_size = 0.3, return_data = FALSE)
+  xrng = c(-0.5, 0.5), yrng = c(-0.5, 0.5), p = NULL,
+  line_color_mapping = NULL, N_floor = 0, N_ceiling = NULL,
+  min_size = 0.3, return_data = FALSE)
 }
 \arguments{
 \item{image_dt}{$image_dt of result from prep_images()}
@@ -21,6 +22,8 @@ plot_summary_raster(image_dt, x_points, y_points = x_points,
 
 \item{p}{an existing ggplot to overlay images onto.  Default of NULL starts a
 new plot.}
+
+\item{line_color_mapping}{named character vector for scale_color_manual, recommend $line_color_mapping from prep_images()}
 
 \item{N_floor}{The value of N to consider 0.  bins with N values <= N_floor
 will be ignored.}

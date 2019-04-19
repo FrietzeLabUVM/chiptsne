@@ -104,6 +104,7 @@ stsPlotSummaryProfiles = function(## basic inputs
         line_color_mapping = seqsetvis::safeBrew(length(unique(profile_dt$mark)))
         names(line_color_mapping) = unique(profile_dt$mark)
     }
+    line_color_mapping = line_color_mapping[names(line_color_mapping) %in% q_marks]
     if(is.factor(profile_dt$cell)){
         stopifnot(q_cells %in% levels(profile_dt$cell))
     }else{
