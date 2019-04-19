@@ -156,7 +156,6 @@ stsPlotSummaryProfiles = function(## basic inputs
                                       NULL)
             img_res = prep_images(
                 summary_dt = summary_dt,
-                position_dt = pos_dt,
                 xrng = xrng,
                 yrng = yrng,
                 x_points = x_points,
@@ -194,7 +193,6 @@ stsPlotSummaryProfiles = function(## basic inputs
                                       "cell")
             img_res = prep_images(
                 summary_dt = summary_dt,
-                position_dt = pos_dt,
                 xrng = xrng,
                 yrng = yrng,
                 x_points = x_points,
@@ -282,10 +280,13 @@ stsPlotSummaryProfiles = function(## basic inputs
 #' @examples
 #' data("profile_dt")
 #' data("tsne_dt")
-#' img_res = prep_images(profile_dt, tsne_dt, 4)
+#' summary_dt = prep_summary(profile_dt, tsne_dt, 4)
+#' img_res = prep_images(summary_dt, 4)
 #' #zoom on top-right quadrant
-#' img_res.zoom = prep_images(profile_dt, tsne_dt,
-#'     4, xrng = c(0, .5), yrng = c(0, .5))
+#' summary_dt.zoom = prep_summary(profile_dt, tsne_dt, 4,
+#'     xrng = c(0, .5), yrng = c(0, .5))
+#' img_res.zoom = prep_images(summary_dt.zoom, 4,
+#'     xrng = c(0, .5), yrng = c(0, .5))
 prep_summary = function(profile_dt,
                         position_dt,
                         x_points,
@@ -330,10 +331,7 @@ prep_summary = function(profile_dt,
 #' Prepares images summarizing profiles in t-sne regions and returns ggimage
 #' compatible data.frame for plotting.
 #'
-#' @param profile_dt a tidy data.table for profile data as retrieved by
-#'   stsFetchTsneInput.  Expected variable names are id, cell, mark, x, and y.
-#' @param position_dt a tidy data.table containing t-sne embedding.  Expected
-#'   variable names are tx, ty, id, and cell.
+#' @param summary_dt a tidy data.table from prep_summary()
 #' @param x_points numeric.  number of grid points to use in x dimension.
 #' @param y_points numeric.  number of grid points to use in y dimension.
 #'   Defaults to same value as x_points.
@@ -366,31 +364,20 @@ prep_summary = function(profile_dt,
 #' @examples
 #' data("profile_dt")
 #' data("tsne_dt")
-#' img_res = prep_images(profile_dt, tsne_dt, 4)
+#' summary_dt = prep_summary(profile_dt, tsne_dt, 4)
+#' img_res = prep_images(summary_dt, 4)
 #' #zoom on top-right quadrant
-#' img_res.zoom = prep_images(profile_dt, tsne_dt, 4,
+#' summary_dt.zoom = prep_summary(profile_dt, tsne_dt, 4,
+#'     xrng = c(0, .5), yrng = c(0, .5))
+#' img_res.zoom = prep_images(summary_dt.zoom, 4,
 #'     xrng = c(0, .5), yrng = c(0, .5))
 #' #use results with plot_summary_raster() to make plots
 prep_images = function(summary_dt,
-                       position_dt,
                        x_points,
                        y_points = x_points,
-                       xrng = range(position_dt$tx),
-                       yrng = range(position_dt$ty),
-                       rname = digest::digest(
-                           list(
-                               profile_dt,
-                               position_dt,
-                               x_points,
-                               y_points,
-                               apply_norm,
-                               ylim,
-                               line_color_mapping,
-                               n_splines,
-                               ma_size,
-                               facet_by
-                           )
-                       ),
+                       xrng = c(-.5, .5),
+                       yrng = c(-.5, .5),
+                       rname = NULL,
                        odir = file.path(tempdir(), rname),
                        force_rewrite = FALSE,
                        apply_norm = TRUE,
@@ -402,6 +389,7 @@ prep_images = function(summary_dt,
                        n_cores = getOption("mc.cores", 1),
                        line_color_mapping = NULL,
                        vertical_facet_mapping = NULL) {
+    profile_dt = NULL # binding for data.table
     if(is.null(line_color_mapping)){
         line_color_mapping = seqsetvis::safeBrew(length(unique(profile_dt$mark)))
         names(line_color_mapping) = unique(profile_dt$mark)
@@ -411,6 +399,21 @@ prep_images = function(summary_dt,
         stop(
             "line_color_mapping is missing assignments for: ",
             paste(missing_colors, collapse = ", ")
+        )
+    }
+    if(is.null(rname)){
+        rname = digest::digest(
+            list(
+                summary_dt,
+                x_points,
+                y_points,
+                apply_norm,
+                ylim,
+                line_color_mapping,
+                n_splines,
+                ma_size,
+                facet_by
+            )
         )
     }
 
@@ -451,14 +454,13 @@ prep_images = function(summary_dt,
     if (force_rewrite) {
         file.remove(img_dt$png_file[file.exists(img_dt$png_file)])
     }
-browser()
 
     if (is.null(facet_by)) {
         count_dt = unique(summary_dt[, .(bx, by, N)])
         img_dt = merge(img_dt, count_dt, by = c("bx", "by"))
     } else{
-        count_dt = unique(summary_dt[, .(bx, by, get(facet_by))])
-        colnames(count_dt)[colnames(count_dt) == "get"] = facet_by
+        count_dt = unique(summary_dt[, .(bx, by, get(facet_by), N)])
+        colnames(count_dt)[colnames(count_dt) == "V3"] = facet_by
         img_dt = merge(img_dt, count_dt, by = c("bx", "by", facet_by))
     }
 
@@ -554,7 +556,6 @@ browser()
         list(
             image_dt = img_dt[],
             summary_profile_dt = summary_dt[],
-            tsne_dt = position_dt[],
             x_points = x_points,
             y_points = y_points,
             xrng = xrng,
@@ -605,10 +606,10 @@ set_size = function(dt, N_floor, N_ceiling, size.name = "img_size"){
 #' library(ggplot2)
 #' data("profile_dt")
 #' data("tsne_dt")
-#'
-#' img_res = prep_images(profile_dt,
+#' summary_dt = prep_summary(profile_dt,
 #'                       tsne_dt,
 #'                       x_points = 4)
+#' img_res = prep_images(summary_dt, 4)
 #' img_rect = set_image_rects(img_res$image_dt,
 #'                            x_points = img_res$x_points,
 #'                            y_points = img_res$y_points,
@@ -672,11 +673,11 @@ set_image_rects = function(image_dt,
 #' data("profile_dt")
 #' data("tsne_dt")
 #' summary_dt = prep_summary(profile_dt, tsne_dt, 4)
-#' img_res = prep_images(summary_dt, tsne_dt, 4)
+#' img_res = prep_images(summary_dt, 4)
 #' #zoom on top-right quadrant
 #'
 #' summary_dt.zoom = prep_summary(profile_dt, tsne_dt, 8, xrng = c(0, .5), yrng = c(0, .5))
-#' img_res.zoom = prep_images(summary_dt.zoom, tsne_dt, 8, xrng = c(0, .5), yrng = c(0, .5))
+#' img_res.zoom = prep_images(summary_dt.zoom, 8, xrng = c(0, .5), yrng = c(0, .5))
 #' plot_summary_raster(img_res$image_dt,
 #'               x_points = img_res$x_points)
 #' plot_summary_raster(img_res.zoom$image_dt,
@@ -760,9 +761,12 @@ plot_summary_raster = function(image_dt,
 #' @examples
 #' data("profile_dt")
 #' data("tsne_dt")
-#' img_res = prep_images(profile_dt, tsne_dt, 4, facet_by = "cell")
+#' summary_dt = prep_summary(profile_dt, tsne_dt, 4, facet_by = "cell")
+#' img_res = prep_images(summary_dt, 4, facet_by = "cell")
 #' #zoom on top-right quadrant
-#' img_res.zoom = prep_images(profile_dt, tsne_dt, 4, facet_by = "cell",
+#' summary_dt.zoom = prep_summary(profile_dt, tsne_dt, 4, facet_by = "cell",
+#'     xrng = c(0, .5), yrng = c(0, .5))
+#' img_res.zoom = prep_images(summary_dt.zoom, 4, facet_by = "cell",
 #'     xrng = c(0, .5), yrng = c(0, .5))
 #' plot_summary_raster_byCell(img_res$image_dt,
 #'               x_points = img_res$x_points)

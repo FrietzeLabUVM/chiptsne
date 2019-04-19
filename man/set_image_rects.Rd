@@ -38,10 +38,10 @@ configures result of prep_images by setting rectangle parameters
 library(ggplot2)
 data("profile_dt")
 data("tsne_dt")
-
-img_res = prep_images(profile_dt,
+summary_dt = prep_summary(profile_dt,
                       tsne_dt,
                       x_points = 4)
+img_res = prep_images(summary_dt, 4)
 img_rect = set_image_rects(img_res$image_dt,
                            x_points = img_res$x_points,
                            y_points = img_res$y_points,

@@ -143,7 +143,8 @@ The resolution of these images is controlled by `n_points`.  Use `xrng` and
 it maps both broad trends and finer relationships effectively.
 
 ```{r, fig.width=5, fig.height=5}
-img = prep_images(tsne_input$bw_dt, tsne_res, x_points = n_points,
+summary_dt = prep_summary(tsne_input$bw_dt, tsne_res, x_points = n_points)
+img = prep_images(summary_dt, x_points = n_points,
                     line_color_mapping = color_mapping)
 img_res = plot_summary_raster(img$image_dt, x_points = n_points, min_size = 0)
 img_res
@@ -152,8 +153,8 @@ img_res
 The same idea as before but now facetted by cell.
 
 ```{r, fig.width=7.5, fig.height=3}
-img_byCell = prep_images(tsne_input$bw_dt, 
-                         tsne_res, 
+summary_dt_byCell = prep_summary(tsne_input$bw_dt, tsne_res, x_points = n_points, facet_by = "cell")
+img_byCell = prep_images(summary_dt_byCell, 
                          x_points = n_points,
                          line_color_mapping = color_mapping, 
                          facet_by  = "cell")

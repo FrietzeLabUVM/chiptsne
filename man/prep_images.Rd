@@ -4,19 +4,15 @@
 \alias{prep_images}
 \title{prep_images}
 \usage{
-prep_images(summary_dt, position_dt, x_points, y_points = x_points,
-  xrng = range(position_dt$tx), yrng = range(position_dt$ty),
-  rname = digest::digest(list(profile_dt, position_dt, x_points,
-  y_points, apply_norm, ylim, line_color_mapping, n_splines, ma_size,
-  facet_by)), odir = file.path(tempdir(), rname),
-  force_rewrite = FALSE, apply_norm = TRUE, ylim = c(0, 1),
-  facet_by = NULL, ma_size = 2, n_splines = 10,
-  n_cores = getOption("mc.cores", 1), line_color_mapping = NULL,
-  vertical_facet_mapping = NULL)
+prep_images(summary_dt, x_points, y_points = x_points, xrng = c(-0.5,
+  0.5), yrng = c(-0.5, 0.5), rname = NULL,
+  odir = file.path(tempdir(), rname), force_rewrite = FALSE,
+  apply_norm = TRUE, ylim = c(0, 1), facet_by = NULL, ma_size = 2,
+  n_splines = 10, n_cores = getOption("mc.cores", 1),
+  line_color_mapping = NULL, vertical_facet_mapping = NULL)
 }
 \arguments{
-\item{position_dt}{a tidy data.table containing t-sne embedding.  Expected
-variable names are tx, ty, id, and cell.}
+\item{summary_dt}{a tidy data.table from prep_summary()}
 
 \item{x_points}{numeric.  number of grid points to use in x dimension.}
 
@@ -55,9 +51,6 @@ of mc.cores option if set or 1.}
 values of profile_dt 'mark' variable and values are colors.}
 
 \item{vertical_facet_mapping}{named vector of vertical facet for data}
-
-\item{profile_dt}{a tidy data.table for profile data as retrieved by
-stsFetchTsneInput.  Expected variable names are id, cell, mark, x, and y.}
 }
 \value{
 data.table with variables
@@ -69,9 +62,12 @@ compatible data.frame for plotting.
 \examples{
 data("profile_dt")
 data("tsne_dt")
-img_res = prep_images(profile_dt, tsne_dt, 4)
+summary_dt = prep_summary(profile_dt, tsne_dt, 4)
+img_res = prep_images(summary_dt, 4)
 #zoom on top-right quadrant
-img_res.zoom = prep_images(profile_dt, tsne_dt, 4,
+summary_dt.zoom = prep_summary(profile_dt, tsne_dt, 4,
+    xrng = c(0, .5), yrng = c(0, .5))
+img_res.zoom = prep_images(summary_dt.zoom, 4,
     xrng = c(0, .5), yrng = c(0, .5))
 #use results with plot_summary_raster() to make plots
 }

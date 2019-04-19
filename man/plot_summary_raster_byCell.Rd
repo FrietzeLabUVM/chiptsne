@@ -45,9 +45,12 @@ plot_summary_raster
 \examples{
 data("profile_dt")
 data("tsne_dt")
-img_res = prep_images(profile_dt, tsne_dt, 4, facet_by = "cell")
+summary_dt = prep_summary(profile_dt, tsne_dt, 4, facet_by = "cell")
+img_res = prep_images(summary_dt, 4, facet_by = "cell")
 #zoom on top-right quadrant
-img_res.zoom = prep_images(profile_dt, tsne_dt, 4, facet_by = "cell",
+summary_dt.zoom = prep_summary(profile_dt, tsne_dt, 4, facet_by = "cell",
+    xrng = c(0, .5), yrng = c(0, .5))
+img_res.zoom = prep_images(summary_dt.zoom, 4, facet_by = "cell",
     xrng = c(0, .5), yrng = c(0, .5))
 plot_summary_raster_byCell(img_res$image_dt,
               x_points = img_res$x_points)

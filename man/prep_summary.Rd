@@ -38,8 +38,11 @@ prep_summary
 \examples{
 data("profile_dt")
 data("tsne_dt")
-img_res = prep_images(profile_dt, tsne_dt, 4)
+summary_dt = prep_summary(profile_dt, tsne_dt, 4)
+img_res = prep_images(summary_dt, 4)
 #zoom on top-right quadrant
-img_res.zoom = prep_images(profile_dt, tsne_dt,
-    4, xrng = c(0, .5), yrng = c(0, .5))
+summary_dt.zoom = prep_summary(profile_dt, tsne_dt, 4,
+    xrng = c(0, .5), yrng = c(0, .5))
+img_res.zoom = prep_images(summary_dt.zoom, 4,
+    xrng = c(0, .5), yrng = c(0, .5))
 }
