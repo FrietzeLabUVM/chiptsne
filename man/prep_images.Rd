@@ -38,7 +38,7 @@ compatible with apply_norm = TRUE.}
 
 \item{facet_by}{character. varaible name to facet profile_dt by when
 constructing images. The only valid non-null value with seqtsne functions
-is "cell".}
+is "tall_var".}
 
 \item{ma_size}{moving average size when smoothing profiles.}
 
@@ -48,7 +48,7 @@ is "cell".}
 of mc.cores option if set or 1.}
 
 \item{line_color_mapping}{named vector of line color.  Names correspond to
-values of profile_dt 'mark' variable and values are colors.}
+values of profile_dt 'wide_var' variable and values are colors.}
 
 \item{vertical_facet_mapping}{named vector of vertical facet for data}
 }

@@ -4,16 +4,16 @@
 \alias{plot_outline}
 \title{plot_outline}
 \usage{
-plot_outline(tsne_dt, qcells, id_to_plot = NULL, p = NULL,
+plot_outline(tsne_dt, qtall_vars, id_to_plot = NULL, p = NULL,
   xrng = c(-0.5, 0.5), yrng = c(-0.5, 0.5), bg_color = "gray",
   line_color_mapping = "black", fill_color_mapping = "gray",
   label_type = c("text", "label", "none")[3], bg_points = 5000,
   arrow_FUN = NULL)
 }
 \arguments{
-\item{tsne_dt}{data.table with tsne info (tx, ty, id, and cell)}
+\item{tsne_dt}{data.table with tsne info (tx, ty, id, and tall_var)}
 
-\item{qcells}{character vector of items in tsne_dt$cell}
+\item{qtall_vars}{character vector of items in tsne_dt$tall_var}
 
 \item{id_to_plot}{character vector of ids in tsne_dt$id}
 
@@ -49,18 +49,18 @@ corresponding to id_to_plot are drawn.  if -1, no points at all are drawn.}
 a ggplot
 }
 \description{
-a ggplot where the position of id in every cell specified by qcells is
+a ggplot where the position of id in every tall_var specified by qtall_vars is
 connected in a polygon.  Allows the identification of both regions where ids
 are stable/dynamic and individual ids that are particularly dynamic.
 }
 \details{
-Good for looking at large numbers of ids with a modest number of cells.
+Good for looking at large numbers of ids with a modest number of tall_vars.
 }
 \examples{
 data(tsne_dt)
-plot_outline(tsne_dt, unique(tsne_dt$cell), unique(tsne_dt$id)[1:3])
-plot_outline(tsne_dt, unique(tsne_dt$cell), unique(tsne_dt$id)[1:3],
+plot_outline(tsne_dt, unique(tsne_dt$tall_var), unique(tsne_dt$id)[1:3])
+plot_outline(tsne_dt, unique(tsne_dt$tall_var), unique(tsne_dt$id)[1:3],
     label_type = "none")
-plot_outline(tsne_dt, unique(tsne_dt$cell), unique(tsne_dt$id)[1:3],
+plot_outline(tsne_dt, unique(tsne_dt$tall_var), unique(tsne_dt$id)[1:3],
     label_type = "label")
 }

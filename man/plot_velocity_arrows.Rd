@@ -22,7 +22,7 @@ ids to be used.}
 points.}
 }
 \value{
-ggplot of arrows indicating position in cell line a to cell line b.
+ggplot of arrows indicating position in tall_var line a to tall_var line b.
 }
 \description{
 plot_velocity_arrows
@@ -30,6 +30,6 @@ plot_velocity_arrows
 \examples{
 data("tsne_dt")
 vel_dt = prep_velocity(tsne_dt,
-    unique(tsne_dt$cell)[2], unique(tsne_dt$cell)[3])
+    unique(tsne_dt$tall_var)[2], unique(tsne_dt$tall_var)[3])
 plot_velocity_arrows(vel_dt)
 }

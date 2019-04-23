@@ -9,7 +9,7 @@ fetch_bam_dt(qdt, qgr, qwin = 50, qmet = "summary", agg_FUN = sum,
   force_overwrite = FALSE)
 }
 \arguments{
-\item{qdt}{data.table containing, file, cell, mark, and optionally
+\item{qdt}{data.table containing, file, tall_var, wide_var, and optionally
 norm_factor}
 
 \item{qgr}{GRanges of regions to fetch}
@@ -18,7 +18,7 @@ norm_factor}
 
 \item{qmet}{strategy to use in each region, summary or sample}
 
-\item{agg_FUN}{function used to aggregate any duplicate cell+mark mappings in
+\item{agg_FUN}{function used to aggregate any duplicate tall_var+wide_var mappings in
 qdt. Should accept a numeric vector and return a single value.}
 
 \item{bfc}{BiocFileCache object to use to cache data}
@@ -42,9 +42,9 @@ data("query_gr")
 bam_files = dir(system.file('extdata', package = "seqtsne"),
     pattern = ".bam$", full.names = TRUE)
 cfg_dt = data.table(file = bam_files)
-cfg_dt[, c("cell", "mark") := tstrsplit(basename(file), "_", keep = 1:2)]
-cfg_dt = cfg_dt[cell \%in\% c("ESH1", "HUES48", "HUES64")]
-cfg_dt[, norm_factor := ifelse(mark == "H3K4me3", .3, 1)]
+cfg_dt[, c("tall_var", "wide_var") := tstrsplit(basename(file), "_", keep = 1:2)]
+cfg_dt = cfg_dt[tall_var \%in\% c("ESH1", "HUES48", "HUES64")]
+cfg_dt[, norm_factor := ifelse(wide_var == "H3K4me3", .3, 1)]
 profile_dt = fetch_bam_dt(cfg_dt, query_gr)
 profile_dt
 }

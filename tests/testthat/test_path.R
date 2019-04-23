@@ -9,20 +9,20 @@ data("profile_dt")
 data("tsne_dt")
 
 test_that("plot_path", {
-    p1 = plot_path(tsne_dt, unique(tsne_dt$cell), query_gr$id[1:3])
+    p1 = plot_path(tsne_dt, unique(tsne_dt$tall_var), query_gr$id[1:3])
     expect_s3_class(p1, "ggplot")
-    p2 = plot_path(tsne_dt, rev(unique(tsne_dt$cell)), query_gr$id[4:7], arrow_FUN = arrow(length = unit(.04, "npc")))
+    p2 = plot_path(tsne_dt, rev(unique(tsne_dt$tall_var)), query_gr$id[4:7], arrow_FUN = arrow(length = unit(.04, "npc")))
     expect_s3_class(p2, "ggplot")
 })
 
 test_that("plot_outline", {
     sel_id = query_gr$id[3:5]
     p1 = plot_outline(tsne_dt,
-                      unique(tsne_dt$cell),
+                      unique(tsne_dt$tall_var),
                       id_to_plot = setdiff(query_gr$id, sel_id),
                       bg_points = -1)
     expect_s3_class(p1, "ggplot")
-    p2 = plot_outline(tsne_dt, unique(tsne_dt$cell),
+    p2 = plot_outline(tsne_dt, unique(tsne_dt$tall_var),
                       p = p1,
                       id_to_plot = sel_id,
                       bg_points = 0,

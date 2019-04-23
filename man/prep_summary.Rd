@@ -10,10 +10,10 @@ prep_summary(profile_dt, position_dt, x_points, y_points = x_points,
 }
 \arguments{
 \item{profile_dt}{a tidy data.table for profile data as retrieved by
-stsFetchTsneInput.  Expected variable names are id, cell, mark, x, and y.}
+stsFetchTsneInput.  Expected variable names are id, tall_var, wide_var, x, and y.}
 
 \item{position_dt}{a tidy data.table containing t-sne embedding.  Expected
-variable names are tx, ty, id, and cell.}
+variable names are tx, ty, id, and tall_var.}
 
 \item{x_points}{numeric.  number of grid points to use in x dimension.}
 
@@ -26,7 +26,7 @@ Defaults to same value as x_points.}
 
 \item{facet_by}{character. varaible name to facet profile_dt by when
 constructing images. The only valid non-null value with seqtsne functions
-is "cell".}
+is "tall_var".}
 }
 \value{
 summary of profiles binned across tsne space according to x_points,

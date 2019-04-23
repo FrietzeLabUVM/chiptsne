@@ -7,7 +7,7 @@
 #'
 #' validates inputs prepares query_gr fetches either bam or bigwig based on
 #' extension of first file transform and normalizes profiles after fetch
-#' @param qdt data.table containing, file, cell, mark, and optionally
+#' @param qdt data.table containing, file, tall_var, wide_var, and optionally
 #'   norm_factor
 #' @param qgr GRanges of regions to fetch
 #' @param region_size numeric, if provided will be used to set all widths on
@@ -17,7 +17,7 @@
 #' @param qwin number of datapoints to use to view each region
 #' @param qmet strategy to use in each region, summary or sample
 #' @param cap_value maximum allowed value.  useful for outlier handling.
-#' @param agg_FUN function used to aggregate any duplicate cell+mark mappings in
+#' @param agg_FUN function used to aggregate any duplicate tall_var+wide_var mappings in
 #'   qdt.  Should accept a numeric vector and return a single value.
 #' @param high_on_right if TRUE, profiles where highest signal is on the left
 #'   are flipped.
@@ -27,8 +27,8 @@
 #' @param rname rname to use with cache.  Default is a digest of arguments used
 #'   to fetch data.
 #' @param force_overwrite if TRUE, any contents of cache are overwritten. Default is FALSE.
-#' @param skip_checks if TRUE, cell and mark completeness checks are skipped.
-#'   Cell/mark combinations must be complete to run StsRunTsne(). Default is FALSE.
+#' @param skip_checks if TRUE, tall_var and wide_var completeness checks are skipped.
+#'   tall_var/wide_var combinations must be complete to run StsRunTsne(). Default is FALSE.
 #' @return a tidy data.table of profile data.
 #' @export
 #' @importFrom seqsetvis ssvFetchBigwig ssvFetchBam
@@ -37,9 +37,9 @@
 #' data("query_gr")
 #' bw_files = dir(system.file('extdata', package = "seqtsne"), pattern = ".bw$", full.names = TRUE)
 #' cfg_dt = data.table(file = bw_files)
-#' cfg_dt[, c("cell", "mark") := tstrsplit(basename(file), "_", keep = 1:2)]
-#' cfg_dt = cfg_dt[cell %in% c("ESH1", "HUES48", "HUES64")]
-#' cfg_dt[, norm_factor := ifelse(mark == "H3K4me3", .3, 1)]
+#' cfg_dt[, c("tall_var", "wide_var") := tstrsplit(basename(file), "_", keep = 1:2)]
+#' cfg_dt = cfg_dt[tall_var %in% c("ESH1", "HUES48", "HUES64")]
+#' cfg_dt[, norm_factor := ifelse(wide_var == "H3K4me3", .3, 1)]
 #' profile_dt = stsFetchTsneInput(cfg_dt, query_gr)
 #' profile_dt
 stsFetchTsneInput = function(qdt,
@@ -70,13 +70,13 @@ stsFetchTsneInput = function(qdt,
         warning("attribute 'file' not found, assuming first column is 'file'.")
         colnames(qdt)[1] = "file"
     }
-    if(!"cell" %in% colnames(qdt)){
-        warning("attribute 'cell' not found, assuming second column is 'cell'.")
-        colnames(qdt)[2] = "cell"
+    if(!"tall_var" %in% colnames(qdt)){
+        warning("attribute 'tall_var' not found, assuming second column is 'tall_var'.")
+        colnames(qdt)[2] = "tall_var"
     }
-    if(!"mark" %in% colnames(qdt)){
-        warning("attribute 'mark' not found, assuming third column is 'mark'.")
-        colnames(qdt)[3] = "mark"
+    if(!"wide_var" %in% colnames(qdt)){
+        warning("attribute 'wide_var' not found, assuming third column is 'wide_var'.")
+        colnames(qdt)[3] = "wide_var"
     }
     if(!all(file.exists(qdt[[1]]))){
         stop(paste(sep = "\n", "\nFirst variable of qdt must be valid file paths.",
@@ -85,13 +85,13 @@ stsFetchTsneInput = function(qdt,
 
     }
     if(!skip_checks){
-        if(!length(unique(qdt[, paste(sort(unique(mark)), collapse = ","),
-                              by = .(cell)]$V1)) == 1){
-            stop("Every mark should be mapped to every cell at least once.")
+        if(!length(unique(qdt[, paste(sort(unique(wide_var)), collapse = ","),
+                              by = .(tall_var)]$V1)) == 1){
+            stop("Every wide_var should be mapped to every tall_var at least once.")
         }
-        if(!length(unique(qdt[, paste(sort(unique(cell)), collapse = ","),
-                              by = .(mark)]$V1)) == 1){
-            stop("Every cell should be mapped to every mark at least once.")
+        if(!length(unique(qdt[, paste(sort(unique(tall_var)), collapse = ","),
+                              by = .(wide_var)]$V1)) == 1){
+            stop("Every tall_var should be mapped to every wide_var at least once.")
 
         }
     }
@@ -112,12 +112,12 @@ stsFetchTsneInput = function(qdt,
         agg_FUN = switch(file_format,
                          bam = {
                              message("for bam input, choosing sum() ",
-                                     "to aggregate any cell/mark duplicates.")
+                                     "to aggregate any tall_var/wide_var duplicates.")
                              sum
                          },
                          bw = {
                              message("for bigwig input, choosing mean() ",
-                                     "to aggregate any cell/mark duplicates.")
+                                     "to aggregate any tall_var/wide_var duplicates.")
                              mean
                          })
 
@@ -134,7 +134,7 @@ stsFetchTsneInput = function(qdt,
                       force_overwrite)
     # apply transforms and thresholds
     prep_res = prep_profile_dt(bw_dt,
-                               unique(qdt[, list(cell, mark, norm_factor)]),
+                               unique(qdt[, list(tall_var, wide_var, norm_factor)]),
                                qgr,
                                cap_value = cap_value,
                                high_on_right = high_on_right)
@@ -149,12 +149,12 @@ stsFetchTsneInput = function(qdt,
 #'
 #' fetches a tidy data.table of scores from bigwigs, automatically uses cache.
 #'
-#' @param qdt data.table containing, file, cell, mark, and optionally
+#' @param qdt data.table containing, file, tall_var, wide_var, and optionally
 #'   norm_factor
 #' @param qgr GRanges of regions to fetch
 #' @param qwin number of datapoints to use to view each region
 #' @param qmet strategy to use in each region, summary or sample
-#' @param agg_FUN function used to aggregate any duplicate cell+mark mappings in
+#' @param agg_FUN function used to aggregate any duplicate tall_var+wide_var mappings in
 #'   qdt. Should accept a numeric vector and return a single value.
 #' @param bfc BiocFileCache object to use to cache data
 #' @param n_cores number of cores to use. Defaults to value of mc.cores or 1 if
@@ -174,9 +174,9 @@ stsFetchTsneInput = function(qdt,
 #' bam_files = dir(system.file('extdata', package = "seqtsne"),
 #'     pattern = ".bam$", full.names = TRUE)
 #' cfg_dt = data.table(file = bam_files)
-#' cfg_dt[, c("cell", "mark") := tstrsplit(basename(file), "_", keep = 1:2)]
-#' cfg_dt = cfg_dt[cell %in% c("ESH1", "HUES48", "HUES64")]
-#' cfg_dt[, norm_factor := ifelse(mark == "H3K4me3", .3, 1)]
+#' cfg_dt[, c("tall_var", "wide_var") := tstrsplit(basename(file), "_", keep = 1:2)]
+#' cfg_dt = cfg_dt[tall_var %in% c("ESH1", "HUES48", "HUES64")]
+#' cfg_dt[, norm_factor := ifelse(wide_var == "H3K4me3", .3, 1)]
 #' profile_dt = fetch_bam_dt(cfg_dt, query_gr)
 #' profile_dt
 fetch_bam_dt = function(qdt,
@@ -225,7 +225,7 @@ fetch_bam_dt = function(qdt,
     }
     bam_dt = bam_fetch()
     bam_dt$sample = NULL
-    bam_dt = bam_dt[, list(y = agg_FUN(y)), list(cell, id, mark, x)]
+    bam_dt = bam_dt[, list(y = agg_FUN(y)), list(tall_var, id, wide_var, x)]
     bam_dt
 }
 
@@ -234,12 +234,12 @@ fetch_bam_dt = function(qdt,
 #' fetches a tidy data.table of read pileups from bams, automatically uses
 #' cache.
 #'
-#' @param qdt data.table containing, file, cell, mark, and optionally
+#' @param qdt data.table containing, file, tall_var, wide_var, and optionally
 #'   norm_factor
 #' @param qgr GRanges of regions to fetch
 #' @param qwin number of datapoints to use to view each region
 #' @param qmet strategy to use in each region, summary or sample
-#' @param agg_FUN used to aggregate any duplicate cell+mark mappings in qdt.
+#' @param agg_FUN used to aggregate any duplicate tall_var+wide_var mappings in qdt.
 #' @param bfc BiocFileCache object to use to cache data
 #' @param n_cores number of cores to use. Defaults to value of mc.cores or 1 if
 #'   mc.cores is not set.
@@ -257,9 +257,9 @@ fetch_bam_dt = function(qdt,
 #' bw_files = dir(system.file('extdata', package = "seqtsne"),
 #'     pattern = ".bw$", full.names = TRUE)
 #' cfg_dt = data.table(file = bw_files)
-#' cfg_dt[, c("cell", "mark") := tstrsplit(basename(file), "_", keep = 1:2)]
-#' cfg_dt = cfg_dt[cell %in% c("ESH1", "HUES48", "HUES64")]
-#' cfg_dt[, norm_factor := ifelse(mark == "H3K4me3", .3, 1)]
+#' cfg_dt[, c("tall_var", "wide_var") := tstrsplit(basename(file), "_", keep = 1:2)]
+#' cfg_dt = cfg_dt[tall_var %in% c("ESH1", "HUES48", "HUES64")]
+#' cfg_dt[, norm_factor := ifelse(wide_var == "H3K4me3", .3, 1)]
 #' profile_dt = fetch_bw_dt(cfg_dt, query_gr)
 #' profile_dt
 fetch_bw_dt = function(qdt,
@@ -302,7 +302,7 @@ fetch_bw_dt = function(qdt,
                                   win_size = qwin, n_cores = n_cores)
     }
     bw_dt = bfcif(bfc, rname, bw_fetch, force_overwrite = force_overwrite)
-    bw_dt = bw_dt[, list(y = agg_FUN(y)), list(cell, id, mark, x)]
+    bw_dt = bw_dt[, list(y = agg_FUN(y)), list(tall_var, id, wide_var, x)]
     bw_dt
 }
 

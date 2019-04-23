@@ -9,18 +9,18 @@
 #     bw_files = dir("/slipstream/galaxy/uploads/working/qc_framework/output_hESC_court_hg19/",
 #                    pattern = "pooled", full.names = TRUE) %>% dir(pattern = "FE.bw$", full.names = TRUE)
 #     cfg_dt = data.table(bw_files)
-#     cfg_dt[, c("cell", "mark") := tstrsplit(basename(bw_files), "_", keep = 1:2)]
+#     cfg_dt[, c("tall_var", "wide_var") := tstrsplit(basename(bw_files), "_", keep = 1:2)]
 #     cfg_dt$norm_factor = 1
-#     cfg_dt[mark == "H3K4me3", norm_factor := .3]
-#     cfg_dt = cfg_dt[cell %in% c("ESH1", "HUES48", "HUES64")]
+#     cfg_dt[wide_var == "H3K4me3", norm_factor := .3]
+#     cfg_dt = cfg_dt[tall_var %in% c("ESH1", "HUES48", "HUES64")]
 #
 #     bam_files = dir("/slipstream/galaxy/uploads/working/qc_framework/output_hESC_court_hg19/",
 #                     pattern = "pooled", full.names = TRUE) %>% dir(pattern = "bam$", full.names = TRUE)
 #     cfg_dt.bam = data.table(bam_files)
-#     cfg_dt.bam[, c("cell", "mark") := tstrsplit(basename(bam_files), "_", keep = 1:2)]
+#     cfg_dt.bam[, c("tall_var", "wide_var") := tstrsplit(basename(bam_files), "_", keep = 1:2)]
 #     cfg_dt.bam$norm_factor = 1
-#     cfg_dt.bam[mark == "H3K4me3", norm_factor := .3]
-#     cfg_dt.bam = cfg_dt.bam[cell %in% c("ESH1", "HUES48", "HUES64")]
+#     cfg_dt.bam[wide_var == "H3K4me3", norm_factor := .3]
+#     cfg_dt.bam = cfg_dt.bam[tall_var %in% c("ESH1", "HUES48", "HUES64")]
 #     #
 #     biv19 = fread("~/R/waldron/shiny_chiptsne/PMC5354816_bivalent_hg19.tsv", col.names = c("seqnames", "start", "end")) %>% GRanges
 #     biv19$group = "bivalent"
@@ -93,8 +93,8 @@
 #     #
 #     # dt[id == "region_1"]
 #     # library(ggplot2)
-#     # ggplot(dt[cell == "ESH1" & id %in% unique(id)[1:3]], aes(x = x, y = y, color = strand)) +
-#     #     geom_path() + facet_grid(id~group+mark)
+#     # ggplot(dt[tall_var == "ESH1" & id %in% unique(id)[1:3]], aes(x = x, y = y, color = strand)) +
+#     #     geom_path() + facet_grid(id~group+wide_var)
 #     #
-#     # dcast(dt[cell == "ESH1" & id %in% unique(id)[1] & mark == "H3K4me3"], group~x+strand, value.var = "y")
+#     # dcast(dt[tall_var == "ESH1" & id %in% unique(id)[1] & wide_var == "H3K4me3"], group~x+strand, value.var = "y")
 # }

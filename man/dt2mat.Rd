@@ -4,16 +4,16 @@
 \alias{dt2mat}
 \title{dt2mat}
 \usage{
-dt2mat(prof_dt, marks)
+dt2mat(prof_dt, wide_vars)
 }
 \arguments{
 \item{prof_dt}{tidy data.table to cast to a matrix}
 
-\item{marks}{character vector of marks to cast}
+\item{wide_vars}{character vector of wide_vars to cast}
 }
 \value{
 a wide matrix with dimensions of nrows = (length(unique(id)) * number
-  of cells) and ncols = (numbers of viewing bins * number of marks)
+  of tall_vars) and ncols = (numbers of viewing bins * number of wide_vars)
 }
 \description{
 casts a tidy data.table, as returned from fetch_bam_dt or fetch_bw_dt to a
@@ -21,20 +21,20 @@ wide matrix compatible with Rtsne
 }
 \examples{
 n_bins = 5
-n_cells = 3
-n_marks = 2
+n_tall_vars = 3
+n_wide_vars = 2
 n_ids = 5
 bins = (seq(n_bins)-1) / (n_bins-1)
-cells = paste("cell", LETTERS[seq(n_cells)], sep = "_")
-marks = rev(paste("mark", rev(letters)[seq(n_marks)], sep = "_"))
+tall_vars = paste("tall_var", LETTERS[seq(n_tall_vars)], sep = "_")
+wide_vars = rev(paste("wide_var", rev(letters)[seq(n_wide_vars)], sep = "_"))
 ids = paste("region", seq(n_ids), sep = "_")
 dt = data.table(
-    x = rep(bins, length(marks)*length(cells)),
-    mark = rep(marks, length(ids), each = length(bins)),
-    cell = rep(cells, length(ids), each= length(bins)*length(marks)),
-    id = rep(ids, each = length(bins)*length(marks)*length(cells))
+    x = rep(bins, length(wide_vars)*length(tall_vars)),
+    wide_var = rep(wide_vars, length(ids), each = length(bins)),
+    tall_var = rep(tall_vars, length(ids), each= length(bins)*length(wide_vars)),
+    id = rep(ids, each = length(bins)*length(wide_vars)*length(tall_vars))
     )
 dt$y = runif(nrow(dt))
-mat = dt2mat(dt, marks)
+mat = dt2mat(dt, wide_vars)
 mat
 }

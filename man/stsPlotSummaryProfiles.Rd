@@ -5,7 +5,7 @@
 \title{stsPlotSummaryProfiles}
 \usage{
 stsPlotSummaryProfiles(profile_dt, position_dt, x_points,
-  y_points = x_points, q_cells = NULL, q_marks = NULL,
+  y_points = x_points, q_tall_vars = NULL, q_wide_vars = NULL,
   xrng = range(position_dt$tx), yrng = range(position_dt$ty),
   plot_type = c("glyph", "raster")[1], rname = NULL,
   odir = file.path(tempdir(), rname), force_rewrite = FALSE,
@@ -17,19 +17,19 @@ stsPlotSummaryProfiles(profile_dt, position_dt, x_points,
 }
 \arguments{
 \item{profile_dt}{a tidy data.table for profile data as retrieved by
-stsFetchTsneInput.  Expected variable names are id, cell, mark, x, and y.}
+stsFetchTsneInput.  Expected variable names are id, tall_var, wide_var, x, and y.}
 
 \item{position_dt}{a tidy data.table containing t-sne embedding.  Expected
-variable names are tx, ty, id, and cell.}
+variable names are tx, ty, id, and tall_var.}
 
 \item{x_points}{numeric.  number of grid points to use in x dimension.}
 
 \item{y_points}{numeric.  number of grid points to use in y dimension.
 Defaults to same value as x_points.}
 
-\item{q_cells}{character vector of cells to plot. Default of NULL plots all.}
+\item{q_tall_vars}{character vector of tall_vars to plot. Default of NULL plots all.}
 
-\item{q_marks}{character vector of marks to plot.  Default of NULL plots all.}
+\item{q_wide_vars}{character vector of wide_vars to plot.  Default of NULL plots all.}
 
 \item{xrng}{view domain in x dimension, default is range of position_dt$tx.}
 
@@ -61,13 +61,13 @@ compatible with apply_norm = TRUE.}
 \item{p}{an existing ggplot to overlay images onto.  Default of NULL starts a
 new plot.}
 
-\item{facet_byCell}{boolean. If TRUE, plots are facetted by cell.}
+\item{facet_byCell}{boolean. If TRUE, plots are facetted by tall_var.}
 
 \item{line_color_mapping}{named vector of line color.  Names correspond to
-values of profile_dt 'mark' variable and values are colors.}
+values of profile_dt 'wide_var' variable and values are colors.}
 
 \item{vertical_facet_mapping}{named vector of groups.  vertical_facet_mapping
-names are marks and order of first occurence determines vertical position
+names are wide_vars and order of first occurence determines vertical position
 top to bottom.}
 
 \item{N_floor}{The value of N to consider 0.  bins with N values <= N_floor

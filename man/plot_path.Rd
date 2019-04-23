@@ -4,16 +4,16 @@
 \alias{plot_path}
 \title{plot_path}
 \usage{
-plot_path(tsne_dt, qcells, id_to_plot, p = NULL, xrng = c(-0.5, 0.5),
-  yrng = c(-0.5, 0.5), arrowhead_position = c("end", "each")[1],
+plot_path(tsne_dt, qtall_vars, id_to_plot, p = NULL, xrng = c(-0.5,
+  0.5), yrng = c(-0.5, 0.5), arrowhead_position = c("end", "each")[1],
   line_type = c("curve", "spline", "straight")[2],
   label_type = c("text", "label", "none")[2], bg_points = 5000,
   arrow_FUN = NULL)
 }
 \arguments{
-\item{tsne_dt}{data.table with tsne info (tx, ty, id, and cell)}
+\item{tsne_dt}{data.table with tsne info (tx, ty, id, and tall_var)}
 
-\item{qcells}{character vector of items in tsne_dt$cell}
+\item{qtall_vars}{character vector of items in tsne_dt$tall_var}
 
 \item{id_to_plot}{character vector of ids in tsne_dt$id}
 
@@ -28,7 +28,7 @@ creates a new ggplot.}
 Determines if arrowheads are drawn for each segment or only on the final
 segment.}
 
-\item{line_type}{character vector describing type of line to connect qcells.
+\item{line_type}{character vector describing type of line to connect qtall_vars.
 One of : curve, spline, or straight}
 
 \item{label_type}{character vector describing labelling method for points
@@ -39,21 +39,21 @@ along lines.  One of : text, label, or none.}
 \item{arrow_FUN}{result of grid::arrow().  Default of NULL does not draw arrowheads.}
 }
 \value{
-ggplot showing how individual ids behave across qcells.
+ggplot showing how individual ids behave across qtall_vars.
 }
 \description{
-Traces a path through the t-sne space in cell line order defined by qcells
+Traces a path through the t-sne space in tall_var line order defined by qtall_vars
 for ids in id_to_plot
 }
 \details{
-Good for looking at a small number of ids in a modest number of cells.
+Good for looking at a small number of ids in a modest number of tall_vars.
 }
 \examples{
 data(tsne_dt)
-plot_path(tsne_dt, unique(tsne_dt$cell), unique(tsne_dt$id)[1:3])
-plot_path(tsne_dt, unique(tsne_dt$cell), unique(tsne_dt$id)[1:3],
+plot_path(tsne_dt, unique(tsne_dt$tall_var), unique(tsne_dt$id)[1:3])
+plot_path(tsne_dt, unique(tsne_dt$tall_var), unique(tsne_dt$id)[1:3],
     arrowhead_position = "each", label_type = "none")
-plot_path(tsne_dt, unique(tsne_dt$cell), unique(tsne_dt$id)[1:3],
+plot_path(tsne_dt, unique(tsne_dt$tall_var), unique(tsne_dt$id)[1:3],
     arrowhead_position = "end", label_type = "none", line_type = "spline",
     arrow_FUN = arrow())
 }

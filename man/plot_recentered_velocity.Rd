@@ -4,18 +4,18 @@
 \alias{plot_recentered_velocity}
 \title{plot_recentered_velocity}
 \usage{
-plot_recentered_velocity(tsne_dt, cell_a, cell_b, x_points,
+plot_recentered_velocity(tsne_dt, tall_var_a, tall_var_b, x_points,
   y_points = x_points, points_as_background = FALSE, p = NULL,
   id_to_plot = NULL, arrow_FUN = NULL, angle_as_color = FALSE)
 }
 \arguments{
 \item{tsne_dt}{tidy data.table of tsne results.  variables names must
-include: tx, ty, id, and cell}
+include: tx, ty, id, and tall_var}
 
-\item{cell_a}{an item in tsne_dt$cell. the origin for calculating
+\item{tall_var_a}{an item in tsne_dt$tall_var. the origin for calculating
 angle/distance.}
 
-\item{cell_b}{an item in tsne_dt$cell. the destination for calculating
+\item{tall_var_b}{an item in tsne_dt$tall_var. the destination for calculating
 angle/distance.}
 
 \item{x_points}{number of equally spaced bins in the x-dimension. Required.}
@@ -45,8 +45,8 @@ plot_recentered_velocity
 \examples{
 data("tsne_dt")
 plot_recentered_velocity(tsne_dt,
-    unique(tsne_dt$cell)[1], unique(tsne_dt$cell)[2], 4)
+    unique(tsne_dt$tall_var)[1], unique(tsne_dt$tall_var)[2], 4)
 plot_recentered_velocity(tsne_dt,
-    unique(tsne_dt$cell)[1], unique(tsne_dt$cell)[2], 1,
+    unique(tsne_dt$tall_var)[1], unique(tsne_dt$tall_var)[2], 1,
     angle_as_color = TRUE)
 }

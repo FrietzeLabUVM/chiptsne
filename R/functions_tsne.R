@@ -19,7 +19,7 @@
 #' @param force_overwrite if TRUE, any contents of cache are overwritten.
 #'
 #' @return a tidy data.table containing t-sne embedding.  variable names
-#' are tx, ty, id, and cell.
+#' are tx, ty, id, and tall_var.
 #' @export
 #' @importFrom Rtsne Rtsne
 #' @importFrom stats var
@@ -29,9 +29,9 @@
 #' data("query_gr")
 #' bw_files = dir(system.file('extdata', package = "seqtsne"), pattern = ".bw$", full.names = TRUE)
 #' cfg_dt = data.table(file = bw_files)
-#' cfg_dt[, c("cell", "mark") := tstrsplit(basename(file), "_", keep = 1:2)]
-#' cfg_dt = cfg_dt[cell %in% c("ESH1", "HUES48", "HUES64")]
-#' cfg_dt[, norm_factor := ifelse(mark == "H3K4me3", .3, 1)]
+#' cfg_dt[, c("tall_var", "wide_var") := tstrsplit(basename(file), "_", keep = 1:2)]
+#' cfg_dt = cfg_dt[tall_var %in% c("ESH1", "HUES48", "HUES64")]
+#' cfg_dt[, norm_factor := ifelse(wide_var == "H3K4me3", .3, 1)]
 #' profile_dt = stsFetchTsneInput(cfg_dt, query_gr)
 #' tsne_dt = stsRunTsne(profile_dt$bw_dt, perplexity = 15)
 #' tsne_dt
@@ -44,9 +44,9 @@ stsRunTsne = function(profile_dt,
                       rname = NULL,
                       force_overwrite = FALSE){
 
-    stopifnot(c("id", "cell", "mark", "x", "y") %in% colnames(profile_dt))
+    stopifnot(c("id", "tall_var", "wide_var", "x", "y") %in% colnames(profile_dt))
     # cast from tidy to wide matrix
-    tsne_mat = dt2mat(profile_dt, unique(profile_dt$mark))
+    tsne_mat = dt2mat(profile_dt, unique(profile_dt$wide_var))
     bad_col = apply(tsne_mat, 2, stats::var) == 0
     if(any(bad_col)){
         stop("zero variance columns detected in tsne matrix input.",
@@ -75,7 +75,7 @@ stsRunTsne = function(profile_dt,
     tdt = as.data.table(res_tsne$Y)
     colnames(tdt) = c("tx", "ty")
     tdt$rn = rownames(tsne_mat)
-    tdt[, c("id", "cell") := tstrsplit(rn, " ", keep = seq(2))]
+    tdt[, c("id", "tall_var") := tstrsplit(rn, " ", keep = seq(2))]
 
     if(norm1){
         tdt$tx = rescale_capped(tdt$tx)-.5
@@ -107,7 +107,7 @@ stsRunTsne = function(profile_dt,
 #' profiles.
 #'
 #' @param prof_dt data.table of ChIP-seq signal profiles.
-#' @param norm_dt data.table containing norm_factor values for cell/mark
+#' @param norm_dt data.table containing norm_factor values for tall_var/wide_var
 #'   combinations.
 #' @param qgr GRanges
 #' @param cap_value numeric, ChIP-seq data is prone to outliers, which will wash
@@ -126,15 +126,15 @@ stsRunTsne = function(profile_dt,
 #' data(query_gr)
 #' #typically, norm_dt is the same configuration table used to fetch prof_dt
 #' #here we derive a new norm_dt that will reduce H3K4me3 to 30% of H3K27me3.
-#' norm_dt = unique(profile_dt[, list(cell, mark)])
-#' norm_dt[, norm_factor := ifelse(mark == "H3K4me3", .3, 1)]
+#' norm_dt = unique(profile_dt[, list(tall_var, wide_var)])
+#' norm_dt[, norm_factor := ifelse(wide_var == "H3K4me3", .3, 1)]
 #' prep_profile_dt(profile_dt, norm_dt, query_gr)
 prep_profile_dt = function(prof_dt,
                            norm_dt,
                            qgr,
                            cap_value = Inf,
                            high_on_right = TRUE){
-    x = y = norm_factor = cell = id = left_sum = right_sum =
+    x = y = norm_factor = tall_var = id = left_sum = right_sum =
         needs_flip = .N = flipe_strand = fraction_flipped = NULL
 
     if(!all(norm_dt$norm_factor == 1)){
@@ -146,9 +146,9 @@ prep_profile_dt = function(prof_dt,
     if(high_on_right){
         balance_dt = prof_dt[, list(right_sum = sum(y[x > 0]),
                                     left_sum = sum(y[x < 0])),
-                             by = list(cell, id)]
+                             by = list(tall_var, id)]
         balance_dt = balance_dt[, list(needs_flip = left_sum > right_sum,
-                                       cell,
+                                       tall_var,
                                        id)]
         most_flipped = balance_dt[,
                                   list(fraction_flipped = sum(needs_flip) / .N),
@@ -156,7 +156,7 @@ prep_profile_dt = function(prof_dt,
         most_flipped[, flip_strand := fraction_flipped > .5]
         GenomicRanges::strand(qgr) = "+"
         GenomicRanges::strand(qgr)[most_flipped$flip_strand] = "-"
-        prof_dt = merge(prof_dt, balance_dt, by = c("id", "cell"))
+        prof_dt = merge(prof_dt, balance_dt, by = c("id", "tall_var"))
         remove(balance_dt)
         prof_dt[needs_flip == TRUE, x := -x]
         prof_dt$needs_flip = NULL
@@ -173,39 +173,39 @@ prep_profile_dt = function(prof_dt,
 #' wide matrix compatible with Rtsne
 #'
 #' @param prof_dt tidy data.table to cast to a matrix
-#' @param marks character vector of marks to cast
+#' @param wide_vars character vector of wide_vars to cast
 #'
 #' @return a wide matrix with dimensions of nrows = (length(unique(id)) * number
-#'   of cells) and ncols = (numbers of viewing bins * number of marks)
+#'   of tall_vars) and ncols = (numbers of viewing bins * number of wide_vars)
 #' @export
 #' @rawNamespace import(data.table, except = c(shift, first, second, last))
 #' @examples
 #' n_bins = 5
-#' n_cells = 3
-#' n_marks = 2
+#' n_tall_vars = 3
+#' n_wide_vars = 2
 #' n_ids = 5
 #' bins = (seq(n_bins)-1) / (n_bins-1)
-#' cells = paste("cell", LETTERS[seq(n_cells)], sep = "_")
-#' marks = rev(paste("mark", rev(letters)[seq(n_marks)], sep = "_"))
+#' tall_vars = paste("tall_var", LETTERS[seq(n_tall_vars)], sep = "_")
+#' wide_vars = rev(paste("wide_var", rev(letters)[seq(n_wide_vars)], sep = "_"))
 #' ids = paste("region", seq(n_ids), sep = "_")
 #' dt = data.table(
-#'     x = rep(bins, length(marks)*length(cells)),
-#'     mark = rep(marks, length(ids), each = length(bins)),
-#'     cell = rep(cells, length(ids), each= length(bins)*length(marks)),
-#'     id = rep(ids, each = length(bins)*length(marks)*length(cells))
+#'     x = rep(bins, length(wide_vars)*length(tall_vars)),
+#'     wide_var = rep(wide_vars, length(ids), each = length(bins)),
+#'     tall_var = rep(tall_vars, length(ids), each= length(bins)*length(wide_vars)),
+#'     id = rep(ids, each = length(bins)*length(wide_vars)*length(tall_vars))
 #'     )
 #' dt$y = runif(nrow(dt))
-#' mat = dt2mat(dt, marks)
+#' mat = dt2mat(dt, wide_vars)
 #' mat
-dt2mat = function(prof_dt, marks){
-    for(m in marks){
-        if(m == marks[1]){
-            dt = dcast( prof_dt[mark == m], id+cell~x, value.var = "y")
+dt2mat = function(prof_dt, wide_vars){
+    for(m in wide_vars){
+        if(m == wide_vars[1]){
+            dt = dcast( prof_dt[wide_var == m], id+tall_var~x, value.var = "y")
             wide_mat = as.matrix(dt[, -seq_len(2)])
-            rn = paste(dt$id, dt$cell)
+            rn = paste(dt$id, dt$tall_var)
         }else{
-            dt = dcast( prof_dt[mark == m], id+cell~x, value.var = "y")
-            stopifnot(all(paste(dt$id, dt$cell) == rn))
+            dt = dcast( prof_dt[wide_var == m], id+tall_var~x, value.var = "y")
+            stopifnot(all(paste(dt$id, dt$tall_var) == rn))
             wide_mat = cbind(wide_mat, as.matrix(dt[, -seq_len(2)]))
 
 

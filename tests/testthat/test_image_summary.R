@@ -18,14 +18,14 @@ img_res = prep_images(summary_dt,
                       x_points = 4, y_points = 3,
                       xrng = c(-.3, .4), yrng = c(-.45, .35))
 color_mapping = seqsetvis::safeBrew(2)
-names(color_mapping) = unique(summary_dt$mark)
+names(color_mapping) = unique(summary_dt$wide_var)
 plot_summary_raster(img_res$image_dt, x_points = 4, y_points = 3,
                     xrng = c(-.3, .4), yrng = c(-.45, .35), line_color_mapping = color_mapping)
 
 stsPlotSummaryProfiles(profile_dt, position_dt = tsne_dt, x_points = 4)
-stsPlotSummaryProfiles(profile_dt, position_dt = tsne_dt, x_points = 4, q_marks = c("H3K4me3"))
+stsPlotSummaryProfiles(profile_dt, position_dt = tsne_dt, x_points = 4, q_wide_vars = c("H3K4me3"))
 stsPlotSummaryProfiles(profile_dt, position_dt = tsne_dt, x_points = 4, plot_type = "raster")
-stsPlotSummaryProfiles(profile_dt, position_dt = tsne_dt, x_points = 4, q_marks = c("H3K4me3"), plot_type = "raster")
+stsPlotSummaryProfiles(profile_dt, position_dt = tsne_dt, x_points = 4, q_wide_vars = c("H3K4me3"), plot_type = "raster")
 
 test_that("prep_images names of outputs", {
     expect_equal(names(img_res), c("image_dt", "summary_profile_dt", "x_points", "y_points", "xrng", "yrng", "line_color_mapping"))
@@ -36,7 +36,7 @@ test_that("prep_images variables of image_dt", {
 })
 
 test_that("prep_images variables of summary_profile_dt", {
-    expect_equal(colnames(img_res$summary_profile_dt), c("bx", "by", "x", "mark", "y", "N", "plot_id", "ynorm", "group"))
+    expect_equal(colnames(img_res$summary_profile_dt), c("bx", "by", "x", "wide_var", "y", "N", "plot_id", "ynorm", "group"))
 })
 
 test_that("prep_images parameter passthrough", {

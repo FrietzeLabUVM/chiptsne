@@ -4,18 +4,18 @@
 \alias{plot_profiles_selected}
 \title{plot_profiles_selected}
 \usage{
-plot_profiles_selected(profile_dt, qcells, id_to_plot,
+plot_profiles_selected(profile_dt, qtall_vars, id_to_plot,
   color_mapping = NULL)
 }
 \arguments{
 \item{profile_dt}{a tidy data.table containing profile data.  variable names
-are id, cell, mark, x, y.}
+are id, tall_var, wide_var, x, y.}
 
-\item{qcells}{character vector of cells to show data for.}
+\item{qtall_vars}{character vector of tall_vars to show data for.}
 
 \item{id_to_plot}{character vector of ids to show data for.}
 
-\item{color_mapping}{color_mapping for marks.}
+\item{color_mapping}{color_mapping for wide_vars.}
 }
 \value{
 a ggplot
@@ -26,7 +26,7 @@ plot_profiles_selected
 \examples{
 data(profile_dt)
 plot_profiles_selected(profile_dt,
-    qcells = unique(profile_dt$cell)[1:2],
+    qtall_vars = unique(profile_dt$tall_var)[1:2],
     id_to_plot = unique(profile_dt$id)[1:3]) +
     theme(panel.spacing = unit(.04, "npc"))
 }

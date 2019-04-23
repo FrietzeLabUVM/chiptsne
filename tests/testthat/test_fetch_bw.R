@@ -10,8 +10,8 @@ options("mc.cores" = 2)
 
 bw_files = dir(system.file('extdata', package = "seqtsne"), pattern = ".bw$", full.names = TRUE)
 cfg_dt = data.table(file = bw_files)
-cfg_dt[, c("cell", "mark") := tstrsplit(basename(file), "_", keep = 1:2)]
-cfg_dt[, norm_factor := ifelse(mark == "H3K4me3", .3, 1)]
+cfg_dt[, c("tall_var", "wide_var") := tstrsplit(basename(file), "_", keep = 1:2)]
+cfg_dt[, norm_factor := ifelse(wide_var == "H3K4me3", .3, 1)]
 # save(query_gr, cfg_dt, file = "tmp2_bw.save")
 tsne_input = stsFetchTsneInput(cfg_dt, query_gr, force_overwrite = TRUE)
 test_that("stsFetchTsneInput dimensions of outputs", {
@@ -24,14 +24,14 @@ test_that("stsFetchTsneInput dimensions of outputs", {
 tsne_res = stsRunTsne(tsne_input$bw_dt, perplexity = 15, force_overwrite = TRUE)
 
 test_that("stsRunTsne dimensions of outputs", {
-    expect_equal(colnames(tsne_res), c("tx", "ty", "id", "cell"))
-    expect_equal(nrow(tsne_res), length(query_gr)*length(unique(cfg_dt$cell)))
+    expect_equal(colnames(tsne_res), c("tx", "ty", "id", "tall_var"))
+    expect_equal(nrow(tsne_res), length(query_gr)*length(unique(cfg_dt$tall_var)))
 })
 #
 #
 # #
 # # bw_dt = tsne_input$bw_dt
-# # setkey(bw_dt, id, cell, mark)
+# # setkey(bw_dt, id, tall_var, wide_var)
 # #
 # # np = 15
 # # img_res = make_tsne_img(tsne_input$bw_dt, tsne_res, np, odir = "~/tsne_images", force_rewrite = TRUE)
@@ -46,7 +46,7 @@ test_that("stsRunTsne dimensions of outputs", {
 # # ggplot(tsne_res, aes(x = tx, y = ty)) + geom_point()
 # #
 # # tsne_res[, id_short := sub(".+_", "", id)]
-# # ggplot(tsne_res, aes(x = tx, y = ty, color = cell, label = id_short)) + geom_text()
+# # ggplot(tsne_res, aes(x = tx, y = ty, color = tall_var, label = id_short)) + geom_text()
 # # lab_dt = tsne_res[, .(tx = mean(tx), ty = mean(ty)), by = .(id_short)]
 # # ggplot(tsne_res, aes(x = tx, y = ty, group = id_short, label = id_short)) +
 # #     geom_polygon(color = "gray70", fill = "gray90") +

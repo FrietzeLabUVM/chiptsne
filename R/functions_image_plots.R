@@ -1,14 +1,14 @@
 #' stsPlotSummaryProfiles
 #'
 #' @param profile_dt a tidy data.table for profile data as retrieved by
-#'   stsFetchTsneInput.  Expected variable names are id, cell, mark, x, and y.
+#'   stsFetchTsneInput.  Expected variable names are id, tall_var, wide_var, x, and y.
 #' @param position_dt a tidy data.table containing t-sne embedding.  Expected
-#'   variable names are tx, ty, id, and cell.
+#'   variable names are tx, ty, id, and tall_var.
 #' @param x_points numeric.  number of grid points to use in x dimension.
 #' @param y_points numeric.  number of grid points to use in y dimension.
 #'   Defaults to same value as x_points.
-#' @param q_cells character vector of cells to plot. Default of NULL plots all.
-#' @param q_marks character vector of marks to plot.  Default of NULL plots all.
+#' @param q_tall_vars character vector of tall_vars to plot. Default of NULL plots all.
+#' @param q_wide_vars character vector of wide_vars to plot.  Default of NULL plots all.
 #' @param xrng view domain in x dimension, default is range of position_dt$tx.
 #' @param yrng view domain in y dimension, default is range of position_dt$ty.
 #' @param plot_type character, must be one of "glyph" or "raster".  raster
@@ -27,11 +27,11 @@
 #' @param n_splines number of points to interpolate with splines.
 #' @param p an existing ggplot to overlay images onto.  Default of NULL starts a
 #'   new plot.
-#' @param facet_byCell boolean. If TRUE, plots are facetted by cell.
+#' @param facet_byCell boolean. If TRUE, plots are facetted by tall_var.
 #' @param line_color_mapping named vector of line color.  Names correspond to
-#'   values of profile_dt 'mark' variable and values are colors.
+#'   values of profile_dt 'wide_var' variable and values are colors.
 #' @param vertical_facet_mapping named vector of groups.  vertical_facet_mapping
-#'   names are marks and order of first occurence determines vertical position
+#'   names are wide_vars and order of first occurence determines vertical position
 #'   top to bottom.
 #' @param N_floor The value of N to consider 0.  bins with N values <= N_floor
 #'   will be ignored.
@@ -58,8 +58,8 @@ stsPlotSummaryProfiles = function(## basic inputs
     x_points,
     y_points = x_points,
     ## selection
-    q_cells = NULL,
-    q_marks = NULL,
+    q_tall_vars = NULL,
+    q_wide_vars = NULL,
     ## view domain
     xrng = range(position_dt$tx),
     yrng = range(position_dt$ty),
@@ -86,41 +86,41 @@ stsPlotSummaryProfiles = function(## basic inputs
     min_size = .3,
     ## output
     return_data = FALSE) {
-    if(is.null(q_cells)){
-        if(is.factor(profile_dt$cell)){
-            q_cells = levels(profile_dt$cell)
+    if(is.null(q_tall_vars)){
+        if(is.factor(profile_dt$tall_var)){
+            q_tall_vars = levels(profile_dt$tall_var)
         }else{
-            q_cells = sort(unique(profile_dt$cell))
+            q_tall_vars = sort(unique(profile_dt$tall_var))
         }
     }
-    if(is.null(q_marks)){
-        if(is.factor(profile_dt$mark)){
-            q_marks = levels(profile_dt$mark)
+    if(is.null(q_wide_vars)){
+        if(is.factor(profile_dt$wide_var)){
+            q_wide_vars = levels(profile_dt$wide_var)
         }else{
-            q_marks = sort(unique(profile_dt$mark))
+            q_wide_vars = sort(unique(profile_dt$wide_var))
         }
     }
     if(is.null(line_color_mapping)){
-        line_color_mapping = seqsetvis::safeBrew(length(unique(profile_dt$mark)))
-        names(line_color_mapping) = unique(profile_dt$mark)
+        line_color_mapping = seqsetvis::safeBrew(length(unique(profile_dt$wide_var)))
+        names(line_color_mapping) = unique(profile_dt$wide_var)
     }
-    line_color_mapping = line_color_mapping[names(line_color_mapping) %in% q_marks]
-    if(is.factor(profile_dt$cell)){
-        stopifnot(q_cells %in% levels(profile_dt$cell))
+    line_color_mapping = line_color_mapping[names(line_color_mapping) %in% q_wide_vars]
+    if(is.factor(profile_dt$tall_var)){
+        stopifnot(q_tall_vars %in% levels(profile_dt$tall_var))
     }else{
-        stopifnot(q_cells %in% unique(profile_dt$cell))
+        stopifnot(q_tall_vars %in% unique(profile_dt$tall_var))
     }
-    if(is.factor(profile_dt$mark)){
-        stopifnot(q_marks %in% levels(profile_dt$mark))
+    if(is.factor(profile_dt$wide_var)){
+        stopifnot(q_wide_vars %in% levels(profile_dt$wide_var))
     }else{
-        stopifnot(q_marks %in% unique(profile_dt$mark))
+        stopifnot(q_wide_vars %in% unique(profile_dt$wide_var))
     }
     if(!plot_type %in% c("glyph", "raster")){
         stop("plot_type (\"", plot_type, "\") must be one of \"glyph\" or \"raster\".")
     }
 
-    prof_dt = copy(profile_dt[cell %in% q_cells & mark %in% q_marks])
-    pos_dt = copy(position_dt[cell %in% q_cells])
+    prof_dt = copy(profile_dt[tall_var %in% q_tall_vars & wide_var %in% q_wide_vars])
+    pos_dt = copy(position_dt[tall_var %in% q_tall_vars])
 
     if(is.null(rname)){
         rname = digest::digest(
@@ -141,9 +141,9 @@ stsPlotSummaryProfiles = function(## basic inputs
         )
     }
 
-    prof_dt$cell = factor(prof_dt$cell, levels = q_cells)
-    prof_dt$mark = factor(prof_dt$mark, levels = q_marks)
-    pos_dt$cell = factor(pos_dt$cell, levels = q_cells)
+    prof_dt$tall_var = factor(prof_dt$tall_var, levels = q_tall_vars)
+    prof_dt$wide_var = factor(prof_dt$wide_var, levels = q_wide_vars)
+    pos_dt$tall_var = factor(pos_dt$tall_var, levels = q_tall_vars)
     if(plot_type == "raster"){
         #prepare images
         if (!facet_byCell) {
@@ -184,14 +184,14 @@ stsPlotSummaryProfiles = function(## basic inputs
                 min_size = min_size,
                 return_data = return_data
             )
-        } else{#do facet by cell
+        } else{#do facet by tall_var
             summary_dt = prep_summary(prof_dt,
                                       pos_dt,
                                       x_points,
                                       y_points,
                                       xrng,
                                       yrng,
-                                      "cell")
+                                      "tall_var")
             img_res = prep_images(
                 summary_dt = summary_dt,
                 xrng = xrng,
@@ -203,7 +203,7 @@ stsPlotSummaryProfiles = function(## basic inputs
                 force_rewrite = force_rewrite,
                 apply_norm = apply_norm,
                 ylim = ylim,
-                facet_by = "cell",
+                facet_by = "tall_var",
                 ma_size = ma_size,
                 n_splines = n_splines,
                 n_cores = n_cores,
@@ -245,8 +245,8 @@ stsPlotSummaryProfiles = function(## basic inputs
                 color_mapping = line_color_mapping
             )
         }else{
-            summary_dt_l = lapply(q_cells, function(cl){
-                prep_summary(prof_dt[cell == cl],
+            summary_dt_l = lapply(q_tall_vars, function(cl){
+                prep_summary(prof_dt[tall_var == cl],
                              pos_dt,
                              x_points,
                              y_points,
@@ -254,8 +254,8 @@ stsPlotSummaryProfiles = function(## basic inputs
                              yrng,
                              NULL)
             })
-            names(summary_dt_l) = q_cells
-            summary_dt = rbindlist(summary_dt_l, use.names = TRUE, idcol = "cell")
+            names(summary_dt_l) = q_tall_vars
+            summary_dt = rbindlist(summary_dt_l, use.names = TRUE, idcol = "tall_var")
             plot_summary_glyph(
                 summary_dt,
                 x_points = x_points,
@@ -267,7 +267,7 @@ stsPlotSummaryProfiles = function(## basic inputs
                 N_ceiling = N_ceiling,
                 color_mapping = line_color_mapping
             ) +
-                facet_wrap("cell")
+                facet_wrap("tall_var")
         }
 
     }
@@ -277,9 +277,9 @@ stsPlotSummaryProfiles = function(## basic inputs
 #' prep_summary
 #'
 #' @param profile_dt a tidy data.table for profile data as retrieved by
-#'   stsFetchTsneInput.  Expected variable names are id, cell, mark, x, and y.
+#'   stsFetchTsneInput.  Expected variable names are id, tall_var, wide_var, x, and y.
 #' @param position_dt a tidy data.table containing t-sne embedding.  Expected
-#'   variable names are tx, ty, id, and cell.
+#'   variable names are tx, ty, id, and tall_var.
 #' @param x_points numeric.  number of grid points to use in x dimension.
 #' @param y_points numeric.  number of grid points to use in y dimension.
 #'   Defaults to same value as x_points.
@@ -287,7 +287,7 @@ stsPlotSummaryProfiles = function(## basic inputs
 #' @param yrng view domain in y dimension, default is range of position_dt$ty.
 #' @param facet_by character. varaible name to facet profile_dt by when
 #'   constructing images. The only valid non-null value with seqtsne functions
-#'   is "cell".
+#'   is "tall_var".
 #'
 #' @return summary of profiles binned across tsne space according to x_points,
 #'   y_points, and within xrng and yrng
@@ -322,17 +322,17 @@ prep_summary = function(profile_dt,
     #merge binning info to profiles
     summary_dt = merge(
         profile_dt,
-        position_dt[, list(bx, by, cell, id)],
+        position_dt[, list(bx, by, tall_var, id)],
         allow.cartesian = TRUE,
-        by = intersect(colnames(profile_dt), c("cell", "id"))
-    )#, by = c("cell", "id"))
-    if (is.null(summary_dt$mark))
-        summary_dt$mark = "signal"
+        by = intersect(colnames(profile_dt), c("tall_var", "id"))
+    )#, by = c("tall_var", "id"))
+    if (is.null(summary_dt$wide_var))
+        summary_dt$wide_var = "signal"
 
     if (is.null(facet_by)) {
-        summary_dt = summary_dt[, list(y = mean(y)), list(bx, by, x, mark)]
+        summary_dt = summary_dt[, list(y = mean(y)), list(bx, by, x, wide_var)]
     } else{
-        summary_dt = summary_dt[, list(y = mean(y)), list(bx, by, x, mark, get(facet_by))]
+        summary_dt = summary_dt[, list(y = mean(y)), list(bx, by, x, wide_var, get(facet_by))]
         colnames(summary_dt)[colnames(summary_dt) == "get"] = facet_by
     }
     N_dt = position_dt[, .(.N), by = .(bx, by)]
@@ -363,13 +363,13 @@ prep_summary = function(profile_dt,
 #'   compatible with apply_norm = TRUE.
 #' @param facet_by character. varaible name to facet profile_dt by when
 #'   constructing images. The only valid non-null value with seqtsne functions
-#'   is "cell".
+#'   is "tall_var".
 #' @param n_splines number of points to interpolate with splines.
 #' @param ma_size moving average size when smoothing profiles.
 #' @param n_cores number of cores to use when writing images.  Default is value
 #'   of mc.cores option if set or 1.
 #' @param line_color_mapping named vector of line color.  Names correspond to
-#'   values of profile_dt 'mark' variable and values are colors.
+#'   values of profile_dt 'wide_var' variable and values are colors.
 #' @param vertical_facet_mapping named vector of vertical facet for data
 #'
 #' @return data.table with variables
@@ -406,11 +406,11 @@ prep_images = function(summary_dt,
                        line_color_mapping = NULL,
                        vertical_facet_mapping = NULL) {
     if(is.null(line_color_mapping)){
-        line_color_mapping = seqsetvis::safeBrew(length(unique(summary_dt$mark)))
-        names(line_color_mapping) = unique(summary_dt$mark)
+        line_color_mapping = seqsetvis::safeBrew(length(unique(summary_dt$wide_var)))
+        names(line_color_mapping) = unique(summary_dt$wide_var)
     }
-    if (!all(unique(summary_dt$mark) %in% names(line_color_mapping))) {
-        missing_colors = setdiff(unique(summary_dt$mark), names(line_color_mapping))
+    if (!all(unique(summary_dt$wide_var) %in% names(line_color_mapping))) {
+        missing_colors = setdiff(unique(summary_dt$wide_var), names(line_color_mapping))
         stop(
             "line_color_mapping is missing assignments for: ",
             paste(missing_colors, collapse = ", ")
@@ -459,7 +459,7 @@ prep_images = function(summary_dt,
 
 
     if (apply_norm) {
-        summary_dt[, ynorm := y / stats::quantile(y, .95), by = list(mark)]
+        summary_dt[, ynorm := y / stats::quantile(y, .95), by = list(wide_var)]
         summary_dt[ynorm > 1, ynorm := 1]
     } else{
         summary_dt[, ynorm := y]
@@ -482,14 +482,14 @@ prep_images = function(summary_dt,
     if (is.null(vertical_facet_mapping)) {
         summary_dt$group = 1
     } else{
-        if (!all(unique(summary_dt$mark) %in% names(vertical_facet_mapping))) {
-            missing_groups = setdiff(unique(summary_dt$mark), names(vertical_facet_mapping))
+        if (!all(unique(summary_dt$wide_var) %in% names(vertical_facet_mapping))) {
+            missing_groups = setdiff(unique(summary_dt$wide_var), names(vertical_facet_mapping))
             stop(
                 "vertical_facet_mapping is missing assignments for: ",
                 paste(missing_groups, collapse = ", ")
             )
         }
-        summary_dt$group = factor(vertical_facet_mapping[summary_dt$mark], levels = unique(vertical_facet_mapping))
+        summary_dt$group = factor(vertical_facet_mapping[summary_dt$wide_var], levels = unique(vertical_facet_mapping))
     }
 
 
@@ -504,12 +504,12 @@ prep_images = function(summary_dt,
                 pdt = summary_dt[plot_id == p_id & get(facet_by) == img_dt[[facet_by]][i]]
             }
 
-            # pdt[, ysm := seqsetvis:::movingAverage(ynorm, n = ma_size), by = list(mark)]
-            pdt[, ysm := movingAverage(ynorm, n = ma_size), by = list(mark)]
+            # pdt[, ysm := seqsetvis:::movingAverage(ynorm, n = ma_size), by = list(wide_var)]
+            pdt[, ysm := movingAverage(ynorm, n = ma_size), by = list(wide_var)]
 
             pdt = seqsetvis::applySpline(pdt,
                                          n = n_splines,
-                                         by_ = "mark",
+                                         by_ = "wide_var",
                                          y_ = "ysm")
             list(pdt, fpath)
         })
@@ -518,7 +518,7 @@ prep_images = function(summary_dt,
         hidden = parallel::mclapply(plot_info, function(x) {
             fpath = x[[2]]
             pdt = x[[1]]
-            # pdt[, ysm := seqsetvis:::movingAverage(y, n = 8), by = list(mark)]
+            # pdt[, ysm := seqsetvis:::movingAverage(y, n = 8), by = list(wide_var)]
 
             p = ggplot(pdt,
                        aes(
@@ -526,8 +526,8 @@ prep_images = function(summary_dt,
                            y = ysm,
                            ymin = 0,
                            ymax = ysm,
-                           color = mark,
-                           fill = mark
+                           color = wide_var,
+                           fill = wide_var
                        )) +
                 geom_ribbon(alpha = .3) +
                 geom_path(size = .6, alpha = 1) +
@@ -558,12 +558,12 @@ prep_images = function(summary_dt,
 
     img_dt[, png_file := normalizePath(png_file)]
 
-    # if (is.factor(position_dt$cell)) {
-    #     if (!is.null(img_dt$cell)) {
-    #         img_dt$cell = factor(img_dt$cell, levels = levels(position_dt$cell))
+    # if (is.factor(position_dt$tall_var)) {
+    #     if (!is.null(img_dt$tall_var)) {
+    #         img_dt$tall_var = factor(img_dt$tall_var, levels = levels(position_dt$tall_var))
     #     }
-    #     if (!is.null(summary_dt$cell)) {
-    #         summary_dt$cell = factor(summary_dt$cell, levels = levels(position_dt$cell))
+    #     if (!is.null(summary_dt$tall_var)) {
+    #         summary_dt$tall_var = factor(summary_dt$tall_var, levels = levels(position_dt$tall_var))
     #     }
     # }
 
@@ -729,9 +729,9 @@ plot_summary_raster = function(image_dt,
     if (is.null(p))
         p = ggplot()
     if(!is.null(line_color_mapping)){
-        col_dt = image_dt[, .(tx, ty, mark = rep(names(line_color_mapping), each = nrow(image_dt)))]
+        col_dt = image_dt[, .(tx, ty, wide_var = rep(names(line_color_mapping), each = nrow(image_dt)))]
         p = p + geom_point(data = col_dt,
-                       aes(x = tx, y = ty, color = mark)) +
+                       aes(x = tx, y = ty, color = wide_var)) +
             scale_color_manual(values = line_color_mapping)
     }
     p = p +
@@ -785,12 +785,12 @@ plot_summary_raster = function(image_dt,
 #' @examples
 #' data("profile_dt")
 #' data("tsne_dt")
-#' summary_dt = prep_summary(profile_dt, tsne_dt, 4, facet_by = "cell")
-#' img_res = prep_images(summary_dt, 4, facet_by = "cell")
+#' summary_dt = prep_summary(profile_dt, tsne_dt, 4, facet_by = "tall_var")
+#' img_res = prep_images(summary_dt, 4, facet_by = "tall_var")
 #' #zoom on top-right quadrant
-#' summary_dt.zoom = prep_summary(profile_dt, tsne_dt, 4, facet_by = "cell",
+#' summary_dt.zoom = prep_summary(profile_dt, tsne_dt, 4, facet_by = "tall_var",
 #'     xrng = c(0, .5), yrng = c(0, .5))
-#' img_res.zoom = prep_images(summary_dt.zoom, 4, facet_by = "cell",
+#' img_res.zoom = prep_images(summary_dt.zoom, 4, facet_by = "tall_var",
 #'     xrng = c(0, .5), yrng = c(0, .5))
 #' plot_summary_raster_byCell(img_res$image_dt,
 #'               x_points = img_res$x_points)
@@ -809,10 +809,10 @@ plot_summary_raster_byCell = function(image_dt,
                                       N_ceiling = NULL,
                                       min_size = .3,
                                       return_data = FALSE) {
-    cell = bx = by = NULL
+    tall_var = bx = by = NULL
 
     # image_dt = merge(image_dt[, list(bx, by, plot_id, png_file, tx, ty)],
-    #                  postion[, list(N = .N), list(cell, bx, by)], by = c("bx", "by"), allow.cartesian = TRUE)
+    #                  postion[, list(N = .N), list(tall_var, bx, by)], by = c("bx", "by"), allow.cartesian = TRUE)
     image_dt = set_image_rects(
         image_dt,
         x_points = x_points,
@@ -828,9 +828,9 @@ plot_summary_raster_byCell = function(image_dt,
     if (is.null(p))
         p = ggplot()
     if(!is.null(line_color_mapping)){
-        col_dt = image_dt[, .(tx, ty, mark = rep(names(line_color_mapping), each = nrow(image_dt)))]
+        col_dt = image_dt[, .(tx, ty, wide_var = rep(names(line_color_mapping), each = nrow(image_dt)))]
         p = p + geom_point(data = col_dt,
-                           aes(x = tx, y = ty, color = mark)) +
+                           aes(x = tx, y = ty, color = wide_var)) +
             scale_color_manual(values = line_color_mapping)
     }
     p = p +
@@ -854,7 +854,7 @@ plot_summary_raster_byCell = function(image_dt,
             color = "black"
         ) +
         coord_cartesian(xlim = xrng, ylim = yrng) +
-        facet_wrap("cell", drop = FALSE)
+        facet_wrap("tall_var", drop = FALSE)
     p
 }
 
@@ -940,20 +940,20 @@ plot_summary_glyph = function(
     }
 
     if(is.null(color_mapping)){
-        if(is.factor(summary_dt$mark)){
-            umarks = levels(summary_dt$mark)
-        }else if(is.character(summary_dt$mark)){
-            umarks = unique(summary_dt$mark)
+        if(is.factor(summary_dt$wide_var)){
+            uwide_vars = levels(summary_dt$wide_var)
+        }else if(is.character(summary_dt$wide_var)){
+            uwide_vars = unique(summary_dt$wide_var)
         }
 
-        color_mapping = seqsetvis::safeBrew(length(umarks))
+        color_mapping = seqsetvis::safeBrew(length(uwide_vars))
     }
     if(is.null(p)){
         p = ggplot()
     }
     p +
         geom_path(data = glyph_dt,
-                  aes(gx, gy, group = paste(gid, mark), color = mark)) +
+                  aes(gx, gy, group = paste(gid, wide_var), color = wide_var)) +
         labs(x = "tx", y = "ty") +
         scale_color_manual(values =  color_mapping) +
         coord_cartesian(xrng, yrng)

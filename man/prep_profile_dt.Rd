@@ -11,7 +11,7 @@ prep_profile_dt(prof_dt, norm_dt, qgr, cap_value = Inf,
 \arguments{
 \item{prof_dt}{data.table of ChIP-seq signal profiles.}
 
-\item{norm_dt}{data.table containing norm_factor values for cell/mark
+\item{norm_dt}{data.table containing norm_factor values for tall_var/wide_var
 combinations.}
 
 \item{qgr}{GRanges}
@@ -37,7 +37,7 @@ data(profile_dt)
 data(query_gr)
 #typically, norm_dt is the same configuration table used to fetch prof_dt
 #here we derive a new norm_dt that will reduce H3K4me3 to 30\% of H3K27me3.
-norm_dt = unique(profile_dt[, list(cell, mark)])
-norm_dt[, norm_factor := ifelse(mark == "H3K4me3", .3, 1)]
+norm_dt = unique(profile_dt[, list(tall_var, wide_var)])
+norm_dt[, norm_factor := ifelse(wide_var == "H3K4me3", .3, 1)]
 prep_profile_dt(profile_dt, norm_dt, query_gr)
 }

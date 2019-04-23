@@ -11,7 +11,7 @@ stsFetchTsneInput(qdt, qgr, region_size = NULL, file_format = NULL,
   qdt, qwin, qmet)), force_overwrite = FALSE, skip_checks = FALSE)
 }
 \arguments{
-\item{qdt}{data.table containing, file, cell, mark, and optionally
+\item{qdt}{data.table containing, file, tall_var, wide_var, and optionally
 norm_factor}
 
 \item{qgr}{GRanges of regions to fetch}
@@ -28,7 +28,7 @@ bw.  Will be automatically determined from file extension if NULL.}
 
 \item{cap_value}{maximum allowed value.  useful for outlier handling.}
 
-\item{agg_FUN}{function used to aggregate any duplicate cell+mark mappings in
+\item{agg_FUN}{function used to aggregate any duplicate tall_var+wide_var mappings in
 qdt.  Should accept a numeric vector and return a single value.}
 
 \item{high_on_right}{if TRUE, profiles where highest signal is on the left
@@ -44,8 +44,8 @@ to fetch data.}
 
 \item{force_overwrite}{if TRUE, any contents of cache are overwritten. Default is FALSE.}
 
-\item{skip_checks}{if TRUE, cell and mark completeness checks are skipped.
-Cell/mark combinations must be complete to run StsRunTsne(). Default is FALSE.}
+\item{skip_checks}{if TRUE, tall_var and wide_var completeness checks are skipped.
+tall_var/wide_var combinations must be complete to run StsRunTsne(). Default is FALSE.}
 }
 \value{
 a tidy data.table of profile data.
@@ -62,9 +62,9 @@ extension of first file transform and normalizes profiles after fetch
 data("query_gr")
 bw_files = dir(system.file('extdata', package = "seqtsne"), pattern = ".bw$", full.names = TRUE)
 cfg_dt = data.table(file = bw_files)
-cfg_dt[, c("cell", "mark") := tstrsplit(basename(file), "_", keep = 1:2)]
-cfg_dt = cfg_dt[cell \%in\% c("ESH1", "HUES48", "HUES64")]
-cfg_dt[, norm_factor := ifelse(mark == "H3K4me3", .3, 1)]
+cfg_dt[, c("tall_var", "wide_var") := tstrsplit(basename(file), "_", keep = 1:2)]
+cfg_dt = cfg_dt[tall_var \%in\% c("ESH1", "HUES48", "HUES64")]
+cfg_dt[, norm_factor := ifelse(wide_var == "H3K4me3", .3, 1)]
 profile_dt = stsFetchTsneInput(cfg_dt, query_gr)
 profile_dt
 }

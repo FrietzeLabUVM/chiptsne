@@ -1,10 +1,10 @@
 #' plot_recentered_velocity
 #'
 #' @param tsne_dt tidy data.table of tsne results.  variables names must
-#'   include: tx, ty, id, and cell
-#' @param cell_a an item in tsne_dt$cell. the origin for calculating
+#'   include: tx, ty, id, and tall_var
+#' @param tall_var_a an item in tsne_dt$tall_var. the origin for calculating
 #'   angle/distance.
-#' @param cell_b an item in tsne_dt$cell. the destination for calculating
+#' @param tall_var_b an item in tsne_dt$tall_var. the destination for calculating
 #'   angle/distance.
 #' @param x_points number of equally spaced bins in the x-dimension. Required.
 #' @param y_points number of equally spaced bins in the y-dimension. Default is
@@ -24,12 +24,12 @@
 #' @examples
 #' data("tsne_dt")
 #' plot_recentered_velocity(tsne_dt,
-#'     unique(tsne_dt$cell)[1], unique(tsne_dt$cell)[2], 4)
+#'     unique(tsne_dt$tall_var)[1], unique(tsne_dt$tall_var)[2], 4)
 #' plot_recentered_velocity(tsne_dt,
-#'     unique(tsne_dt$cell)[1], unique(tsne_dt$cell)[2], 1,
+#'     unique(tsne_dt$tall_var)[1], unique(tsne_dt$tall_var)[2], 1,
 #'     angle_as_color = TRUE)
 plot_recentered_velocity = function(tsne_dt,
-                                    cell_a, cell_b,
+                                    tall_var_a, tall_var_b,
                                     x_points,
                                     y_points = x_points,
                                     points_as_background = FALSE,
@@ -45,7 +45,7 @@ plot_recentered_velocity = function(tsne_dt,
     }
     strategy = "individual_recentered"
     av_dt = calc_delta(tsne_dt.tp,
-                       cell_a, cell_b,
+                       tall_var_a, tall_var_b,
                        x_points, y_points,
                        strategy = strategy)
 
@@ -53,18 +53,18 @@ plot_recentered_velocity = function(tsne_dt,
     if (is.null(p))
         p = ggplot()
     if (points_as_background) {
-        p = p + geom_point(data = tsne_dt.tp[cell %in% c(cell_a, cell_b)],
-                           aes(x = tx, y = ty, color = cell))
+        p = p + geom_point(data = tsne_dt.tp[tall_var %in% c(tall_var_a, tall_var_b)],
+                           aes(x = tx, y = ty, color = tall_var))
     }
     if (angle_as_color) {
-        av_dt[, angle := xy2deg(tx_cell_a, ty_cell_a, tx_cell_b, ty_cell_b)]
+        av_dt[, angle := xy2deg(tx_tall_var_a, ty_tall_var_a, tx_tall_var_b, ty_tall_var_b)]
         p = p + geom_segment(
             data = av_dt,
             aes(
-                x = tx_cell_a,
-                xend = tx_cell_b,
-                y = ty_cell_a,
-                yend = ty_cell_b,
+                x = tx_tall_var_a,
+                xend = tx_tall_var_b,
+                y = ty_tall_var_a,
+                yend = ty_tall_var_b,
                 color = angle
             ),
             arrow = arrow_FUN
@@ -86,10 +86,10 @@ plot_recentered_velocity = function(tsne_dt,
         p = p + geom_segment(
             data = av_dt,
             aes(
-                x = tx_cell_a,
-                xend = tx_cell_b,
-                y = ty_cell_a,
-                yend = ty_cell_b
+                x = tx_tall_var_a,
+                xend = tx_tall_var_b,
+                y = ty_tall_var_a,
+                yend = ty_tall_var_b
             ),
             arrow = arrow_FUN
         ) +
@@ -107,10 +107,10 @@ plot_recentered_velocity = function(tsne_dt,
 #' plot_regional_velocity
 #'
 #' @param tsne_dt tidy data.table of tsne results.  variables names must
-#'   include: tx, ty, id, and cell
-#' @param cell_a an item in tsne_dt$cell. the origin for calculating
+#'   include: tx, ty, id, and tall_var
+#' @param tall_var_a an item in tsne_dt$tall_var. the origin for calculating
 #'   angle/distance.
-#' @param cell_b an item in tsne_dt$cell. the destination for calculating
+#' @param tall_var_b an item in tsne_dt$tall_var. the destination for calculating
 #'   angle/distance.
 #' @param x_points number of equally spaced bins in the x-dimension. Required.
 #' @param y_points number of equally spaced bins in the y-dimension. Default is
@@ -131,11 +131,11 @@ plot_recentered_velocity = function(tsne_dt,
 #'
 #' @examples
 #' data("tsne_dt")
-#' plot_regional_velocity(tsne_dt, unique(tsne_dt$cell)[1],
-#'     unique(tsne_dt$cell)[2], 4, min_N = 4, arrow_FUN = arrow())
+#' plot_regional_velocity(tsne_dt, unique(tsne_dt$tall_var)[1],
+#'     unique(tsne_dt$tall_var)[2], 4, min_N = 4, arrow_FUN = arrow())
 plot_regional_velocity = function(tsne_dt,
-                                  cell_a,
-                                  cell_b,
+                                  tall_var_a,
+                                  tall_var_b,
                                   x_points,
                                   y_points = x_points,
                                   points_as_background = FALSE,
@@ -156,25 +156,25 @@ plot_regional_velocity = function(tsne_dt,
         tsne_dt.tp = tsne_dt[id %in% id_to_plot]
     }
 
-    av_dt = calc_delta(tsne_dt.tp, cell_a, cell_b, x_points, y_points, strategy = strategy)
+    av_dt = calc_delta(tsne_dt.tp, tall_var_a, tall_var_b, x_points, y_points, strategy = strategy)
 
     # if(is.null(av_dt$N)) av_dt$N = 1
     if (is.null(p))
         p = ggplot()
     if (points_as_background) {
-        p = p + geom_point(data = tsne_dt.tp[cell %in% c(cell_a, cell_b)],
-                           aes(x = tx, y = ty, color = cell))
+        p = p + geom_point(data = tsne_dt.tp[tall_var %in% c(tall_var_a, tall_var_b)],
+                           aes(x = tx, y = ty, color = tall_var))
     }
     if (is.null(av_dt$N)) {
         if (angle_as_color) {
-            av_dt[, angle := xy2deg(tx_cell_a, ty_cell_a, tx_cell_b, ty_cell_b)]
+            av_dt[, angle := xy2deg(tx_tall_var_a, ty_tall_var_a, tx_tall_var_b, ty_tall_var_b)]
             p = p + geom_segment(
                 data = av_dt,
                 aes(
-                    x = tx_cell_a,
-                    xend = tx_cell_b,
-                    y = ty_cell_a,
-                    yend = ty_cell_b,
+                    x = tx_tall_var_a,
+                    xend = tx_tall_var_b,
+                    y = ty_tall_var_a,
+                    yend = ty_tall_var_b,
                     color = angle
                 ),
                 arrow = arrow_FUN
@@ -196,10 +196,10 @@ plot_regional_velocity = function(tsne_dt,
             p = p + geom_segment(
                 data = av_dt,
                 aes(
-                    x = tx_cell_a,
-                    xend = tx_cell_b,
-                    y = ty_cell_a,
-                    yend = ty_cell_b
+                    x = tx_tall_var_a,
+                    xend = tx_tall_var_b,
+                    y = ty_tall_var_a,
+                    yend = ty_tall_var_b
                 ),
                 arrow = arrow_FUN
             ) +
@@ -213,14 +213,14 @@ plot_regional_velocity = function(tsne_dt,
         }
     } else{
         if (angle_as_color) {
-            av_dt[, angle := xy2deg(tx_cell_a, ty_cell_a, tx_cell_b, ty_cell_b)]
+            av_dt[, angle := xy2deg(tx_tall_var_a, ty_tall_var_a, tx_tall_var_b, ty_tall_var_b)]
             p = p + geom_segment(
                 data = av_dt[N >= min_N],
                 aes(
-                    x = tx_cell_a,
-                    xend = tx_cell_b,
-                    y = ty_cell_a,
-                    yend = ty_cell_b,
+                    x = tx_tall_var_a,
+                    xend = tx_tall_var_b,
+                    y = ty_tall_var_a,
+                    yend = ty_tall_var_b,
                     size = N,
                     color = angle
                 ),
@@ -245,10 +245,10 @@ plot_regional_velocity = function(tsne_dt,
             p = p + geom_segment(
                 data = av_dt[N >= min_N],
                 aes(
-                    x = tx_cell_a,
-                    xend = tx_cell_b,
-                    y = ty_cell_a,
-                    yend = ty_cell_b,
+                    x = tx_tall_var_a,
+                    xend = tx_tall_var_b,
+                    y = ty_tall_var_a,
+                    yend = ty_tall_var_b,
                     size = N
                 ),
                 arrow = arrow_FUN
@@ -278,7 +278,7 @@ plot_regional_velocity = function(tsne_dt,
 #'
 #' @examples
 #' data("tsne_dt")
-#' vel_dt = prep_velocity(tsne_dt, unique(tsne_dt$cell)[1], unique(tsne_dt$cell)[2])
+#' vel_dt = prep_velocity(tsne_dt, unique(tsne_dt$tall_var)[1], unique(tsne_dt$tall_var)[2])
 #' plot_velocity_centered(vel_dt)
 plot_velocity_centered = function(velocity_dt, line_alpha = .5, line_size = 1){
     ggplot(velocity_dt, aes(x = angle, xend = angle, y = 0, yend = distance, color = angle)) +
@@ -304,8 +304,8 @@ plot_velocity_centered = function(velocity_dt, line_alpha = .5, line_size = 1){
 #' data("tsne_dt")
 #' vel_dt = prep_velocity(
 #'     tsne_dt,
-#'     unique(tsne_dt$cell)[1],
-#'     unique(tsne_dt$cell)[2]
+#'     unique(tsne_dt$tall_var)[1],
+#'     unique(tsne_dt$tall_var)[2]
 #'     )
 #' plot_velocity_bins(vel_dt, bins = 18, bin_FUN = sum)
 #' plot_velocity_bins(vel_dt, bins = 8, bin_FUN = median)
@@ -355,13 +355,13 @@ plot_velocity_bins = function(velocity_dt,
 #' @param background_color character. color to use when plotting background
 #'   points.
 #'
-#' @return ggplot of arrows indicating position in cell line a to cell line b.
+#' @return ggplot of arrows indicating position in tall_var line a to tall_var line b.
 #' @export
 #'
 #' @examples
 #' data("tsne_dt")
 #' vel_dt = prep_velocity(tsne_dt,
-#'     unique(tsne_dt$cell)[2], unique(tsne_dt$cell)[3])
+#'     unique(tsne_dt$tall_var)[2], unique(tsne_dt$tall_var)[3])
 #' plot_velocity_arrows(vel_dt)
 plot_velocity_arrows = function(velocity_dt,
                                 p = NULL,
@@ -374,12 +374,12 @@ plot_velocity_arrows = function(velocity_dt,
     if(angle_as_color){
         p_arrows = p +
             annotate("segment",
-                     x = bg$tx_cell_a, xend = bg$tx_cell_b,
-                     y = bg$ty_cell_a, yend = bg$ty_cell_b,
+                     x = bg$tx_tall_var_a, xend = bg$tx_tall_var_b,
+                     y = bg$ty_tall_var_a, yend = bg$ty_tall_var_b,
                      color = background_color) +
             geom_segment(data = velocity_dt[foreground == TRUE],
-                         aes(x = tx_cell_a, xend = tx_cell_b,
-                             y = ty_cell_a, yend = ty_cell_b,
+                         aes(x = tx_tall_var_a, xend = tx_tall_var_b,
+                             y = ty_tall_var_a, yend = ty_tall_var_b,
                              color = angle),
                          arrow = arrow(length = unit(0.1,"cm"))) +
 
@@ -388,12 +388,12 @@ plot_velocity_arrows = function(velocity_dt,
     }else{
         p_arrows = p +
             annotate("segment",
-                     x = bg$tx_cell_a, xend = bg$tx_cell_b,
-                     y = bg$ty_cell_a, yend = bg$ty_cell_b,
+                     x = bg$tx_tall_var_a, xend = bg$tx_tall_var_b,
+                     y = bg$ty_tall_var_a, yend = bg$ty_tall_var_b,
                      color = background_color) +
             geom_segment(data = velocity_dt[foreground == TRUE],
-                         aes(x = tx_cell_a, xend = tx_cell_b,
-                             y = ty_cell_a, yend = ty_cell_b),
+                         aes(x = tx_tall_var_a, xend = tx_tall_var_b,
+                             y = ty_tall_var_a, yend = ty_tall_var_b),
                          arrow = arrow(length = unit(0.1,"cm")))
     }
     p_arrows
@@ -402,10 +402,10 @@ plot_velocity_arrows = function(velocity_dt,
 #' prep_velocity
 #'
 #' @param tsne_dt tidy data.table of tsne results.  variables names must
-#'   include: tx, ty, id, and cell
-#' @param cell_a an item in tsne_dt$cell. the origin for calculating
+#'   include: tx, ty, id, and tall_var
+#' @param tall_var_a an item in tsne_dt$tall_var. the origin for calculating
 #'   angle/distance.
-#' @param cell_b an item in tsne_dt$cell. the destination for calculating
+#' @param tall_var_b an item in tsne_dt$tall_var. the destination for calculating
 #'   angle/distance.
 #' @param id_to_plot character.  ids in tsne_dt$id. Default of NULL causes all
 #'   ids to be used.
@@ -417,17 +417,17 @@ plot_velocity_arrows = function(velocity_dt,
 #' @param drop_backgroud if TRUE, all background velocities are dropped. Default
 #'   is FALSE.
 #'
-#' @return a tidy data.table of velocity measurements from cell_a to cell_b
+#' @return a tidy data.table of velocity measurements from tall_var_a to tall_var_b
 #' @export
 #'
 #' @examples
 #' data("tsne_dt")
 #' vel_dt = prep_velocity(tsne_dt,
-#'     unique(tsne_dt$cell)[2], unique(tsne_dt$cell)[3])
+#'     unique(tsne_dt$tall_var)[2], unique(tsne_dt$tall_var)[3])
 #' vel_dt
 prep_velocity = function(tsne_dt,
-                         cell_a,
-                         cell_b,
+                         tall_var_a,
+                         tall_var_b,
                          id_to_plot = NULL,
                          max_plotted = 500,
                          delta.min = 0,
@@ -436,7 +436,7 @@ prep_velocity = function(tsne_dt,
                          angle.max = 360,
                          drop_backgroud = FALSE) {
 
-    v_dt = calc_delta(tsne_dt, cell_a, cell_b, 10)
+    v_dt = calc_delta(tsne_dt, tall_var_a, tall_var_b, 10)
 
     # manual selection
     if(is.null(id_to_plot)){
@@ -449,14 +449,14 @@ prep_velocity = function(tsne_dt,
         v_dt.tp = v_dt.tp[id %in% sampleCap(v_dt.tp$id, max_plotted)]
     }
     # angle selection
-    v_dt.tp[, angle := xy2deg(x1 = tx_cell_a, x2 = tx_cell_b, y1 = ty_cell_a, y2 = ty_cell_b)]
+    v_dt.tp[, angle := xy2deg(x1 = tx_tall_var_a, x2 = tx_tall_var_b, y1 = ty_tall_var_a, y2 = ty_tall_var_b)]
     if(angle.min > angle.max){
         v_dt.tp[, foreground := angle <= angle.min & angle >= angle.max]
     }else{
         v_dt.tp[, foreground := angle >= angle.min & angle <= angle.max]
     }
     # distance selection
-    v_dt.tp[, distance := xy2dist(x1 = tx_cell_a, x2 = tx_cell_b, y1 = ty_cell_a, y2 = ty_cell_b)]
+    v_dt.tp[, distance := xy2dist(x1 = tx_tall_var_a, x2 = tx_tall_var_b, y1 = ty_tall_var_a, y2 = ty_tall_var_b)]
     v_dt.tp = v_dt.tp[distance < delta.min | distance > delta.max, foreground := FALSE]
     if(drop_backgroud){
         v_dt.tp = v_dt.tp[foreground == TRUE]

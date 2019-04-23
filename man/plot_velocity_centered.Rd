@@ -21,6 +21,6 @@ plot_velocity_centered
 }
 \examples{
 data("tsne_dt")
-vel_dt = prep_velocity(tsne_dt, unique(tsne_dt$cell)[1], unique(tsne_dt$cell)[2])
+vel_dt = prep_velocity(tsne_dt, unique(tsne_dt$tall_var)[1], unique(tsne_dt$tall_var)[2])
 plot_velocity_centered(vel_dt)
 }

@@ -254,13 +254,13 @@ annotate_rects = function(p,
 
 #' calc_delta
 #'
-#' calculates delta (distance/difference) between points in cell_a and cell_b
+#' calculates delta (distance/difference) between points in tall_var_a and tall_var_b
 #' according to strategy.
 #'
 #' @param tsne_dt result of stsRunTsne()
-#' @param cell_a character that matches single item in tsne_dt$cell.  The origin
+#' @param tall_var_a character that matches single item in tsne_dt$tall_var.  The origin
 #'   of deltas.
-#' @param cell_b character that matches single item in tsne_dt$cell  The
+#' @param tall_var_b character that matches single item in tsne_dt$tall_var  The
 #'   destination of deltas.
 #' @param x_points number of equally spaced bins in the x-dimension. Required.
 #' @param y_points number of equally spaced bins in the y-dimension. Default is
@@ -273,47 +273,47 @@ annotate_rects = function(p,
 #'
 #' @examples
 #' data(tsne_dt)
-#' calc_delta(tsne_dt, unique(tsne_dt$cell)[1], unique(tsne_dt$cell)[2], x_points= 4)
-calc_delta = function(tsne_dt, cell_a, cell_b, x_points, y_points = x_points, strategy = "normal"){
-    stopifnot(cell_a %in% unique(tsne_dt$cell))
-    stopifnot(cell_b %in% unique(tsne_dt$cell))
-    v_dt = dcast(tsne_dt[cell %in% c(cell_a, cell_b)], "id~cell", value.var = c("tx", "ty"))
-    colnames(v_dt) = sub(cell_a, "cell_a", colnames(v_dt))
-    colnames(v_dt) = sub(cell_b, "cell_b", colnames(v_dt))
+#' calc_delta(tsne_dt, unique(tsne_dt$tall_var)[1], unique(tsne_dt$tall_var)[2], x_points= 4)
+calc_delta = function(tsne_dt, tall_var_a, tall_var_b, x_points, y_points = x_points, strategy = "normal"){
+    stopifnot(tall_var_a %in% unique(tsne_dt$tall_var))
+    stopifnot(tall_var_b %in% unique(tsne_dt$tall_var))
+    v_dt = dcast(tsne_dt[tall_var %in% c(tall_var_a, tall_var_b)], "id~tall_var", value.var = c("tx", "ty"))
+    colnames(v_dt) = sub(tall_var_a, "tall_var_a", colnames(v_dt))
+    colnames(v_dt) = sub(tall_var_b, "tall_var_b", colnames(v_dt))
 
-    v_dt$bx_cell_a = bin_values(v_dt$tx_cell_a, n_bins = x_points, xrng = range(tsne_dt$tx))
+    v_dt$bx_tall_var_a = bin_values(v_dt$tx_tall_var_a, n_bins = x_points, xrng = range(tsne_dt$tx))
     xs = bin_values_centers(n_bins = x_points, rng = range(tsne_dt$tx))
-    v_dt$btx_cell_a = xs[v_dt$bx_cell_a]
+    v_dt$btx_tall_var_a = xs[v_dt$bx_tall_var_a]
 
-    v_dt$by_cell_a = bin_values(v_dt$ty_cell_a, n_bins = y_points, xrng = range(tsne_dt$ty))
+    v_dt$by_tall_var_a = bin_values(v_dt$ty_tall_var_a, n_bins = y_points, xrng = range(tsne_dt$ty))
     ys = bin_values_centers(n_bins = y_points, rng = range(tsne_dt$ty))
-    v_dt$bty_cell_a = ys[v_dt$by_cell_a]
+    v_dt$bty_tall_var_a = ys[v_dt$by_tall_var_a]
     # strategy = "by_destination"
     # strategy = "by_direction"
 
     v_dt = switch(strategy,
                   "by_destination" = {
-                      v_dt = v_dt[, list(tx_cell_b = mean(tx_cell_b), ty_cell_b = mean(ty_cell_b), N = .N), list(bx_cell_a, by_cell_a)]
-                      v_dt$tx_cell_a = xs[v_dt$bx_cell_a]
-                      v_dt$ty_cell_a = ys[v_dt$by_cell_a]
+                      v_dt = v_dt[, list(tx_tall_var_b = mean(tx_tall_var_b), ty_tall_var_b = mean(ty_tall_var_b), N = .N), list(bx_tall_var_a, by_tall_var_a)]
+                      v_dt$tx_tall_var_a = xs[v_dt$bx_tall_var_a]
+                      v_dt$ty_tall_var_a = ys[v_dt$by_tall_var_a]
                       v_dt
                   },
                   "by_direction" = {
-                      v_dt = v_dt[, list(tx_cell_b = mean(tx_cell_b - tx_cell_a), ty_cell_b = mean(ty_cell_b - ty_cell_a), N = .N), list(bx_cell_a, by_cell_a)]
-                      v_dt$tx_cell_b = xs[v_dt$bx_cell_a] + v_dt$tx_cell_b
-                      v_dt$ty_cell_b = ys[v_dt$by_cell_a] + v_dt$ty_cell_b
-                      v_dt$tx_cell_a = xs[v_dt$bx_cell_a]
-                      v_dt$ty_cell_a = ys[v_dt$by_cell_a]
+                      v_dt = v_dt[, list(tx_tall_var_b = mean(tx_tall_var_b - tx_tall_var_a), ty_tall_var_b = mean(ty_tall_var_b - ty_tall_var_a), N = .N), list(bx_tall_var_a, by_tall_var_a)]
+                      v_dt$tx_tall_var_b = xs[v_dt$bx_tall_var_a] + v_dt$tx_tall_var_b
+                      v_dt$ty_tall_var_b = ys[v_dt$by_tall_var_a] + v_dt$ty_tall_var_b
+                      v_dt$tx_tall_var_a = xs[v_dt$bx_tall_var_a]
+                      v_dt$ty_tall_var_a = ys[v_dt$by_tall_var_a]
                       v_dt
                   },
                   "individual_recentered" = {
                       v_dt = copy(v_dt)
-                      v_dt = v_dt[, tx_cell_b := tx_cell_b - tx_cell_a]
-                      v_dt = v_dt[, ty_cell_b := ty_cell_b - ty_cell_a]
-                      v_dt$tx_cell_b = xs[v_dt$bx_cell_a] + v_dt$tx_cell_b
-                      v_dt$ty_cell_b = ys[v_dt$by_cell_a] + v_dt$ty_cell_b
-                      v_dt$tx_cell_a = xs[v_dt$bx_cell_a]
-                      v_dt$ty_cell_a = ys[v_dt$by_cell_a]
+                      v_dt = v_dt[, tx_tall_var_b := tx_tall_var_b - tx_tall_var_a]
+                      v_dt = v_dt[, ty_tall_var_b := ty_tall_var_b - ty_tall_var_a]
+                      v_dt$tx_tall_var_b = xs[v_dt$bx_tall_var_a] + v_dt$tx_tall_var_b
+                      v_dt$ty_tall_var_b = ys[v_dt$by_tall_var_a] + v_dt$ty_tall_var_b
+                      v_dt$tx_tall_var_a = xs[v_dt$bx_tall_var_a]
+                      v_dt$ty_tall_var_a = ys[v_dt$by_tall_var_a]
                       v_dt
                   },
                   "normal" = {
@@ -330,10 +330,10 @@ calc_delta = function(tsne_dt, cell_a, cell_b, x_points, y_points = x_points, st
 #' plot_profiles_selected
 #'
 #' @param profile_dt a tidy data.table containing profile data.  variable names
-#' are id, cell, mark, x, y.
-#' @param qcells character vector of cells to show data for.
+#' are id, tall_var, wide_var, x, y.
+#' @param qtall_vars character vector of tall_vars to show data for.
 #' @param id_to_plot character vector of ids to show data for.
-#' @param color_mapping color_mapping for marks.
+#' @param color_mapping color_mapping for wide_vars.
 #'
 #' @return a ggplot
 #' @export
@@ -341,25 +341,25 @@ calc_delta = function(tsne_dt, cell_a, cell_b, x_points, y_points = x_points, st
 #' @examples
 #' data(profile_dt)
 #' plot_profiles_selected(profile_dt,
-#'     qcells = unique(profile_dt$cell)[1:2],
+#'     qtall_vars = unique(profile_dt$tall_var)[1:2],
 #'     id_to_plot = unique(profile_dt$id)[1:3]) +
 #'     theme(panel.spacing = unit(.04, "npc"))
 plot_profiles_selected = function(profile_dt,
-                                  qcells,
+                                  qtall_vars,
                                   id_to_plot,
                                   color_mapping = NULL) {
     if(is.null(color_mapping)){
-        color_mapping = seqsetvis::safeBrew(length(unique(profile_dt$mark)))
-        names(color_mapping) = unique(profile_dt$mark)
+        color_mapping = seqsetvis::safeBrew(length(unique(profile_dt$wide_var)))
+        names(color_mapping) = unique(profile_dt$wide_var)
     }
-    stopifnot(qcells %in% unique(profile_dt$cell))
+    stopifnot(qtall_vars %in% unique(profile_dt$tall_var))
     stopifnot(id_to_plot %in% profile_dt$id)
-    plot_dt = profile_dt[id %in% id_to_plot & cell %in% qcells]
-    plot_dt$cell = factor(plot_dt$cell, levels = qcells)
+    plot_dt = profile_dt[id %in% id_to_plot & tall_var %in% qtall_vars]
+    plot_dt$tall_var = factor(plot_dt$tall_var, levels = qtall_vars)
     plot_dt$id = factor(plot_dt$id, levels = id_to_plot)
 
-    p = ggplot(plot_dt, aes(x = x, ymin = 0, ymax = y, y = y, color = mark, fill = mark)) +
-        facet_grid("cell~id", switch = "y") +
+    p = ggplot(plot_dt, aes(x = x, ymin = 0, ymax = y, y = y, color = wide_var, fill = wide_var)) +
+        facet_grid("tall_var~id", switch = "y") +
         geom_ribbon(alpha = .5) +
         geom_path(show.legend = FALSE) +
         theme_classic() +

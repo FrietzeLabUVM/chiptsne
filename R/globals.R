@@ -9,8 +9,8 @@ globalVariables(c(
     "x",
     "y",
     "id",
-    "cell",
-    "mark",
+    "tall_var",
+    "wide_var",
     "tx",
     "ty",
     "rn",
@@ -18,9 +18,9 @@ globalVariables(c(
     "angle",
     "angle_bin",
     "bx",
-    "bx_cell_a",
-    "by_cell_a",
-    "cell_o",
+    "bx_tall_var_a",
+    "by_tall_var_a",
+    "tall_var_o",
     "grp",
     "grp_o",
     "ch_i",
@@ -31,11 +31,11 @@ globalVariables(c(
     "plot_id",
     "png_file",
     "foreground",
-    "tx_cell_a",
-    "tx_cell_b",
+    "tx_tall_var_a",
+    "tx_tall_var_b",
     "tx_end",
-    "ty_cell_a",
-    "ty_cell_b",
+    "ty_tall_var_a",
+    "ty_tall_var_b",
     "ty_end",
     "ysm",
     "flip_strand"
@@ -87,7 +87,7 @@ globalVariables(
     )
 )
 # .N N alpha angle angle_bin annotate arrow  bin_value bx
-# bx_cell_a by_cell_a cell_o ch_i coord_cartesian coord_polar copy
+# bx_tall_var_a by_tall_var_a tall_var_o ch_i coord_cartesian coord_polar copy
 # dcast distance element_blank element_text facet_grid facet_wrap
 # flip_strand foreground geom_curve geom_path geom_point geom_rect
 # geom_ribbon geom_segment ggplot ggsave gpar grp grp_o guides img_size
@@ -96,5 +96,5 @@ globalVariables(
 # scale_color_brewer scale_color_gradientn scale_color_manual
 # scale_fill_gradient2 scale_fill_gradientn scale_fill_manual
 # scale_size_continuous scale_x_continuous spline theme theme_classic
-# theme_void tstrsplit tx_cell_a tx_cell_b tx_end ty_cell_a ty_cell_b
+# theme_void tstrsplit tx_tall_var_a tx_tall_var_b tx_end ty_tall_var_a ty_tall_var_b
 # ty_end unit validObject var xmax xmin ymax ymin ynorm ysm
