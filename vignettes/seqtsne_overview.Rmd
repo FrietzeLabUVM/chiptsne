@@ -128,9 +128,9 @@ tsne_res = stsRunTsne(tsne_input$bw_dt, perplexity = perplexity)
 A basic plot facetted by the 3 cell lines.
 
 ```{r basic plot, fig.width=13, fig.height=4}
-ggplot(tsne_res, aes(x = tx, y = ty, color = cell)) + 
+ggplot(tsne_res, aes(x = tx, y = ty, color = tall_var)) + 
     geom_point() +
-    facet_wrap("cell")
+    facet_wrap("tall_var")
 
 ```
 
@@ -153,40 +153,40 @@ img_res
 The same idea as before but now facetted by cell.
 
 ```{r, fig.width=7.5, fig.height=3}
-summary_dt_byCell = prep_summary(tsne_input$bw_dt, tsne_res, x_points = n_points, facet_by = "cell")
+summary_dt_byCell = prep_summary(tsne_input$bw_dt, tsne_res, x_points = n_points, facet_by = "tall_var")
 img_byCell = prep_images(summary_dt_byCell, 
                          x_points = n_points,
                          line_color_mapping = color_mapping, 
-                         facet_by  = "cell")
-img_byCell_res = plot_summary_raster_byCell(img_byCell$image_dt, x_points = n_points)
-img_byCell_res
+                         facet_by  = "tall_var")
+img_bytall_var_res = plot_summary_raster_byCell(img_byCell$image_dt, x_points = n_points)
+img_bytall_var_res
 ```
 
 ## Velocity
 
 Arrows identity how regions behave between two groups.  Each arrow is drawn 
-from the postion in `cell_a` to position in `cell_b` with color mapped to 
+from the postion in `tall_var_a` to position in `tall_var_b` with color mapped to 
 angle to aid in pattern detection.
 
 ```{r, fig.width=8, fig.height=4}
-vel_dt = prep_velocity(tsne_res, cell_a = "HUES48", cell_b = "HUES64")
+vel_dt = prep_velocity(tsne_res, tall_var_a = "HUES48", tall_var_b = "HUES64")
 vel_res = plot_velocity_arrows(vel_dt)
 vel_res
 ```
 
 Individual arrows can be overwhelming, we can also employ a binning strategy
 to summarize the average destination in t-sne space for groups of points.
-Each arrow here is drawn to the average desination (`cell_b`) for all nearby 
-points (`cell_a`).
+Each arrow here is drawn to the average desination (`tall_var_b`) for all nearby 
+points (`tall_var_a`).
 
 ```{r, fig.width=4, fig.height=3}
-plot_regional_velocity(tsne_dt, cell_a = "HUES48", cell_b = "HUES64", x_points = n_points)
+plot_regional_velocity(tsne_dt, tall_var_a = "HUES48", tall_var_b = "HUES64", x_points = n_points)
 ```
 
 We can also layer the binned arrows on top of the binned profiles.
 
 ```{r, fig.width=4, fig.height=3}
-plot_regional_velocity(tsne_dt, cell_a = "HUES48", cell_b = "HUES64", 
+plot_regional_velocity(tsne_dt, tall_var_a = "HUES48", tall_var_b = "HUES64", 
                        x_points = n_points, p = img_res)#, p = img_res$plot)
 ```
 
@@ -196,7 +196,7 @@ Individual profiles can also be viewed.
 
 ```{r, fig.width=6, fig.height=3}
 plot_profiles_selected(tsne_input$bw_dt, 
-                       qcells = c("HUES48", "HUES64"), 
+                       qtall_vars = c("HUES48", "HUES64"), 
                        id_to_plot = query_gr$id[1:5], 
                        color_mapping = color_mapping)
 ```
