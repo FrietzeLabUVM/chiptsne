@@ -5,9 +5,9 @@
 \title{plot_summary_glyph}
 \usage{
 plot_summary_glyph(summary_dt, x_points, y_points = x_points,
-  xrng = c(-0.5, 0.5), yrng = c(-0.5, 0.5), p = NULL, N_floor = 0,
-  N_ceiling = NULL, min_size = 0.3, return_data = FALSE,
-  color_mapping = NULL)
+  xrng = c(-0.5, 0.5), yrng = c(-0.5, 0.5), ylim = NULL, p = NULL,
+  N_floor = 0, N_ceiling = NULL, min_size = 0.3,
+  return_data = FALSE, color_mapping = NULL)
 }
 \arguments{
 \item{summary_dt}{results from prep_summary()}
@@ -19,6 +19,8 @@ plot_summary_glyph(summary_dt, x_points, y_points = x_points,
 \item{xrng}{view domain in x dimension.}
 
 \item{yrng}{view domain in y dimension.}
+
+\item{ylim}{ylimits per glyph}
 
 \item{p}{an existing ggplot to overlay images onto.  Default of NULL starts a
 new plot.}

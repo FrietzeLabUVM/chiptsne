@@ -26,7 +26,9 @@
 #'   mc.cores is not set.
 #' @param rname rname to use with cache.  Default is a digest of arguments used
 #'   to fetch data.
-#' @param force_overwrite if TRUE, any contents of cache are overwritten.
+#' @param force_overwrite if TRUE, any contents of cache are overwritten. Default is FALSE.
+#' @param skip_checks if TRUE, cell and mark completeness checks are skipped.
+#'   Cell/mark combinations must be complete to run StsRunTsne(). Default is FALSE.
 #' @return a tidy data.table of profile data.
 #' @export
 #' @importFrom seqsetvis ssvFetchBigwig ssvFetchBam
@@ -55,7 +57,8 @@ stsFetchTsneInput = function(qdt,
                                                          qdt,
                                                          qwin,
                                                          qmet)),
-                             force_overwrite = FALSE){
+                             force_overwrite = FALSE,
+                             skip_checks = FALSE){
     stopifnot(is.data.frame(qdt))
     qgr = prep_query_gr(qgr, region_size)
 
@@ -81,14 +84,16 @@ stsFetchTsneInput = function(qdt,
                    paste(collapse = " ", qdt[[1]][!file.exists(qdt[[1]])])))
 
     }
-    if(!length(unique(qdt[, paste(sort(unique(mark)), collapse = ","),
-                          by = .(cell)]$V1)) == 1){
-        stop("Every mark should be mapped to every cell at least once.")
-    }
-    if(!length(unique(qdt[, paste(sort(unique(cell)), collapse = ","),
-                          by = .(mark)]$V1)) == 1){
-        stop("Every cell should be mapped to every mark at least once.")
+    if(!skip_checks){
+        if(!length(unique(qdt[, paste(sort(unique(mark)), collapse = ","),
+                              by = .(cell)]$V1)) == 1){
+            stop("Every mark should be mapped to every cell at least once.")
+        }
+        if(!length(unique(qdt[, paste(sort(unique(cell)), collapse = ","),
+                              by = .(mark)]$V1)) == 1){
+            stop("Every cell should be mapped to every mark at least once.")
 
+        }
     }
     if(is.null(file_format)){#try to determine file format
         test_file = tolower(qdt[[1]][1])

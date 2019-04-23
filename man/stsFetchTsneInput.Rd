@@ -8,7 +8,7 @@ stsFetchTsneInput(qdt, qgr, region_size = NULL, file_format = NULL,
   qwin = 50, qmet = "summary", cap_value = 20, agg_FUN = NULL,
   high_on_right = TRUE, bfc = BiocFileCache::BiocFileCache(),
   n_cores = getOption("mc.cores", 1), rname = digest::digest(list(qgr,
-  qdt, qwin, qmet)), force_overwrite = FALSE)
+  qdt, qwin, qmet)), force_overwrite = FALSE, skip_checks = FALSE)
 }
 \arguments{
 \item{qdt}{data.table containing, file, cell, mark, and optionally
@@ -42,7 +42,10 @@ mc.cores is not set.}
 \item{rname}{rname to use with cache.  Default is a digest of arguments used
 to fetch data.}
 
-\item{force_overwrite}{if TRUE, any contents of cache are overwritten.}
+\item{force_overwrite}{if TRUE, any contents of cache are overwritten. Default is FALSE.}
+
+\item{skip_checks}{if TRUE, cell and mark completeness checks are skipped.
+Cell/mark combinations must be complete to run StsRunTsne(). Default is FALSE.}
 }
 \value{
 a tidy data.table of profile data.

@@ -146,7 +146,6 @@ stsPlotSummaryProfiles = function(## basic inputs
     pos_dt$cell = factor(pos_dt$cell, levels = q_cells)
     if(plot_type == "raster"){
         #prepare images
-
         if (!facet_byCell) {
             summary_dt = prep_summary(prof_dt,
                                       pos_dt,
@@ -234,11 +233,17 @@ stsPlotSummaryProfiles = function(## basic inputs
                                       xrng,
                                       yrng,
                                       NULL)
-            plot_summary_glyph(summary_dt,
-                               x_points = x_points, y_points = y_points,
-                               xrng = xrng, yrng = yrng,
-                               N_floor = N_floor, N_ceiling = N_ceiling,
-                               color_mapping = line_color_mapping)
+            plot_summary_glyph(
+                summary_dt,
+                x_points = x_points,
+                y_points = y_points,
+                xrng = xrng,
+                yrng = yrng,
+                ylim = ylim,
+                N_floor = N_floor,
+                N_ceiling = N_ceiling,
+                color_mapping = line_color_mapping
+            )
         }else{
             summary_dt_l = lapply(q_cells, function(cl){
                 prep_summary(prof_dt[cell == cl],
@@ -251,11 +256,17 @@ stsPlotSummaryProfiles = function(## basic inputs
             })
             names(summary_dt_l) = q_cells
             summary_dt = rbindlist(summary_dt_l, use.names = TRUE, idcol = "cell")
-            plot_summary_glyph(summary_dt,
-                               x_points = x_points, y_points = y_points,
-                               xrng = xrng, yrng = yrng,
-                               N_floor = N_floor, N_ceiling = N_ceiling,
-                               color_mapping = line_color_mapping) +
+            plot_summary_glyph(
+                summary_dt,
+                x_points = x_points,
+                y_points = y_points,
+                xrng = xrng,
+                yrng = yrng,
+                ylim = ylim,
+                N_floor = N_floor,
+                N_ceiling = N_ceiling,
+                color_mapping = line_color_mapping
+            ) +
                 facet_wrap("cell")
         }
 
@@ -854,6 +865,7 @@ plot_summary_raster_byCell = function(image_dt,
 #' @param y_points numeric.  number of grid points to use in y dimension.
 #' @param xrng view domain in x dimension.
 #' @param yrng view domain in y dimension.
+#' @param ylim ylimits per glyph
 #' @param p an existing ggplot to overlay images onto.  Default of NULL starts a
 #'   new plot.
 #' @param N_floor The value of N to consider 0.  bins with N values <= N_floor
@@ -886,6 +898,7 @@ plot_summary_glyph = function(
     y_points = x_points,
     xrng = c(-.5, .5),
     yrng = c(-.5, .5),
+    ylim = NULL,
     p = NULL,
     N_floor = 0,
     N_ceiling = NULL,
@@ -896,6 +909,15 @@ plot_summary_glyph = function(
     summary_dt = set_size(summary_dt, N_floor, N_ceiling, size.name = "group_size")
     summary_dt = summary_dt[group_size >= min_size]
 
+    if(is.null(ylim)){
+         ylim = range(summary_dt$y)
+    }
+    ylim = range(ylim)
+    #apply ylimits
+    summary_dt[y < min(ylim), y := min(ylim)]
+    summary_dt[y > max(ylim), y := max(ylim)]
+
+    #apply sizing
     summary_dt[, x := x * group_size]
     summary_dt[, y := y * group_size]
 
@@ -907,8 +929,10 @@ plot_summary_glyph = function(
     down_scale = max(summary_dt$group_size)
 
     glyph_dt = as.data.table(GGally::glyphs(summary_dt,
-                                            x_major = "tx", x_minor = "x",
-                                            y_major = "ty", y_minor = "y",
+                                            x_major = "tx",
+                                            x_minor = "x",
+                                            y_major = "ty",
+                                            y_minor = "y",
                                             width = diff(xrng)/x_points*.95*down_scale,
                                             height = diff(yrng)/y_points*.95*down_scale))
     if(return_data){
