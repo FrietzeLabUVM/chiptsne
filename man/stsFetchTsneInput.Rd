@@ -5,10 +5,11 @@
 \title{stsFetchTsneInput}
 \usage{
 stsFetchTsneInput(qdt, qgr, region_size = NULL, file_format = NULL,
-  qwin = 50, qmet = "summary", cap_value = 20, agg_FUN = NULL,
-  high_on_right = TRUE, bfc = BiocFileCache::BiocFileCache(),
-  n_cores = getOption("mc.cores", 1), rname = digest::digest(list(qgr,
-  qdt, qwin, qmet)), force_overwrite = FALSE, skip_checks = FALSE)
+  qwin = 50, qmet = "summary", cap_value = 20, fetch_FUN = NULL,
+  agg_FUN = NULL, high_on_right = TRUE,
+  bfc = BiocFileCache::BiocFileCache(), n_cores = getOption("mc.cores",
+  1), rname = digest::digest(list(qgr, qdt, qwin, qmet, fetch_FUN)),
+  force_overwrite = FALSE, verbose = TRUE, skip_checks = FALSE)
 }
 \arguments{
 \item{qdt}{data.table containing, file, tall_var, wide_var, and optionally
@@ -28,6 +29,8 @@ bw.  Will be automatically determined from file extension if NULL.}
 
 \item{cap_value}{maximum allowed value.  useful for outlier handling.}
 
+\item{fetch_FUN}{function used to load and process data from files.}
+
 \item{agg_FUN}{function used to aggregate any duplicate tall_var+wide_var mappings in
 qdt.  Should accept a numeric vector and return a single value.}
 
@@ -43,6 +46,8 @@ mc.cores is not set.}
 to fetch data.}
 
 \item{force_overwrite}{if TRUE, any contents of cache are overwritten. Default is FALSE.}
+
+\item{verbose}{if TRUE outputs progress and log messages}
 
 \item{skip_checks}{if TRUE, tall_var and wide_var completeness checks are skipped.
 tall_var/wide_var combinations must be complete to run StsRunTsne(). Default is FALSE.}

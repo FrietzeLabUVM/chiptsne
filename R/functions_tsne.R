@@ -16,6 +16,7 @@
 #' @param bfc BiocFileCache obect to use when caching.
 #' @param rname rname to use when querying the cache. Default is a digest
 #' of 20 sampled rows and columns from the tsne input matrix and perplexity.
+#' @param verbose if TRUE logs and status are output as messages
 #' @param force_overwrite if TRUE, any contents of cache are overwritten.
 #'
 #' @return a tidy data.table containing t-sne embedding.  variable names
@@ -42,6 +43,8 @@ stsRunTsne = function(profile_dt,
                       norm1 = TRUE,
                       bfc = BiocFileCache::BiocFileCache(),
                       rname = NULL,
+                      Y_init = NULL,
+                      verbose = TRUE,
                       force_overwrite = FALSE){
 
     stopifnot(c("id", "tall_var", "wide_var", "x", "y") %in% colnames(profile_dt))
@@ -64,14 +67,24 @@ stsRunTsne = function(profile_dt,
             perplexity
         ))
     }
+    if(is.data.table(Y_init)){
+        Y_init = as.matrix(Y_init[, .(tx, ty)], rownames.value = paste(Y_init$id, Y_init$tall_var))
+        Y_init = Y_init[rownames(tsne_mat),]
+        stopifnot(ncol(Y_init) == 2)
+    }else{
+        stopifnot(is.null(Y_init))
+    }
+
+
     res_tsne = bfcif(bfc, rname,
                      FUN = function(){
                          Rtsne::Rtsne(tsne_mat,
+                                      Y_init = Y_init,
                                       num_threads = n_cores,
                                       perplexity = perplexity,
                                       check_duplicates = FALSE)
                      },
-                     force_overwrite = force_overwrite)
+                     force_overwrite = force_overwrite, verbose = verbose)
     tdt = as.data.table(res_tsne$Y)
     colnames(tdt) = c("tx", "ty")
     tdt$rn = rownames(tsne_mat)
@@ -103,69 +116,7 @@ stsRunTsne = function(profile_dt,
 }
 
 
-#' applies normalizations and transformations to prof_dt, a tidy data.table of
-#' profiles.
-#'
-#' @param prof_dt data.table of ChIP-seq signal profiles.
-#' @param norm_dt data.table containing norm_factor values for tall_var/wide_var
-#'   combinations.
-#' @param qgr GRanges
-#' @param cap_value numeric, ChIP-seq data is prone to outliers, which will wash
-#'   out weaker signal if not properly capped.  Default is Inf, i.e. no capping.
-#' @param high_on_right boolean, should profiles be flipped when most signal is
-#'   on the left? Default is TRUE.  This is appropriate when there is no
-#'   biological significance to the orientation of a signal, i.e. mirror image
-#'   profiles are equivalent.
-#'
-#' @return list of two items.  prepared version of prof_dt and query_gr modified
-#'   to reflect any flipping required by high_on_right.
-#' @export
-#' @rawNamespace import(data.table, except = c(shift, first, second, last))
-#' @examples
-#' data(profile_dt)
-#' data(query_gr)
-#' #typically, norm_dt is the same configuration table used to fetch prof_dt
-#' #here we derive a new norm_dt that will reduce H3K4me3 to 30% of H3K27me3.
-#' norm_dt = unique(profile_dt[, list(tall_var, wide_var)])
-#' norm_dt[, norm_factor := ifelse(wide_var == "H3K4me3", .3, 1)]
-#' prep_profile_dt(profile_dt, norm_dt, query_gr)
-prep_profile_dt = function(prof_dt,
-                           norm_dt,
-                           qgr,
-                           cap_value = Inf,
-                           high_on_right = TRUE){
-    x = y = norm_factor = tall_var = id = left_sum = right_sum =
-        needs_flip = .N = flipe_strand = fraction_flipped = NULL
 
-    if(!all(norm_dt$norm_factor == 1)){
-        prof_dt = merge(prof_dt, norm_dt, by = intersect(colnames(prof_dt),
-                                                         colnames(norm_dt)))
-        prof_dt[, y := y * norm_factor]
-        prof_dt$norm_factor = NULL
-    }
-    if(high_on_right){
-        balance_dt = prof_dt[, list(right_sum = sum(y[x > 0]),
-                                    left_sum = sum(y[x < 0])),
-                             by = list(tall_var, id)]
-        balance_dt = balance_dt[, list(needs_flip = left_sum > right_sum,
-                                       tall_var,
-                                       id)]
-        most_flipped = balance_dt[,
-                                  list(fraction_flipped = sum(needs_flip) / .N),
-                                  by = list(id)]
-        most_flipped[, flip_strand := fraction_flipped > .5]
-        GenomicRanges::strand(qgr) = "+"
-        GenomicRanges::strand(qgr)[most_flipped$flip_strand] = "-"
-        prof_dt = merge(prof_dt, balance_dt, by = c("id", "tall_var"))
-        remove(balance_dt)
-        prof_dt[needs_flip == TRUE, x := -x]
-        prof_dt$needs_flip = NULL
-    }
-    if(is.finite(cap_value)){
-        prof_dt[y > cap_value, y := cap_value]
-    }
-    list(prof_dt = prof_dt[], query_gr = qgr)
-}
 
 #' dt2mat
 #'

@@ -242,7 +242,9 @@ stsPlotSummaryProfiles = function(## basic inputs
                 ylim = ylim,
                 N_floor = N_floor,
                 N_ceiling = N_ceiling,
-                color_mapping = line_color_mapping
+                min_size = min_size,
+                color_mapping = line_color_mapping,
+                return_data = return_data
             )
         }else{
             summary_dt_l = lapply(q_tall_vars, function(cl){
@@ -256,18 +258,35 @@ stsPlotSummaryProfiles = function(## basic inputs
             })
             names(summary_dt_l) = q_tall_vars
             summary_dt = rbindlist(summary_dt_l, use.names = TRUE, idcol = "tall_var")
-            plot_summary_glyph(
-                summary_dt,
-                x_points = x_points,
-                y_points = y_points,
-                xrng = xrng,
-                yrng = yrng,
-                ylim = ylim,
-                N_floor = N_floor,
-                N_ceiling = N_ceiling,
-                color_mapping = line_color_mapping
-            ) +
-                facet_wrap("tall_var")
+            if(return_data){
+                plot_summary_glyph(
+                    summary_dt,
+                    x_points = x_points,
+                    y_points = y_points,
+                    xrng = xrng,
+                    yrng = yrng,
+                    ylim = ylim,
+                    N_floor = N_floor,
+                    N_ceiling = N_ceiling,
+                    min_size = min_size,
+                    color_mapping = line_color_mapping,
+                    return_data = return_data
+                )
+            }else{
+                plot_summary_glyph(
+                    summary_dt,
+                    x_points = x_points,
+                    y_points = y_points,
+                    xrng = xrng,
+                    yrng = yrng,
+                    ylim = ylim,
+                    N_floor = N_floor,
+                    N_ceiling = N_ceiling,
+                    min_size = min_size,
+                    color_mapping = line_color_mapping
+                ) +
+                    facet_wrap("tall_var")
+            }
         }
 
     }
@@ -315,6 +334,7 @@ prep_summary = function(profile_dt,
                                        ty >= min(yrng) &
                                        ty <= max(yrng)])
     #use positional info from position_dt to bin points
+    position_dt = position_dt[id %in% unique(profile_dt$id)]
     if(is.null(position_dt$bx))
         position_dt[, bx := bin_values(tx, x_points, xrng = xrng)]
     if(is.null(position_dt$by))
@@ -731,7 +751,7 @@ plot_summary_raster = function(image_dt,
     if(!is.null(line_color_mapping)){
         col_dt = image_dt[, .(tx, ty, wide_var = rep(names(line_color_mapping), each = nrow(image_dt)))]
         p = p + geom_point(data = col_dt,
-                       aes(x = tx, y = ty, color = wide_var)) +
+                           aes(x = tx, y = ty, color = wide_var)) +
             scale_color_manual(values = line_color_mapping)
     }
     p = p +
@@ -910,7 +930,7 @@ plot_summary_glyph = function(
     summary_dt = summary_dt[group_size >= min_size]
 
     if(is.null(ylim)){
-         ylim = range(summary_dt$y)
+        ylim = range(summary_dt$y)
     }
     ylim = range(ylim)
     #apply ylimits

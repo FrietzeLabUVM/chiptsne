@@ -7,7 +7,7 @@
 stsRunTsne(profile_dt, perplexity = 100,
   n_cores = getOption("mc.cores", 1), high_topright = TRUE,
   norm1 = TRUE, bfc = BiocFileCache::BiocFileCache(), rname = NULL,
-  force_overwrite = FALSE)
+  Y_init = NULL, verbose = TRUE, force_overwrite = FALSE)
 }
 \arguments{
 \item{profile_dt}{a tidy data.table for profile data as retrieved by
@@ -29,6 +29,8 @@ the space.}
 
 \item{rname}{rname to use when querying the cache. Default is a digest
 of 20 sampled rows and columns from the tsne input matrix and perplexity.}
+
+\item{verbose}{if TRUE logs and status are output as messages}
 
 \item{force_overwrite}{if TRUE, any contents of cache are overwritten.}
 }

@@ -370,3 +370,63 @@ plot_profiles_selected = function(profile_dt,
         scale_fill_manual(values = color_mapping)
     p
 }
+
+
+#' plot_flat
+#'
+#' plot to a temporary png and redraw as a flat image
+#'
+#' useful when svg would be too expensive due to high number of items
+#'
+#' @param p a ggplot object to render
+#' @param dpi dots per inch for temp png, default is 150
+#' @param width width in inches for temp png, default it 8
+#' @param height height in inches for temp png, default is 8
+#'
+#' @return a ggplot object containing flat image of original
+#' @export
+#'
+#' @examples
+plot_flat = function(p, dpi = 150, width = dev.size()[1], height = dev.size()[2], panel_only = FALSE){
+    if(panel_only){
+        pan = p +
+            theme(
+                title = element_blank(),
+                axis.title = element_blank(),
+                axis.text = element_blank(),
+                axis.ticks = element_blank(),
+                plot.margin = margin(0,0,0,0),
+                legend.position="none"
+
+            )
+        ggpan = ggplot_build(pan)
+        xlim = ggpan$layout$panel_scales_x[[1]]$range$range
+        ylim = ggpan$layout$panel_scales_y[[1]]$range$range
+
+        exp_f = ifelse(ggpan$layout$coord$expand, .05, 0)
+        exlim = scales::expand_range(xlim, exp_f)
+        eylim = scales::expand_range(ylim, exp_f)
+        # pan + annotate("point", x= exlim, y = eylim, color = "red") +
+        #     coord_cartesian(xlim = xlim, ylim = ylim, expand = ggpan$layout$coord$expand)
+        ggsave("tmp.png", plot = pan, width = width, height = height, units = "in", dpi = dpi)
+        df = data.frame(image = "tmp.png", xmin = min(exlim), ymin = min(eylim), xmax = max(exlim), ymax = max(eylim))
+        pf = ggplot(df,
+                    aes(image = image, xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax)) +
+            geom_image.rect() +
+            coord_cartesian(expand = FALSE)
+        pf$labels = p$labels
+        # pf$scales = p$scales
+        # pf2 = pf + geom_point(aes(x = xmin, y = ymin, color = xmin)) + scale_color_continuous()
+
+    }else{
+        ggsave("tmp.png", plot = p, width = width, height = height, units = "in", dpi = dpi)
+        df = data.frame(image = "tmp.png", xmin = 0, ymin = 0, xmax = 1, ymax = 1)
+        pf = ggplot(df,
+                    aes(image = image, xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax)) +
+            geom_image.rect() +
+            coord_cartesian(expand = FALSE) +
+            theme_void()
+
+    }
+    print(pf)
+}

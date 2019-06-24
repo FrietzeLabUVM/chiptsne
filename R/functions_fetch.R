@@ -17,6 +17,7 @@
 #' @param qwin number of datapoints to use to view each region
 #' @param qmet strategy to use in each region, summary or sample
 #' @param cap_value maximum allowed value.  useful for outlier handling.
+#' @param fetch_FUN function used to load and process data from files.
 #' @param agg_FUN function used to aggregate any duplicate tall_var+wide_var mappings in
 #'   qdt.  Should accept a numeric vector and return a single value.
 #' @param high_on_right if TRUE, profiles where highest signal is on the left
@@ -27,6 +28,7 @@
 #' @param rname rname to use with cache.  Default is a digest of arguments used
 #'   to fetch data.
 #' @param force_overwrite if TRUE, any contents of cache are overwritten. Default is FALSE.
+#' @param verbose if TRUE outputs progress and log messages
 #' @param skip_checks if TRUE, tall_var and wide_var completeness checks are skipped.
 #'   tall_var/wide_var combinations must be complete to run StsRunTsne(). Default is FALSE.
 #' @return a tidy data.table of profile data.
@@ -49,6 +51,7 @@ stsFetchTsneInput = function(qdt,
                              qwin = 50,
                              qmet = "summary",
                              cap_value = 20,
+                             fetch_FUN = NULL,
                              agg_FUN = NULL,
                              high_on_right = TRUE,
                              bfc = BiocFileCache::BiocFileCache(),
@@ -56,8 +59,10 @@ stsFetchTsneInput = function(qdt,
                              rname = digest::digest(list(qgr,
                                                          qdt,
                                                          qwin,
-                                                         qmet)),
+                                                         qmet,
+                                                         fetch_FUN)),
                              force_overwrite = FALSE,
+                             verbose = TRUE,
                              skip_checks = FALSE){
     stopifnot(is.data.frame(qdt))
     qgr = prep_query_gr(qgr, region_size)
@@ -78,10 +83,10 @@ stsFetchTsneInput = function(qdt,
         warning("attribute 'wide_var' not found, assuming third column is 'wide_var'.")
         colnames(qdt)[3] = "wide_var"
     }
-    if(!all(file.exists(qdt[[1]]))){
+    if(!all(file.exists(qdt$file))){
         stop(paste(sep = "\n", "\nFirst variable of qdt must be valid file paths.",
                    "Files not found:",
-                   paste(collapse = " ", qdt[[1]][!file.exists(qdt[[1]])])))
+                   paste(collapse = " ", qdt$file[!file.exists(qdt$file)])))
 
     }
     if(!skip_checks){
@@ -96,45 +101,70 @@ stsFetchTsneInput = function(qdt,
         }
     }
     if(is.null(file_format)){#try to determine file format
-        test_file = tolower(qdt[[1]][1])
+        test_file = tolower(qdt$file[1])
         if(grepl(".bw$", test_file) | grepl(".bigwig$", test_file)){
             file_format = "bw"
         }else if(grepl(".bam$", test_file)){
             file_format = "bam"
         }else{
-            stop("couldn't determine file_format of ", qdt[[1]][1],
+            stop("couldn't determine file_format of ", qdt$file[1],
                  "\nplease manually set file_format to bam or bw (bigWig).")
         }
 
     }
     stopifnot(file_format %in% c("bam", "bw"))
+    if(is.null(fetch_FUN)){
+        fetch_FUN = switch(file_format,
+                           bam = {
+                               if(verbose)
+                                   message(
+                                       "Using default fetch_FUN for bam data.",
+                                       "\nfragLen will be automatically calculated",
+                                       " and pileup will be sum of both strands."
+                                   )
+                               fetch_bam_dt
+                           },
+                           bw = {
+                               if(verbose)
+                                   message("Using default fetch_FUN for bigwig data.")
+                               fetch_bw_dt
+                           })
+    }
     if(is.null(agg_FUN)){
         agg_FUN = switch(file_format,
                          bam = {
-                             message("for bam input, choosing sum() ",
-                                     "to aggregate any tall_var/wide_var duplicates.")
+                             if(verbose)
+                                 message("for bam input, choosing sum() ",
+                                         "to aggregate any tall_var/wide_var duplicates.")
                              sum
                          },
                          bw = {
-                             message("for bigwig input, choosing mean() ",
-                                     "to aggregate any tall_var/wide_var duplicates.")
+                             if(verbose)
+                                 message("for bigwig input, choosing mean() ",
+                                         "to aggregate any tall_var/wide_var duplicates.")
                              mean
                          })
 
     }
-    fetch_FUN = switch(file_format,
-                       bam = fetch_bam_dt,
-                       bw = fetch_bw_dt)
+
+
+
+    # browser()
     # fetch tidy data
-    bw_dt = fetch_FUN(qdt, qgr, qwin, qmet,
+    bw_dt = fetch_FUN(qdt[, .(file)],
+                      qgr,
+                      qwin,
+                      qmet,
                       agg_FUN,
                       bfc,
                       n_cores,
                       rname,
-                      force_overwrite)
+                      force_overwrite,
+                      verbose)
+
     # apply transforms and thresholds
     prep_res = prep_profile_dt(bw_dt,
-                               unique(qdt[, list(tall_var, wide_var, norm_factor)]),
+                               qdt,#unique(qdt[, list(file, tall_var, wide_var, norm_factor)]),
                                qgr,
                                cap_value = cap_value,
                                high_on_right = high_on_right)
@@ -142,7 +172,7 @@ stsFetchTsneInput = function(qdt,
     qgr = prep_res[[2]]
 
 
-    return(list(bw_dt = bw_dt, query_gr = qgr))
+    return(list(bw_dt = bw_dt, query_gr = qgr, rname = rname))
 }
 
 #' fetch_bam_dt
@@ -184,13 +214,10 @@ fetch_bam_dt = function(qdt,
                         qwin = 50,
                         qmet = "summary",
                         agg_FUN = sum,
-                        bfc = NULL,#BiocFileCache::BiocFileCache(),
+                        bfc = NULL,
                         n_cores = getOption("mc.cores", 1),
-                        rname = NULL,#digest::digest(list(qgr,
-                        #            qdt[, 1:3],
-                        #            qwin,
-                        #           qmet)),
-                        force_overwrite = FALSE){
+                        rname = NULL,
+                        force_overwrite = FALSE, verbose = TRUE){
     #how to handle stranded?
     #how to handle frag lens?
     if(is.null(bfc)){
@@ -198,17 +225,14 @@ fetch_bam_dt = function(qdt,
     }
     if(is.null(rname)){
         rname = digest::digest(list(qgr,
-                                    qdt[, seq(3), with = FALSE],
+                                    qdt,
                                     qwin,
                                     qmet))
     }
     stopifnot(is.data.frame(qdt))
     qdt = as.data.table(qdt)
-    if(is.null(qdt$norm_factor)){
-        qdt$norm_factor = 1
-    }
-    if(!all(file.exists(qdt[[1]]))){
-        missing_files = qdt[[1]][!file.exists(qdt[[1]])]
+    if(!all(file.exists(qdt$file))){
+        missing_files = qdt$file[!file.exists(qdt$file)]
         stop(paste(sep = "\n",
                    "\nFirst variable of qdt must be valid file paths.",
                    "Files not found:",
@@ -217,15 +241,97 @@ fetch_bam_dt = function(qdt,
     }
 
     bam_fetch = function(){
-        seqsetvis::ssvFetchBam(qdt[, seq(3), with = FALSE], qgr,
+        seqsetvis::ssvFetchBam(qdt, qgr, names_variable = "file",
                                return_data.table = TRUE,
                                win_method = qmet,
                                win_size = qwin,
                                n_cores = n_cores)
     }
     bam_dt = bam_fetch()
-    bam_dt$sample = NULL
-    bam_dt = bam_dt[, list(y = agg_FUN(y)), list(tall_var, id, wide_var, x)]
+    # bam_dt$sample = NULL
+    # bam_dt = bam_dt[, list(y = agg_FUN(y)), list(tall_var, id, wide_var, x)]
+    bam_dt
+}
+
+#' fetch_bam_stranded_dt
+#'
+#' fetches a tidy data.table of scores from bigwigs, automatically uses cache.
+#' In contrast to fetch_bam_dt, fragment size is not calculated and fragments
+#' are not extended and pileup per strand is stored.
+#'
+#' @param qdt data.table containing, file, tall_var, wide_var, and optionally
+#'   norm_factor
+#' @param qgr GRanges of regions to fetch
+#' @param qwin number of datapoints to use to view each region
+#' @param qmet strategy to use in each region, summary or sample
+#' @param agg_FUN function used to aggregate any duplicate tall_var+wide_var mappings in
+#'   qdt. Should accept a numeric vector and return a single value.
+#' @param bfc BiocFileCache object to use to cache data
+#' @param n_cores number of cores to use. Defaults to value of mc.cores or 1 if
+#'   mc.cores is not set.
+#' @param rname rname to use with cache.  Default is a digest of arguments used
+#'   to fetch data.
+#' @param force_overwrite if TRUE, any contents of cache are overwritten.
+#'
+#' @return a tidy data.table of profile data.
+#' @export
+#' @importFrom BiocFileCache BiocFileCache
+#' @importFrom digest digest
+#' @importFrom seqsetvis ssvFetchBam
+#' @rawNamespace import(data.table, except = c(shift, first, second, last))
+#' @examples
+#' data("query_gr")
+#' bam_files = dir(system.file('extdata', package = "seqtsne"),
+#'     pattern = ".bam$", full.names = TRUE)
+#' cfg_dt = data.table(file = bam_files)
+#' cfg_dt[, c("tall_var", "wide_var") := tstrsplit(basename(file), "_", keep = 1:2)]
+#' cfg_dt = cfg_dt[tall_var %in% c("ESH1", "HUES48", "HUES64")]
+#' cfg_dt[, norm_factor := ifelse(wide_var == "H3K4me3", .3, 1)]
+#' profile_dt = fetch_bam_stranded_dt(cfg_dt, query_gr)
+#' profile_dt
+fetch_bam_stranded_dt = function(qdt,
+                                 qgr,
+                                 qwin = 50,
+                                 qmet = "summary",
+                                 agg_FUN = sum,
+                                 bfc = NULL,
+                                 n_cores = getOption("mc.cores", 1),
+                                 rname = NULL,
+                                 force_overwrite = FALSE, verbose = TRUE){
+    #how to handle stranded?
+    #how to handle frag lens?
+    if(is.null(bfc)){
+        bfc = BiocFileCache::BiocFileCache()
+    }
+    if(is.null(rname)){
+        rname = digest::digest(list(qgr,
+                                    qdt,
+                                    qwin,
+                                    qmet))
+    }
+    stopifnot(is.data.frame(qdt))
+    qdt = as.data.table(qdt)
+    if(!all(file.exists(qdt$file))){
+        missing_files = qdt$file[!file.exists(qdt$file)]
+        stop(paste(sep = "\n",
+                   "\nFirst variable of qdt must be valid file paths.",
+                   "Files not found:",
+                   paste(collapse = " ", missing_files)))
+
+    }
+
+    bam_fetch = function(){
+        seqsetvis::ssvFetchBam(qdt, qgr, names_variable = "file",
+                               target_strand = "both",
+                               fragLens = NA,
+                               return_data.table = TRUE,
+                               win_method = qmet,
+                               win_size = qwin,
+                               n_cores = n_cores)
+    }
+    bam_dt = bfcif(bfc, rname, bam_fetch, force_overwrite = force_overwrite, verbose = verbose)
+    # bam_dt$sample = NULL
+    # bam_dt = bam_dt[, list(y = agg_FUN(y)), list(tall_var, id, wide_var, x)]
     bam_dt
 }
 
@@ -270,13 +376,14 @@ fetch_bw_dt = function(qdt,
                        bfc = NULL,
                        n_cores = getOption("mc.cores", 1),
                        rname = NULL,
-                       force_overwrite = FALSE){
+                       force_overwrite = FALSE,
+                       verbose = TRUE){
     if(is.null(bfc)){
         bfc = BiocFileCache::BiocFileCache()
     }
     if(is.null(rname)){
         rname = digest::digest(list(qgr,
-                                    qdt[, seq(3), with = FALSE],
+                                    qdt,
                                     qwin,
                                     qmet))
     }
@@ -287,22 +394,23 @@ fetch_bw_dt = function(qdt,
     }
     stopifnot(is.data.frame(qdt))
     qdt = as.data.table(qdt)
-    if(!all(file.exists(qdt[[1]]))){
+    if(!all(file.exists(qdt$file))){
         stop(paste(sep = "\n",
                    "\nFirst variable of qdt must be valid file paths.",
                    "Files not found:",
-                   paste(collapse = " ", qdt[[1]][!file.exists(qdt[[1]])])))
+                   paste(collapse = " ", qdt$file[!file.exists(qdt$file)])))
 
     }
 
     bw_fetch = function(){
-        seqsetvis::ssvFetchBigwig(qdt[, seq(3), with = FALSE], qgr,
+        seqsetvis::ssvFetchBigwig(qdt, qgr, names_variable = "file",
                                   return_data.table = TRUE,
                                   win_method = qmet,
                                   win_size = qwin, n_cores = n_cores)
     }
-    bw_dt = bfcif(bfc, rname, bw_fetch, force_overwrite = force_overwrite)
-    bw_dt = bw_dt[, list(y = agg_FUN(y)), list(tall_var, id, wide_var, x)]
+    # browser()
+    bw_dt = bfcif(bfc, rname, bw_fetch, force_overwrite = force_overwrite, verbose = verbose)
+    # bw_dt = bw_dt[, list(y = agg_FUN(y)), list(tall_var, id, wide_var, x)]
     bw_dt
 }
 
@@ -374,4 +482,67 @@ prep_query_gr = function(query_gr,
     query_gr$name = NULL
     query_gr$id = paste(id_prefix, seq(length(query_gr)), sep = "_")
     query_gr
+}
+
+#' applies normalizations and transformations to prof_dt, a tidy data.table of
+#' profiles.
+#'
+#' @param prof_dt data.table of ChIP-seq signal profiles.
+#' @param norm_dt data.table containing norm_factor values for tall_var/wide_var
+#'   combinations.
+#' @param qgr GRanges
+#' @param cap_value numeric, ChIP-seq data is prone to outliers, which will wash
+#'   out weaker signal if not properly capped.  Default is Inf, i.e. no capping.
+#' @param high_on_right boolean, should profiles be flipped when most signal is
+#'   on the left? Default is TRUE.  This is appropriate when there is no
+#'   biological significance to the orientation of a signal, i.e. mirror image
+#'   profiles are equivalent.
+#'
+#' @return list of two items.  prepared version of prof_dt and query_gr modified
+#'   to reflect any flipping required by high_on_right.
+#' @export
+#' @rawNamespace import(data.table, except = c(shift, first, second, last))
+#' @examples
+#' data(profile_dt)
+#' data(query_gr)
+#' #typically, norm_dt is the same configuration table used to fetch prof_dt
+#' #here we derive a new norm_dt that will reduce H3K4me3 to 30% of H3K27me3.
+#' norm_dt = unique(profile_dt[, list(tall_var, wide_var)])
+#' norm_dt[, norm_factor := ifelse(wide_var == "H3K4me3", .3, 1)]
+#' prep_profile_dt(profile_dt, norm_dt, query_gr)
+prep_profile_dt = function(prof_dt,
+                           norm_dt,
+                           qgr,
+                           cap_value = Inf,
+                           high_on_right = TRUE){
+    x = y = norm_factor = tall_var = id = left_sum = right_sum =
+        needs_flip = .N = flipe_strand = fraction_flipped = NULL
+    prof_dt = merge(prof_dt, norm_dt, by = intersect(colnames(prof_dt),
+                                                     colnames(norm_dt)))
+    if(!all(norm_dt$norm_factor == 1)){
+        prof_dt[, y := y * norm_factor]
+        # prof_dt$norm_factor = NULL
+    }
+    if(high_on_right){
+        balance_dt = prof_dt[, list(right_sum = sum(y[x > 0]),
+                                    left_sum = sum(y[x < 0])),
+                             by = list(tall_var, id)]
+        balance_dt = balance_dt[, list(needs_flip = left_sum > right_sum,
+                                       tall_var,
+                                       id)]
+        most_flipped = balance_dt[,
+                                  list(fraction_flipped = sum(needs_flip) / .N),
+                                  by = list(id)]
+        most_flipped[, flip_strand := fraction_flipped > .5]
+        GenomicRanges::strand(qgr) = "+"
+        GenomicRanges::strand(qgr)[most_flipped$flip_strand] = "-"
+        prof_dt = merge(prof_dt, balance_dt, by = c("id", "tall_var"))
+        remove(balance_dt)
+        prof_dt[needs_flip == TRUE, x := -x]
+        prof_dt$needs_flip = NULL
+    }
+    if(is.finite(cap_value)){
+        prof_dt[y > cap_value, y := cap_value]
+    }
+    list(prof_dt = prof_dt[], query_gr = qgr)
 }

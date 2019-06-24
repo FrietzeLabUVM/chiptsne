@@ -13,9 +13,11 @@ cfg_dt = data.table(file = bw_files)
 cfg_dt[, c("tall_var", "wide_var") := tstrsplit(basename(file), "_", keep = 1:2)]
 cfg_dt[, norm_factor := ifelse(wide_var == "H3K4me3", .3, 1)]
 # save(query_gr, cfg_dt, file = "tmp2_bw.save")
+# debug(prep_profile_dt)
 tsne_input = stsFetchTsneInput(cfg_dt, query_gr, force_overwrite = TRUE)
+
 test_that("stsFetchTsneInput dimensions of outputs", {
-    expect_equal(names(tsne_input), c("bw_dt", "query_gr"))
+    expect_equal(names(tsne_input), c("bw_dt", "query_gr", "rname"))
     expect_equal(nrow(tsne_input$bw_dt), length(query_gr)*nrow(cfg_dt)*50)
     expect_equal(length(tsne_input$query_gr), length(query_gr))
 
@@ -26,6 +28,18 @@ tsne_res = stsRunTsne(tsne_input$bw_dt, perplexity = 15, force_overwrite = TRUE)
 test_that("stsRunTsne dimensions of outputs", {
     expect_equal(colnames(tsne_res), c("tx", "ty", "id", "tall_var"))
     expect_equal(nrow(tsne_res), length(query_gr)*length(unique(cfg_dt$tall_var)))
+})
+
+test_that("stsRunTsne config attributes pass through", {
+    cfg_dt_extra = cfg_dt
+    cfg_dt_extra[, cell := tall_var]
+    cfg_dt_extra[, mark := wide_var]
+    tsne_input = stsFetchTsneInput(cfg_dt_extra, query_gr, force_overwrite = TRUE)
+    obs = sort(colnames(tsne_input$bw_dt))
+    obs = setdiff(obs, c("id", "x", "y", "start", "end", "width", "strand", "seqnames"))
+    exp = sort(colnames(cfg_dt_extra))
+    # exp = setdiff(exp, "file")
+    expect_equal(obs, exp)
 })
 #
 #

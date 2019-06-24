@@ -14,11 +14,13 @@ cfg_dt[, c("tall_var", "wide_var") := tstrsplit(basename(file), "_", keep = 1:2)
 cfg_dt = cfg_dt[tall_var %in% c("ESH1", "HUES48", "HUES64")]
 cfg_dt[, norm_factor := ifelse(wide_var == "H3K4me3", .3, 1)]
 
+# debug(seqsetvis::ssvFetchBam)
+# debug(prep_profile_dt)
 tsne_input = stsFetchTsneInput(cfg_dt, query_gr, force_overwrite = TRUE)
 
 
 test_that("stsFetchTsneInput dimensions of outputs", {
-    expect_equal(names(tsne_input), c("bw_dt", "query_gr"))
+    expect_equal(names(tsne_input), c("bw_dt", "query_gr", "rname"))
     expect_equal(nrow(tsne_input$bw_dt), length(query_gr)*nrow(cfg_dt)*50)
     # expect_equal(nrow(tsne_input$bw_mat), length(query_gr)*length(unique(cfg_dt$tall_var)))
     # expect_equal(ncol(tsne_input$bw_mat), length(unique(cfg_dt$wide_var))*50)

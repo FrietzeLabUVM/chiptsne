@@ -6,7 +6,7 @@
 \usage{
 fetch_bam_dt(qdt, qgr, qwin = 50, qmet = "summary", agg_FUN = sum,
   bfc = NULL, n_cores = getOption("mc.cores", 1), rname = NULL,
-  force_overwrite = FALSE)
+  force_overwrite = FALSE, verbose = TRUE)
 }
 \arguments{
 \item{qdt}{data.table containing, file, tall_var, wide_var, and optionally
