@@ -1,7 +1,7 @@
 testthat::context("tsne cluster")
 
 library(data.table)
-library(seqtsne)
+library(chiptsne)
 library(testthat)
 
 data("query_gr")

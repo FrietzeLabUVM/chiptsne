@@ -3,7 +3,7 @@ if(!exists("LOADED")){
     library(shiny)
     library(data.table)
     library(seqsetvis)
-    library(seqtsne)
+    library(chiptsne)
     library(magrittr)
     library(GenomicRanges)
     options(mc.cores = 16)

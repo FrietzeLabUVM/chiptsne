@@ -1,7 +1,7 @@
 testthat::context("tsne path")
 
 library(data.table)
-library(seqtsne)
+library(chiptsne)
 library(testthat)
 
 data("query_gr")

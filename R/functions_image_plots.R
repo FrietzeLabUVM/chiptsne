@@ -304,8 +304,8 @@ stsPlotSummaryProfiles = function(## basic inputs
 #'   Defaults to same value as x_points.
 #' @param xrng view domain in x dimension, default is range of position_dt$tx.
 #' @param yrng view domain in y dimension, default is range of position_dt$ty.
-#' @param facet_by character. varaible name to facet profile_dt by when
-#'   constructing images. The only valid non-null value with seqtsne functions
+#' @param facet_by character. variable name to facet profile_dt by when
+#'   constructing images. The only valid non-null value with chiptsne functions
 #'   is "tall_var".
 #'
 #' @return summary of profiles binned across tsne space according to x_points,
@@ -382,7 +382,7 @@ prep_summary = function(profile_dt,
 #' @param ylim y-limits of regional summary plots.  Default of c(0, 1) is
 #'   compatible with apply_norm = TRUE.
 #' @param facet_by character. varaible name to facet profile_dt by when
-#'   constructing images. The only valid non-null value with seqtsne functions
+#'   constructing images. The only valid non-null value with chiptsne functions
 #'   is "tall_var".
 #' @param n_splines number of points to interpolate with splines.
 #' @param ma_size moving average size when smoothing profiles.

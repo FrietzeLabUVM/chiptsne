@@ -1,14 +1,14 @@
 testthat::context("Bigwig files")
 
 library(data.table)
-library(seqtsne)
+library(chiptsne)
 library(testthat)
 
 data("query_gr")
 
 options("mc.cores" = 2)
 
-bw_files = dir(system.file('extdata', package = "seqtsne"), pattern = ".bw$", full.names = TRUE)
+bw_files = dir(system.file('extdata', package = "chiptsne"), pattern = ".bw$", full.names = TRUE)
 cfg_dt = data.table(file = bw_files)
 cfg_dt[, c("tall_var", "wide_var") := tstrsplit(basename(file), "_", keep = 1:2)]
 cfg_dt[, norm_factor := ifelse(wide_var == "H3K4me3", .3, 1)]

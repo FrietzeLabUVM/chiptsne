@@ -1,7 +1,7 @@
 
 ## load dependencies
 library(testthat)
-library(seqtsne)
+library(chiptsne)
 library(data.table)
 
 ## test package

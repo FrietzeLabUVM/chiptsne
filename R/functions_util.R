@@ -32,7 +32,7 @@
 #' bfcif(bfc, "fun_results_3", my_fun1, verbose = TRUE, return_path_only = TRUE)
 bfcif = function(bfc, rname, FUN, force_overwrite = FALSE, return_path_only = FALSE, verbose = FALSE){
     # is rname in cache?
-    if(nrow(BiocFileCache::bfcquery(bfc, query = rname, field = "rname")) == 0){
+    if(nrow(BiocFileCache::bfcquery(bfc, query = rname, field = "rname", exact = TRUE)) == 0){
         if(verbose) message("results not in cache. ", appendLF = FALSE)
         cache_path = BiocFileCache::bfcnew(bfc, rname = rname)
 
@@ -92,10 +92,10 @@ sampleCap = function(x, n = 500){
 #' @importFrom scales rescale
 #' @examples
 #' #behaves identically to scales::rescale when x is within 'from' domain
-#' seqtsne:::rescale_capped(0:10, to = c(0, 1), c(0, 10))
+#' chiptsne:::rescale_capped(0:10, to = c(0, 1), c(0, 10))
 #' scales::rescale(0:10, to = c(0, 1), c(0, 10))
 #' #when x exceeds 'from' domain, results are still within 'to' domain
-#' seqtsne:::rescale_capped(0:10, to = c(0,1), c(0,5))
+#' chiptsne:::rescale_capped(0:10, to = c(0,1), c(0,5))
 #' #not true for scales::rescale
 #' scales::rescale(0:10, to = c(0,1), c(0,5))
 rescale_capped = function(x, to = c(0,1), from = range(x, na.rm = TRUE, finite = TRUE)){

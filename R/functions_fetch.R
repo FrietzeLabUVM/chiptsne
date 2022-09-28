@@ -37,7 +37,7 @@
 #' @rawNamespace import(data.table, except = c(shift, first, second, last))
 #' @examples
 #' data("query_gr")
-#' bw_files = dir(system.file('extdata', package = "seqtsne"), pattern = ".bw$", full.names = TRUE)
+#' bw_files = dir(system.file('extdata', package = "chiptsne"), pattern = ".bw$", full.names = TRUE)
 #' cfg_dt = data.table(file = bw_files)
 #' cfg_dt[, c("tall_var", "wide_var") := tstrsplit(basename(file), "_", keep = 1:2)]
 #' cfg_dt = cfg_dt[tall_var %in% c("ESH1", "HUES48", "HUES64")]
@@ -201,7 +201,7 @@ stsFetchTsneInput = function(qdt,
 #' @rawNamespace import(data.table, except = c(shift, first, second, last))
 #' @examples
 #' data("query_gr")
-#' bam_files = dir(system.file('extdata', package = "seqtsne"),
+#' bam_files = dir(system.file('extdata', package = "chiptsne"),
 #'     pattern = ".bam$", full.names = TRUE)
 #' cfg_dt = data.table(file = bam_files)
 #' cfg_dt[, c("tall_var", "wide_var") := tstrsplit(basename(file), "_", keep = 1:2)]
@@ -217,7 +217,9 @@ fetch_bam_dt = function(qdt,
                         bfc = NULL,
                         n_cores = getOption("mc.cores", 1),
                         rname = NULL,
-                        force_overwrite = FALSE, verbose = TRUE){
+                        force_overwrite = FALSE,
+                        verbose = TRUE,
+                        fragLens = NULL){
     #how to handle stranded?
     #how to handle frag lens?
     if(is.null(bfc)){
@@ -242,10 +244,12 @@ fetch_bam_dt = function(qdt,
 
     bam_fetch = function(){
         seqsetvis::ssvFetchBam(qdt, qgr, names_variable = "file",
+                               fragLens = fragLens,
                                return_data.table = TRUE,
                                win_method = qmet,
                                win_size = qwin,
-                               n_cores = n_cores)
+                               n_cores = n_cores,
+                               n_region_splits = 50)
     }
     bam_dt = bam_fetch()
     # bam_dt$sample = NULL
@@ -281,7 +285,7 @@ fetch_bam_dt = function(qdt,
 #' @rawNamespace import(data.table, except = c(shift, first, second, last))
 #' @examples
 #' data("query_gr")
-#' bam_files = dir(system.file('extdata', package = "seqtsne"),
+#' bam_files = dir(system.file('extdata', package = "chiptsne"),
 #'     pattern = ".bam$", full.names = TRUE)
 #' cfg_dt = data.table(file = bam_files)
 #' cfg_dt[, c("tall_var", "wide_var") := tstrsplit(basename(file), "_", keep = 1:2)]
@@ -327,7 +331,8 @@ fetch_bam_stranded_dt = function(qdt,
                                return_data.table = TRUE,
                                win_method = qmet,
                                win_size = qwin,
-                               n_cores = n_cores)
+                               n_cores = n_cores,
+                               n_region_splits = 50)
     }
     bam_dt = bfcif(bfc, rname, bam_fetch, force_overwrite = force_overwrite, verbose = verbose)
     # bam_dt$sample = NULL
@@ -360,7 +365,7 @@ fetch_bam_stranded_dt = function(qdt,
 #' @importFrom GenomicRanges width
 #' @examples
 #' data("query_gr")
-#' bw_files = dir(system.file('extdata', package = "seqtsne"),
+#' bw_files = dir(system.file('extdata', package = "chiptsne"),
 #'     pattern = ".bw$", full.names = TRUE)
 #' cfg_dt = data.table(file = bw_files)
 #' cfg_dt[, c("tall_var", "wide_var") := tstrsplit(basename(file), "_", keep = 1:2)]
@@ -406,7 +411,8 @@ fetch_bw_dt = function(qdt,
         seqsetvis::ssvFetchBigwig(qdt, qgr, names_variable = "file",
                                   return_data.table = TRUE,
                                   win_method = qmet,
-                                  win_size = qwin, n_cores = n_cores)
+                                  win_size = qwin, n_cores = n_cores,
+                                  n_region_splits = 50)
     }
     # browser()
     bw_dt = bfcif(bfc, rname, bw_fetch, force_overwrite = force_overwrite, verbose = verbose)

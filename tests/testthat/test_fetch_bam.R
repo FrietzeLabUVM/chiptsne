@@ -1,14 +1,14 @@
 testthat::context("Bam files")
 
 library(data.table)
-library(seqtsne)
+library(chiptsne)
 library(testthat)
 
 data("query_gr")
 
 options("mc.cores" = 2)
 
-bam_files = dir(system.file('extdata', package = "seqtsne"), pattern = ".bam$", full.names = TRUE)
+bam_files = dir(system.file('extdata', package = "chiptsne"), pattern = ".bam$", full.names = TRUE)
 cfg_dt = data.table(file = bam_files)
 cfg_dt[, c("tall_var", "wide_var") := tstrsplit(basename(file), "_", keep = 1:2)]
 cfg_dt = cfg_dt[tall_var %in% c("ESH1", "HUES48", "HUES64")]
@@ -37,7 +37,7 @@ test_that("stsRunTsne zero variance error", {
 
 data("bam_pileup_dt")
 tsne_input$bw_dt = bam_pileup_dt
-tsne_input$bw_mat = seqtsne:::dt2mat(bam_pileup_dt, wide_vars = unique(bam_pileup_dt$wide_var))
+tsne_input$bw_mat = chiptsne:::dt2mat(bam_pileup_dt, wide_vars = unique(bam_pileup_dt$wide_var))
 
 tsne_res = stsRunTsne(tsne_input$bw_dt,
            perplexity = 15, force_overwrite = TRUE)

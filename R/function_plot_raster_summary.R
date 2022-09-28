@@ -1,5 +1,27 @@
 
-#' plot_raster_summary of a value
+
+#' aggregate_signals
+#'
+#' @param profile_dt
+#' @param agg_FUN
+#' @param xmin
+#' @param xmax
+#' @param by_
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' aggregate_signals(profile_dt)
+#' aggregate_signals(profile_dt, xmin = -.2, xmax = .2, agg_FUN = mean)
+aggregate_signals = function(profile_dt, agg_FUN = max, y_ = "y", yout_ = "ynorm",
+                             xmin = -Inf, xmax = Inf, by_ = c("tall_var", "wide_var")){
+    agg_dt = profile_dt[x >= xmin & x <= xmax, .(val_ = agg_FUN(get(y_))), by = c("id", by_)]
+    agg_dt[[yout_]] = agg_dt$val_
+    agg_dt[, c(yout_, "id", by_), with = FALSE]
+}
+
+#' plot_binned_aggregates
 #'
 #' @param agg_dt
 #' @param xbins
@@ -18,15 +40,15 @@
 #' @export
 #'
 #' @examples
-#' agg_dt = profile_dt[, .(y = mean(y)), .(id, tall_var, wide_var)]
+#' agg_dt = aggregate_signals(profile_dt)#[, .(y = mean(y)), .(id, tall_var, wide_var)]
 #' agg_dt = merge(agg_dt, tsne_dt, by = c("id", "tall_var"))
 #' #control resolution in x and y separately
 #' plot_raster_summary(agg_dt, facet_ = c("tall_var", "wide_var"),
 #'     xbins = 2, ybins = 3)
 #' #filter out sparse regions
 #' plot_raster_summary(agg_dt, facet_ = c("tall_var", "wide_var"),
-#'     xbins = 2, min_size = 10, xrng =  c(-.5, .5))
-plot_raster_summary = function(agg_dt,
+#'     xbins = 12, min_size = 0, xrng =  c(-.5, .5))
+plot_binned_aggregates = function(agg_dt,
                                xbins = 50,
                                ybins = xbins,
                                xrng = NULL,
@@ -42,10 +64,12 @@ plot_raster_summary = function(agg_dt,
 
     if(is.null(xrng)) xrng = range(agg_dt[[bxval]])
     if(is.null(yrng)) yrng = range(agg_dt[[byval]])
-    agg_dt[, bx := bin_values(tx, n_bins = xbins, xrng = xrng)]
-    agg_dt[, by := bin_values(ty, n_bins = ybins, xrng = yrng)]
+    agg_dt[bxval >= min(xrng) & bxval <= max(xrng) &
+               byval >= min(yrng) & byval <= max(yrng)]
+    agg_dt[, bx := bin_values(get(bxval), n_bins = xbins, xrng = xrng)]
+    agg_dt[, by := bin_values(get(byval), n_bins = ybins, xrng = yrng)]
 
-    bin_dt = agg_dt[, .(y = bin_met(y), N = .N), c(facet_, "bx", "by")]
+    bin_dt = agg_dt[, .(y = bin_met(get(val)), N = .N), c(facet_, "bx", "by")]
     # if(min_size > 1){
     #     bin_dt = bin_dt[N >= min_size]
     # }

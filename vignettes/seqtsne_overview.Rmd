@@ -1,9 +1,10 @@
 ---
-title: "The **seqtsne** package"
+title: "The **chiptsne** package"
 author: "Joseph R Boyd"
 output:
-  BiocStyle::html_document:
-    toc_float: true
+  html_document
+  #BiocStyle::html_document:
+    #toc_float: true
 vignette: >
     %\VignetteIndexEntry{Overview and Use Cases}
     %\VignetteEngine{knitr::rmarkdown}
@@ -21,9 +22,9 @@ knitr::opts_chunk$set(
 ```
 
 # Synopsis
-seq - tee - snee
+chip - tee - snee
 
-`r Githubpkg("jrboyd/seqtsne")` 
+`r if(FALSE){Githubpkg("jrboyd/chiptsne")}`
 
 This package is in active development.  *Expect changes in function and
 parameter names!*
@@ -45,12 +46,12 @@ parameter names!*
 ## From github
 
 ```{r bioc install, eval=FALSE}
-devtools::install_github("jrboyd/seqtsne")
+devtools::install_github("FrietzeLabUVM/chiptsne")
 ```
 
 ## Load the library
-```{r load seqtsne, message=FALSE}
-library(seqtsne)
+```{r load chiptsne, message=FALSE}
+library(chiptsne)
 ```
 
 ## Load optional useful libraries
@@ -98,7 +99,7 @@ cell and mark metadata.
 # #create config from bws
 # bws = dir(input_dirs, pattern = "pooled_FE.bw", full.names = TRUE)
 data("query_gr")
-bw_files = dir(system.file('extdata', package = "seqtsne"), 
+bw_files = dir(system.file('extdata', package = "chiptsne"), 
                full.names = TRUE, pattern = ".bw$")
 cfg_dt = data.table(file = bw_files)
 cfg_dt[, c("cell", "mark") := tstrsplit(basename(file), "_", keep = 1:2)]
