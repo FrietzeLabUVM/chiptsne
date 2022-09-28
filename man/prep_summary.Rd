@@ -4,9 +4,15 @@
 \alias{prep_summary}
 \title{prep_summary}
 \usage{
-prep_summary(profile_dt, position_dt, x_points, y_points = x_points,
-  xrng = range(position_dt$tx), yrng = range(position_dt$ty),
-  facet_by = NULL)
+prep_summary(
+  profile_dt,
+  position_dt,
+  x_points,
+  y_points = x_points,
+  xrng = range(position_dt$tx),
+  yrng = range(position_dt$ty),
+  facet_by = NULL
+)
 }
 \arguments{
 \item{profile_dt}{a tidy data.table for profile data as retrieved by
@@ -24,8 +30,8 @@ Defaults to same value as x_points.}
 
 \item{yrng}{view domain in y dimension, default is range of position_dt$ty.}
 
-\item{facet_by}{character. varaible name to facet profile_dt by when
-constructing images. The only valid non-null value with seqtsne functions
+\item{facet_by}{character. variable name to facet profile_dt by when
+constructing images. The only valid non-null value with chiptsne functions
 is "tall_var".}
 }
 \value{

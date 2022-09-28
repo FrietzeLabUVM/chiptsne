@@ -4,10 +4,20 @@
 \alias{plot_summary_glyph}
 \title{plot_summary_glyph}
 \usage{
-plot_summary_glyph(summary_dt, x_points, y_points = x_points,
-  xrng = c(-0.5, 0.5), yrng = c(-0.5, 0.5), ylim = NULL, p = NULL,
-  N_floor = 0, N_ceiling = NULL, min_size = 0.3,
-  return_data = FALSE, color_mapping = NULL)
+plot_summary_glyph(
+  summary_dt,
+  x_points,
+  y_points = x_points,
+  xrng = c(-0.5, 0.5),
+  yrng = c(-0.5, 0.5),
+  ylim = NULL,
+  p = NULL,
+  N_floor = 0,
+  N_ceiling = NULL,
+  min_size = 0.3,
+  return_data = FALSE,
+  color_mapping = NULL
+)
 }
 \arguments{
 \item{summary_dt}{results from prep_summary()}

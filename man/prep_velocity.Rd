@@ -4,9 +4,18 @@
 \alias{prep_velocity}
 \title{prep_velocity}
 \usage{
-prep_velocity(tsne_dt, tall_var_a, tall_var_b, id_to_plot = NULL,
-  max_plotted = 500, delta.min = 0, delta.max = Inf, angle.min = 0,
-  angle.max = 360, drop_backgroud = FALSE)
+prep_velocity(
+  tsne_dt,
+  tall_var_a,
+  tall_var_b,
+  id_to_plot = NULL,
+  max_plotted = 500,
+  delta.min = 0,
+  delta.max = Inf,
+  angle.min = 0,
+  angle.max = 360,
+  drop_backgroud = FALSE
+)
 }
 \arguments{
 \item{tsne_dt}{tidy data.table of tsne results.  variables names must

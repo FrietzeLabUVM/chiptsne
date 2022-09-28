@@ -4,12 +4,24 @@
 \alias{stsFetchTsneInput}
 \title{stsFetchTsneInput}
 \usage{
-stsFetchTsneInput(qdt, qgr, region_size = NULL, file_format = NULL,
-  qwin = 50, qmet = "summary", cap_value = 20, fetch_FUN = NULL,
-  agg_FUN = NULL, high_on_right = TRUE,
-  bfc = BiocFileCache::BiocFileCache(), n_cores = getOption("mc.cores",
-  1), rname = digest::digest(list(qgr, qdt, qwin, qmet, fetch_FUN)),
-  force_overwrite = FALSE, verbose = TRUE, skip_checks = FALSE)
+stsFetchTsneInput(
+  qdt,
+  qgr,
+  region_size = NULL,
+  file_format = NULL,
+  qwin = 50,
+  qmet = "summary",
+  cap_value = 20,
+  fetch_FUN = NULL,
+  agg_FUN = NULL,
+  high_on_right = TRUE,
+  bfc = BiocFileCache::BiocFileCache(),
+  n_cores = getOption("mc.cores", 1),
+  rname = digest::digest(list(qgr, qdt, qwin, qmet, fetch_FUN)),
+  force_overwrite = FALSE,
+  verbose = TRUE,
+  skip_checks = FALSE
+)
 }
 \arguments{
 \item{qdt}{data.table containing, file, tall_var, wide_var, and optionally
@@ -65,7 +77,7 @@ extension of first file transform and normalizes profiles after fetch
 }
 \examples{
 data("query_gr")
-bw_files = dir(system.file('extdata', package = "seqtsne"), pattern = ".bw$", full.names = TRUE)
+bw_files = dir(system.file('extdata', package = "chiptsne"), pattern = ".bw$", full.names = TRUE)
 cfg_dt = data.table(file = bw_files)
 cfg_dt[, c("tall_var", "wide_var") := tstrsplit(basename(file), "_", keep = 1:2)]
 cfg_dt = cfg_dt[tall_var \%in\% c("ESH1", "HUES48", "HUES64")]

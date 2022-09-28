@@ -4,8 +4,12 @@
 \alias{plot_profiles_selected}
 \title{plot_profiles_selected}
 \usage{
-plot_profiles_selected(profile_dt, qtall_vars, id_to_plot,
-  color_mapping = NULL)
+plot_profiles_selected(
+  profile_dt,
+  qtall_vars,
+  id_to_plot,
+  color_mapping = NULL
+)
 }
 \arguments{
 \item{profile_dt}{a tidy data.table containing profile data.  variable names

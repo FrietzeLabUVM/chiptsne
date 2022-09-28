@@ -2,18 +2,28 @@
 % Please edit documentation in R/function_plot_raster_summary.R
 \name{plot_binned_aggregates}
 \alias{plot_binned_aggregates}
-\title{plot_raster_summary of a value}
+\title{plot_binned_aggregates}
 \usage{
-plot_binned_aggregates(agg_dt, xbins = 50, ybins = xbins,
-  xrng = NULL, yrng = NULL, val = "y", bxval = "tx",
-  byval = "ty", facet_ = "wide_var", bin_met = mean, min_size = 1,
-  return_data = FALSE)
+plot_binned_aggregates(
+  agg_dt,
+  xbins = 50,
+  ybins = xbins,
+  xrng = NULL,
+  yrng = NULL,
+  val = "y",
+  bxval = "tx",
+  byval = "ty",
+  facet_ = "wide_var",
+  bin_met = mean,
+  min_size = 1,
+  return_data = FALSE
+)
 }
 \arguments{
 \item{return_data}{}
 }
 \description{
-plot_raster_summary of a value
+plot_binned_aggregates
 }
 \examples{
 agg_dt = aggregate_signals(profile_dt)#[, .(y = mean(y)), .(id, tall_var, wide_var)]

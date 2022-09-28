@@ -4,8 +4,15 @@
 \alias{geom_image.rect}
 \title{geom_image.rect}
 \usage{
-geom_image.rect(mapping = NULL, data = NULL, stat = "identity",
-  position = "identity", inherit.aes = TRUE, na.rm = FALSE, ...)
+geom_image.rect(
+  mapping = NULL,
+  data = NULL,
+  stat = "identity",
+  position = "identity",
+  inherit.aes = TRUE,
+  na.rm = FALSE,
+  ...
+)
 }
 \arguments{
 \item{mapping}{aes mapping}

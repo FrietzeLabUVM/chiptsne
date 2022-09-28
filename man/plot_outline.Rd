@@ -4,11 +4,20 @@
 \alias{plot_outline}
 \title{plot_outline}
 \usage{
-plot_outline(tsne_dt, qtall_vars, id_to_plot = NULL, p = NULL,
-  xrng = c(-0.5, 0.5), yrng = c(-0.5, 0.5), bg_color = "gray",
-  line_color_mapping = "black", fill_color_mapping = "gray",
-  label_type = c("text", "label", "none")[3], bg_points = 5000,
-  arrow_FUN = NULL)
+plot_outline(
+  tsne_dt,
+  qtall_vars,
+  id_to_plot = NULL,
+  p = NULL,
+  xrng = c(-0.5, 0.5),
+  yrng = c(-0.5, 0.5),
+  bg_color = "gray",
+  line_color_mapping = "black",
+  fill_color_mapping = "gray",
+  label_type = c("text", "label", "none")[3],
+  bg_points = 5000,
+  arrow_FUN = NULL
+)
 }
 \arguments{
 \item{tsne_dt}{data.table with tsne info (tx, ty, id, and tall_var)}

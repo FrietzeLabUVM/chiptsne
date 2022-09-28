@@ -4,11 +4,19 @@
 \alias{plot_path}
 \title{plot_path}
 \usage{
-plot_path(tsne_dt, qtall_vars, id_to_plot, p = NULL, xrng = c(-0.5,
-  0.5), yrng = c(-0.5, 0.5), arrowhead_position = c("end", "each")[1],
+plot_path(
+  tsne_dt,
+  qtall_vars,
+  id_to_plot,
+  p = NULL,
+  xrng = c(-0.5, 0.5),
+  yrng = c(-0.5, 0.5),
+  arrowhead_position = c("end", "each")[1],
   line_type = c("curve", "spline", "straight")[2],
-  label_type = c("text", "label", "none")[2], bg_points = 5000,
-  arrow_FUN = NULL)
+  label_type = c("text", "label", "none")[2],
+  bg_points = 5000,
+  arrow_FUN = NULL
+)
 }
 \arguments{
 \item{tsne_dt}{data.table with tsne info (tx, ty, id, and tall_var)}

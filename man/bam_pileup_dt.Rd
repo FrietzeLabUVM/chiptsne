@@ -4,14 +4,16 @@
 \name{bam_pileup_dt}
 \alias{bam_pileup_dt}
 \title{data.table of bam pileups}
-\format{data.table from fetch
+\format{
+data.table from fetch
 \describe{
   \item{id}{unique region identifier}
   \item{cell}{cell facet}
   \item{mark}{mark facet}
   \item{x}{relative position to center of region}
   \item{y}{mean read pileup}
-}}
+}
+}
 \source{
 \href{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE17312}{GSE17312}
 }

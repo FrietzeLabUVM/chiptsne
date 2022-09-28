@@ -4,16 +4,33 @@
 \alias{stsPlotSummaryProfiles}
 \title{stsPlotSummaryProfiles}
 \usage{
-stsPlotSummaryProfiles(profile_dt, position_dt, x_points,
-  y_points = x_points, q_tall_vars = NULL, q_wide_vars = NULL,
-  xrng = range(position_dt$tx), yrng = range(position_dt$ty),
-  plot_type = c("glyph", "raster")[1], rname = NULL,
-  odir = file.path(tempdir(), rname), force_rewrite = FALSE,
-  n_cores = getOption("mc.cores", 1), apply_norm = TRUE, ylim = c(0,
-  1), ma_size = 2, n_splines = 10, p = NULL, facet_byCell = FALSE,
-  line_color_mapping = NULL, vertical_facet_mapping = NULL,
-  N_floor = 0, N_ceiling = NULL, min_size = 0.3,
-  return_data = FALSE)
+stsPlotSummaryProfiles(
+  profile_dt,
+  position_dt,
+  x_points,
+  y_points = x_points,
+  q_tall_vars = NULL,
+  q_wide_vars = NULL,
+  xrng = range(position_dt$tx),
+  yrng = range(position_dt$ty),
+  plot_type = c("glyph", "raster")[1],
+  rname = NULL,
+  odir = file.path(tempdir(), rname),
+  force_rewrite = FALSE,
+  n_cores = getOption("mc.cores", 1),
+  apply_norm = TRUE,
+  ylim = c(0, 1),
+  ma_size = 2,
+  n_splines = 10,
+  p = NULL,
+  facet_byCell = FALSE,
+  line_color_mapping = NULL,
+  vertical_facet_mapping = NULL,
+  N_floor = 0,
+  N_ceiling = NULL,
+  min_size = 0.3,
+  return_data = FALSE
+)
 }
 \arguments{
 \item{profile_dt}{a tidy data.table for profile data as retrieved by

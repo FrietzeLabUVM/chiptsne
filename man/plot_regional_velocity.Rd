@@ -4,10 +4,20 @@
 \alias{plot_regional_velocity}
 \title{plot_regional_velocity}
 \usage{
-plot_regional_velocity(tsne_dt, tall_var_a, tall_var_b, x_points,
-  y_points = x_points, points_as_background = FALSE, p = NULL,
-  min_N = 0, id_to_plot = NULL, strategy = c("by_direction",
-  "by_destination")[2], arrow_FUN = NULL, angle_as_color = FALSE)
+plot_regional_velocity(
+  tsne_dt,
+  tall_var_a,
+  tall_var_b,
+  x_points,
+  y_points = x_points,
+  points_as_background = FALSE,
+  p = NULL,
+  min_N = 0,
+  id_to_plot = NULL,
+  strategy = c("by_direction", "by_destination")[2],
+  arrow_FUN = NULL,
+  angle_as_color = FALSE
+)
 }
 \arguments{
 \item{tsne_dt}{tidy data.table of tsne results.  variables names must

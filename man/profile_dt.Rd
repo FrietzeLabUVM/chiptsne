@@ -4,14 +4,16 @@
 \name{profile_dt}
 \alias{profile_dt}
 \title{data.table of fold-enrichment}
-\format{data.table from fetch
+\format{
+data.table from fetch
 \describe{
   \item{id}{unique region identifier}
   \item{cell}{cell facet}
   \item{mark}{mark facet}
   \item{x}{relative position to center of region}
   \item{y}{mean fold-enrichment}
-}}
+}
+}
 \source{
 \href{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE17312}{GSE17312}
 }

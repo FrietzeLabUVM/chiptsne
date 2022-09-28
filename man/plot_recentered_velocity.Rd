@@ -4,9 +4,18 @@
 \alias{plot_recentered_velocity}
 \title{plot_recentered_velocity}
 \usage{
-plot_recentered_velocity(tsne_dt, tall_var_a, tall_var_b, x_points,
-  y_points = x_points, points_as_background = FALSE, p = NULL,
-  id_to_plot = NULL, arrow_FUN = NULL, angle_as_color = FALSE)
+plot_recentered_velocity(
+  tsne_dt,
+  tall_var_a,
+  tall_var_b,
+  x_points,
+  y_points = x_points,
+  points_as_background = FALSE,
+  p = NULL,
+  id_to_plot = NULL,
+  arrow_FUN = NULL,
+  angle_as_color = FALSE
+)
 }
 \arguments{
 \item{tsne_dt}{tidy data.table of tsne results.  variables names must

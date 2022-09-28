@@ -4,8 +4,14 @@
 \alias{calc_delta}
 \title{calc_delta}
 \usage{
-calc_delta(tsne_dt, tall_var_a, tall_var_b, x_points,
-  y_points = x_points, strategy = "normal")
+calc_delta(
+  tsne_dt,
+  tall_var_a,
+  tall_var_b,
+  x_points,
+  y_points = x_points,
+  strategy = "normal"
+)
 }
 \arguments{
 \item{tsne_dt}{result of stsRunTsne()}

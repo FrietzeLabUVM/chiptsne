@@ -8,7 +8,7 @@ Description:
     Supports all stages of analysis of NGS data using t-sne.  This 
     includes data retrieval from .bam and .bigWig files, normalization, running 
     t-sne, figure generation, and interactive analysis.
-License:  MIT + file LICENSE
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Depends: 
@@ -41,7 +41,7 @@ Suggests:
     covr,
     knitr,
     testthat
-RoxygenNote: 6.1.1
+RoxygenNote: 7.2.1
 VignetteBuilder: knitr
 biocViews: 
     Software, 

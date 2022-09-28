@@ -4,8 +4,13 @@
 \alias{plot_flat}
 \title{plot_flat}
 \usage{
-plot_flat(p, dpi = 150, width = dev.size()[1],
-  height = dev.size()[2], panel_only = FALSE)
+plot_flat(
+  p,
+  dpi = 150,
+  width = dev.size()[1],
+  height = dev.size()[2],
+  panel_only = FALSE
+)
 }
 \arguments{
 \item{p}{a ggplot object to render}

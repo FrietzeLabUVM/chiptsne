@@ -4,8 +4,13 @@
 \alias{stsPlotClusterProfiles}
 \title{Title}
 \usage{
-stsPlotClusterProfiles(profile_dt, cluster_dt, cluster_ = "cluster_id",
-  w = 0.05, h = 0.05)
+stsPlotClusterProfiles(
+  profile_dt,
+  cluster_dt,
+  cluster_ = "cluster_id",
+  w = 0.05,
+  h = 0.05
+)
 }
 \arguments{
 \item{h}{}

@@ -4,13 +4,15 @@
 \name{tsne_dt}
 \alias{tsne_dt}
 \title{data.table of tsne embedding}
-\format{data.table from stsRunTsne
+\format{
+data.table from stsRunTsne
 \describe{
   \item{tx}{x coordinate}
   \item{ty}{y coordinate}
   \item{id}{unique region identifier}
   \item{cell}{cell facet}
-}}
+}
+}
 \source{
 \href{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE17312}{GSE17312}
 }

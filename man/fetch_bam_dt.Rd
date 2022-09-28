@@ -4,9 +4,19 @@
 \alias{fetch_bam_dt}
 \title{fetch_bam_dt}
 \usage{
-fetch_bam_dt(qdt, qgr, qwin = 50, qmet = "summary", agg_FUN = sum,
-  bfc = NULL, n_cores = getOption("mc.cores", 1), rname = NULL,
-  force_overwrite = FALSE, verbose = TRUE)
+fetch_bam_dt(
+  qdt,
+  qgr,
+  qwin = 50,
+  qmet = "summary",
+  agg_FUN = sum,
+  bfc = NULL,
+  n_cores = getOption("mc.cores", 1),
+  rname = NULL,
+  force_overwrite = FALSE,
+  verbose = TRUE,
+  fragLens = NULL
+)
 }
 \arguments{
 \item{qdt}{data.table containing, file, tall_var, wide_var, and optionally
@@ -39,7 +49,7 @@ fetches a tidy data.table of scores from bigwigs, automatically uses cache.
 }
 \examples{
 data("query_gr")
-bam_files = dir(system.file('extdata', package = "seqtsne"),
+bam_files = dir(system.file('extdata', package = "chiptsne"),
     pattern = ".bam$", full.names = TRUE)
 cfg_dt = data.table(file = bam_files)
 cfg_dt[, c("tall_var", "wide_var") := tstrsplit(basename(file), "_", keep = 1:2)]

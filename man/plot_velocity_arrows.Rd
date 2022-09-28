@@ -4,8 +4,13 @@
 \alias{plot_velocity_arrows}
 \title{plot_velocity_arrows}
 \usage{
-plot_velocity_arrows(velocity_dt, p = NULL, id_to_plot = NULL,
-  angle_as_color = TRUE, background_color = "lightgray")
+plot_velocity_arrows(
+  velocity_dt,
+  p = NULL,
+  id_to_plot = NULL,
+  angle_as_color = TRUE,
+  background_color = "lightgray"
+)
 }
 \arguments{
 \item{velocity_dt}{data.table with angle and distance info.}

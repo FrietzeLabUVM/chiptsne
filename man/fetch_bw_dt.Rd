@@ -4,9 +4,18 @@
 \alias{fetch_bw_dt}
 \title{fetch_bw_dt}
 \usage{
-fetch_bw_dt(qdt, qgr, qwin = 50, qmet = "summary", agg_FUN = mean,
-  bfc = NULL, n_cores = getOption("mc.cores", 1), rname = NULL,
-  force_overwrite = FALSE, verbose = TRUE)
+fetch_bw_dt(
+  qdt,
+  qgr,
+  qwin = 50,
+  qmet = "summary",
+  agg_FUN = mean,
+  bfc = NULL,
+  n_cores = getOption("mc.cores", 1),
+  rname = NULL,
+  force_overwrite = FALSE,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{qdt}{data.table containing, file, tall_var, wide_var, and optionally
@@ -39,7 +48,7 @@ cache.
 }
 \examples{
 data("query_gr")
-bw_files = dir(system.file('extdata', package = "seqtsne"),
+bw_files = dir(system.file('extdata', package = "chiptsne"),
     pattern = ".bw$", full.names = TRUE)
 cfg_dt = data.table(file = bw_files)
 cfg_dt[, c("tall_var", "wide_var") := tstrsplit(basename(file), "_", keep = 1:2)]

@@ -4,8 +4,14 @@
 \alias{bfcif}
 \title{bfcif}
 \usage{
-bfcif(bfc, rname, FUN, force_overwrite = FALSE,
-  return_path_only = FALSE, verbose = FALSE)
+bfcif(
+  bfc,
+  rname,
+  FUN,
+  force_overwrite = FALSE,
+  return_path_only = FALSE,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{bfc}{a BiocFileCache object, as from running \code{BiocFileCache::BiocFileCache()}}

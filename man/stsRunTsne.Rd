@@ -4,10 +4,18 @@
 \alias{stsRunTsne}
 \title{stsRunTsne}
 \usage{
-stsRunTsne(profile_dt, perplexity = 100,
-  n_cores = getOption("mc.cores", 1), high_topright = TRUE,
-  norm1 = TRUE, bfc = BiocFileCache::BiocFileCache(), rname = NULL,
-  Y_init = NULL, verbose = TRUE, force_overwrite = FALSE)
+stsRunTsne(
+  profile_dt,
+  perplexity = 100,
+  n_cores = getOption("mc.cores", 1),
+  high_topright = TRUE,
+  norm1 = TRUE,
+  bfc = BiocFileCache::BiocFileCache(),
+  rname = NULL,
+  Y_init = NULL,
+  verbose = TRUE,
+  force_overwrite = FALSE
+)
 }
 \arguments{
 \item{profile_dt}{a tidy data.table for profile data as retrieved by
@@ -43,7 +51,7 @@ stsRunTsne
 }
 \examples{
 data("query_gr")
-bw_files = dir(system.file('extdata', package = "seqtsne"), pattern = ".bw$", full.names = TRUE)
+bw_files = dir(system.file('extdata', package = "chiptsne"), pattern = ".bw$", full.names = TRUE)
 cfg_dt = data.table(file = bw_files)
 cfg_dt[, c("tall_var", "wide_var") := tstrsplit(basename(file), "_", keep = 1:2)]
 cfg_dt = cfg_dt[tall_var \%in\% c("ESH1", "HUES48", "HUES64")]

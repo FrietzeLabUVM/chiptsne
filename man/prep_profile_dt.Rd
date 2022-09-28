@@ -5,8 +5,7 @@
 \title{applies normalizations and transformations to prof_dt, a tidy data.table of
 profiles.}
 \usage{
-prep_profile_dt(prof_dt, norm_dt, qgr, cap_value = Inf,
-  high_on_right = TRUE)
+prep_profile_dt(prof_dt, norm_dt, qgr, cap_value = Inf, high_on_right = TRUE)
 }
 \arguments{
 \item{prof_dt}{data.table of ChIP-seq signal profiles.}

@@ -4,10 +4,19 @@
 \alias{plot_summary_raster_byCell}
 \title{plot_summary_raster}
 \usage{
-plot_summary_raster_byCell(image_dt, x_points, y_points = x_points,
-  p = NULL, line_color_mapping = NULL, xrng = c(-0.5, 0.5),
-  yrng = c(-0.5, 0.5), N_floor = 0, N_ceiling = NULL,
-  min_size = 0.3, return_data = FALSE)
+plot_summary_raster_byCell(
+  image_dt,
+  x_points,
+  y_points = x_points,
+  p = NULL,
+  line_color_mapping = NULL,
+  xrng = c(-0.5, 0.5),
+  yrng = c(-0.5, 0.5),
+  N_floor = 0,
+  N_ceiling = NULL,
+  min_size = 0.3,
+  return_data = FALSE
+)
 }
 \arguments{
 \item{image_dt}{$image_dt of result from prep_images()}

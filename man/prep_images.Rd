@@ -4,12 +4,24 @@
 \alias{prep_images}
 \title{prep_images}
 \usage{
-prep_images(summary_dt, x_points, y_points = x_points, xrng = c(-0.5,
-  0.5), yrng = c(-0.5, 0.5), rname = NULL,
-  odir = file.path(tempdir(), rname), force_rewrite = FALSE,
-  apply_norm = TRUE, ylim = c(0, 1), facet_by = NULL, ma_size = 2,
-  n_splines = 10, n_cores = getOption("mc.cores", 1),
-  line_color_mapping = NULL, vertical_facet_mapping = NULL)
+prep_images(
+  summary_dt,
+  x_points,
+  y_points = x_points,
+  xrng = c(-0.5, 0.5),
+  yrng = c(-0.5, 0.5),
+  rname = NULL,
+  odir = file.path(tempdir(), rname),
+  force_rewrite = FALSE,
+  apply_norm = TRUE,
+  ylim = c(0, 1),
+  facet_by = NULL,
+  ma_size = 2,
+  n_splines = 10,
+  n_cores = getOption("mc.cores", 1),
+  line_color_mapping = NULL,
+  vertical_facet_mapping = NULL
+)
 }
 \arguments{
 \item{summary_dt}{a tidy data.table from prep_summary()}
@@ -37,7 +49,7 @@ transformed ot domain of [0,1]. Default is TRUE.}
 compatible with apply_norm = TRUE.}
 
 \item{facet_by}{character. varaible name to facet profile_dt by when
-constructing images. The only valid non-null value with seqtsne functions
+constructing images. The only valid non-null value with chiptsne functions
 is "tall_var".}
 
 \item{ma_size}{moving average size when smoothing profiles.}

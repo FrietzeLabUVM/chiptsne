@@ -4,8 +4,15 @@
 \alias{aggregate_signals}
 \title{aggregate_signals}
 \usage{
-aggregate_signals(profile_dt, agg_FUN = max, xmin = -Inf, xmax = Inf,
-  by_ = c("tall_var", "wide_var"))
+aggregate_signals(
+  profile_dt,
+  agg_FUN = max,
+  y_ = "y",
+  yout_ = "ynorm",
+  xmin = -Inf,
+  xmax = Inf,
+  by_ = c("tall_var", "wide_var")
+)
 }
 \arguments{
 \item{by_}{}

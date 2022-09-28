@@ -4,11 +4,13 @@
 \name{query_gr}
 \alias{query_gr}
 \title{GRanges region annotation of hESC bivalent sites.}
-\format{A GRanges with 30 rows and mcols:
+\format{
+A GRanges with 30 rows and mcols:
 \describe{
   \item{group}{a bivalency category from \href{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5354816/}{PMC5354816}}
   \item{id}{an arbitrary unique identifier}
-}}
+}
+}
 \source{
 \href{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE17312}{GSE17312}
 }

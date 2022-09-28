@@ -4,8 +4,16 @@
 \alias{set_image_rects}
 \title{set_image_rects}
 \usage{
-set_image_rects(image_dt, x_points, y_points, xrng, yrng, N_floor = 0,
-  N_ceiling = NULL, min_size = 0.3)
+set_image_rects(
+  image_dt,
+  x_points,
+  y_points,
+  xrng,
+  yrng,
+  N_floor = 0,
+  N_ceiling = NULL,
+  min_size = 0.3
+)
 }
 \arguments{
 \item{image_dt}{$image_dt of result from prep_images()}

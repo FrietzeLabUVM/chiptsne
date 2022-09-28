@@ -4,8 +4,14 @@
 \alias{combine_mostsimilar}
 \title{Title}
 \usage{
-combine_mostsimilar(p_dt, profile_dt, n_times = 1, min_dist = Inf,
-  cluster_ = "cluster_id", new_cluster_ = cluster_)
+combine_mostsimilar(
+  p_dt,
+  profile_dt,
+  n_times = 1,
+  min_dist = Inf,
+  cluster_ = "cluster_id",
+  new_cluster_ = cluster_
+)
 }
 \arguments{
 \item{min_dist}{}
