@@ -151,16 +151,16 @@ stsFetchTsneInput = function(qdt,
 
     # browser()
     # fetch tidy data
-    bw_dt = fetch_FUN(qdt[, .(file)],
-                      qgr,
-                      qwin,
-                      qmet,
-                      agg_FUN,
-                      bfc,
-                      n_cores,
-                      rname,
-                      force_overwrite,
-                      verbose)
+    bw_dt = fetch_FUN(qdt = qdt[, .(file)],
+                      qgr = qgr,
+                      qwin = qwin,
+                      qmet = qmet,
+                      agg_FUN = agg_FUN,
+                      bfc = bfc,
+                      n_cores = n_cores,
+                      rname = rname,
+                      force_overwrite = force_overwrite,
+                      verbose = verbose)
 
     # apply transforms and thresholds
     prep_res = prep_profile_dt(bw_dt,
@@ -219,7 +219,7 @@ fetch_bam_dt = function(qdt,
                         rname = NULL,
                         force_overwrite = FALSE,
                         verbose = TRUE,
-                        fragLens = NULL){
+                        fragLens = "auto"){
     #how to handle stranded?
     #how to handle frag lens?
     if(is.null(bfc)){
@@ -229,7 +229,9 @@ fetch_bam_dt = function(qdt,
         rname = digest::digest(list(qgr,
                                     qdt,
                                     qwin,
-                                    qmet))
+                                    qmet,
+                                    agg_FUN,
+                                    fragLens))
     }
     stopifnot(is.data.frame(qdt))
     qdt = as.data.table(qdt)
@@ -251,7 +253,7 @@ fetch_bam_dt = function(qdt,
                                n_cores = n_cores,
                                n_region_splits = 50)
     }
-    bam_dt = bam_fetch()
+    bam_dt = bfcif(bfc, rname, bam_fetch, force_overwrite = force_overwrite, verbose = verbose)
     # bam_dt$sample = NULL
     # bam_dt = bam_dt[, list(y = agg_FUN(y)), list(tall_var, id, wide_var, x)]
     bam_dt

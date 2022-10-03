@@ -37,9 +37,7 @@ animate_summary_profiles = function(profile_dt,
         min_size = min_size
     )
     dc_dt = dcast(summ_dt, plot_id+x~wide_var, value.var = "gy")
-    dim(dc_dt)
-    dc_dt[, 1:5]
-    dt = melt(dc_dt, id.vars = c("plot_id", "x"))
+    dt = reshape2::melt(dc_dt, id.vars = c("plot_id", "x"))
     dt = dt[, var(value), by = .(plot_id, x)][, .(dynamic = max(V1)), .(plot_id)]
 
     summ_dt = merge(summ_dt, dt, by = "plot_id")

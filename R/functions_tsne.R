@@ -148,18 +148,18 @@ stsRunTsne = function(profile_dt,
 #' dt$y = runif(nrow(dt))
 #' mat = dt2mat(dt, wide_vars)
 #' mat
-dt2mat = function(prof_dt, wide_vars){
+dt2mat = function(prof_dt, wide_vars, fun.aggregate = mean){
     for(m in wide_vars){
         if(m == wide_vars[1]){
-            dt = dcast( prof_dt[wide_var == m], id+tall_var~x, value.var = "y")
+            dt = data.table::dcast( prof_dt[wide_var == m], id+tall_var~x, value.var = "y",
+                                    fun.aggregate = fun.aggregate)
             wide_mat = as.matrix(dt[, -seq_len(2)])
             rn = paste(dt$id, dt$tall_var)
         }else{
-            dt = dcast( prof_dt[wide_var == m], id+tall_var~x, value.var = "y")
+            dt = data.table::dcast( prof_dt[wide_var == m], id+tall_var~x, value.var = "y",
+                                    fun.aggregate = fun.aggregate)
             stopifnot(all(paste(dt$id, dt$tall_var) == rn))
             wide_mat = cbind(wide_mat, as.matrix(dt[, -seq_len(2)]))
-
-
         }
     }
     rownames(wide_mat) = rn

@@ -22,3 +22,5 @@ dev_graph_based_clustering.R
 dev_tsne_vs_pca.R
 *.png
 auth.log.trouble.txt
+figures_*
+output_*

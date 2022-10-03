@@ -1,4 +1,4 @@
-Package: seqtsne
+Package: chiptsne
 Type: Package
 Title: Application of t-sne to NGS Genomic Signal Profiles
 Version: 0.0.0

@@ -93,7 +93,7 @@ nn_clust = function(tsne_res, nsamp = Inf, nn = 100){
     knn <- knn.info$nn.idx
     colnames(knn) = c("tid", paste0("V", seq(nn-1)))
     knn = as.data.table(knn)
-    mknn = melt(knn, id.vars = "tid")
+    mknn = reshape2::melt(knn, id.vars = "tid")
 
     # adj <- matrix(0, ncol(mat), ncol(mat))
     # rownames(adj) <- colnames(adj) <- colnames(mat)
@@ -128,7 +128,7 @@ nn_clust = function(tsne_res, nsamp = Inf, nn = 100){
     return(list(data = p_dt, plot = p))
 }
 
-#' Title
+#' combine_mostsimilar
 #'
 #' @param p_dt
 #' @param profile_dt
@@ -137,6 +137,7 @@ nn_clust = function(tsne_res, nsamp = Inf, nn = 100){
 #'
 #' @return
 #' @export
+#' @import reshape2
 #'
 #' @examples
 combine_mostsimilar = function(p_dt, profile_dt,
@@ -173,7 +174,7 @@ combine_mostsimilar = function(p_dt, profile_dt,
 
     agg_dist = dist(agg_mat)
 
-    ddt = as.data.table(melt(as.matrix(agg_dist)))
+    ddt = as.data.table(reshape2::melt(as.matrix(agg_dist)))
 
     ddt$Var1 = factor(ddt$Var1)
     ddt$Var2 = factor(ddt$Var2)
