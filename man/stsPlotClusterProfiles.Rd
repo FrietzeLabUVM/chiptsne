@@ -6,10 +6,15 @@
 \usage{
 stsPlotClusterProfiles(
   profile_dt,
-  cluster_dt,
+  cluster_dt = profile_dt,
   cluster_ = "cluster_id",
   w = 0.05,
-  h = 0.05
+  h = 0.05,
+  x_var = "x",
+  y_var = "y",
+  id_var = "id",
+  wide_var = "name",
+  tall_var = "tall_none"
 )
 }
 \arguments{

@@ -11,7 +11,12 @@ prep_summary(
   y_points = x_points,
   xrng = range(position_dt$tx),
   yrng = range(position_dt$ty),
-  facet_by = NULL
+  facet_by = NULL,
+  x_var = "x",
+  y_var = "y",
+  id_var = "id",
+  wide_var = "name",
+  tall_var = "tall_none"
 )
 }
 \arguments{

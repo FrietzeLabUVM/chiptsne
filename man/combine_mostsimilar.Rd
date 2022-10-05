@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions_cluster.R
 \name{combine_mostsimilar}
 \alias{combine_mostsimilar}
-\title{Title}
+\title{combine_mostsimilar}
 \usage{
 combine_mostsimilar(
   p_dt,
@@ -17,5 +17,5 @@ combine_mostsimilar(
 \item{min_dist}{}
 }
 \description{
-Title
+combine_mostsimilar
 }

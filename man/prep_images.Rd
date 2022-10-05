@@ -20,7 +20,10 @@ prep_images(
   n_splines = 10,
   n_cores = getOption("mc.cores", 1),
   line_color_mapping = NULL,
-  vertical_facet_mapping = NULL
+  vertical_facet_mapping = NULL,
+  wide_var = "name",
+  x_var = "x",
+  y_var = "y"
 )
 }
 \arguments{

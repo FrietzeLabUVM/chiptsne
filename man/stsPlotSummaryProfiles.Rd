@@ -9,8 +9,13 @@ stsPlotSummaryProfiles(
   position_dt,
   x_points,
   y_points = x_points,
-  q_tall_vars = NULL,
-  q_wide_vars = NULL,
+  x_var = "x",
+  y_var = "y",
+  id_var = "id",
+  wide_var = "name",
+  tall_var = "tall_none",
+  q_tall_values = NULL,
+  q_wide_values = NULL,
   xrng = range(position_dt$tx),
   yrng = range(position_dt$ty),
   plot_type = c("glyph", "raster")[1],
@@ -43,10 +48,6 @@ variable names are tx, ty, id, and tall_var.}
 
 \item{y_points}{numeric.  number of grid points to use in y dimension.
 Defaults to same value as x_points.}
-
-\item{q_tall_vars}{character vector of tall_vars to plot. Default of NULL plots all.}
-
-\item{q_wide_vars}{character vector of wide_vars to plot.  Default of NULL plots all.}
 
 \item{xrng}{view domain in x dimension, default is range of position_dt$tx.}
 
@@ -99,6 +100,10 @@ N_floor to N_ceiling.}
 
 \item{return_data}{if TRUE, data.table that would have been used to create
 ggplot is returned instead.}
+
+\item{q_tall_vars}{character vector of tall_vars to plot. Default of NULL plots all.}
+
+\item{q_wide_vars}{character vector of wide_vars to plot.  Default of NULL plots all.}
 }
 \value{
 returns a ggplot containing images summarizing t-sne space at

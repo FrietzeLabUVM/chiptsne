@@ -34,7 +34,7 @@
 #' @return a tidy data.table of profile data.
 #' @export
 #' @importFrom seqsetvis ssvFetchBigwig ssvFetchBam
-#' @rawNamespace import(data.table, except = c(shift, first, second, last))
+#' @rawNamespace import(data.table, except = c(shift, first, second, last, melt, dcast))
 #' @examples
 #' data("query_gr")
 #' bw_files = dir(system.file('extdata', package = "chiptsne"), pattern = ".bw$", full.names = TRUE)
@@ -198,7 +198,7 @@ stsFetchTsneInput = function(qdt,
 #' @importFrom BiocFileCache BiocFileCache
 #' @importFrom digest digest
 #' @importFrom seqsetvis ssvFetchBam
-#' @rawNamespace import(data.table, except = c(shift, first, second, last))
+#' @rawNamespace import(data.table, except = c(shift, first, second, last, melt, dcast))
 #' @examples
 #' data("query_gr")
 #' bam_files = dir(system.file('extdata', package = "chiptsne"),
@@ -284,7 +284,7 @@ fetch_bam_dt = function(qdt,
 #' @importFrom BiocFileCache BiocFileCache
 #' @importFrom digest digest
 #' @importFrom seqsetvis ssvFetchBam
-#' @rawNamespace import(data.table, except = c(shift, first, second, last))
+#' @rawNamespace import(data.table, except = c(shift, first, second, last, melt, dcast))
 #' @examples
 #' data("query_gr")
 #' bam_files = dir(system.file('extdata', package = "chiptsne"),
@@ -509,7 +509,7 @@ prep_query_gr = function(query_gr,
 #' @return list of two items.  prepared version of prof_dt and query_gr modified
 #'   to reflect any flipping required by high_on_right.
 #' @export
-#' @rawNamespace import(data.table, except = c(shift, first, second, last))
+#' @rawNamespace import(data.table, except = c(shift, first, second, last, melt, dcast))
 #' @examples
 #' data(profile_dt)
 #' data(query_gr)

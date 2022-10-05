@@ -15,7 +15,8 @@ plot_summary_raster(
   N_floor = 0,
   N_ceiling = NULL,
   min_size = 0.3,
-  return_data = FALSE
+  return_data = FALSE,
+  wide_var = "name"
 )
 }
 \arguments{

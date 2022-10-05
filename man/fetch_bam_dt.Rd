@@ -15,7 +15,7 @@ fetch_bam_dt(
   rname = NULL,
   force_overwrite = FALSE,
   verbose = TRUE,
-  fragLens = NULL
+  fragLens = "auto"
 )
 }
 \arguments{
