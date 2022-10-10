@@ -24,3 +24,4 @@ dev_tsne_vs_pca.R
 auth.log.trouble.txt
 figures_*
 output_*
+dev_object.ssvQC.plotSignal.Rds

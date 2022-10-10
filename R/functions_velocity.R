@@ -19,7 +19,6 @@
 #' @param angle_as_color if TRUE, a rainbow like scale is applied to angle.
 #'
 #' @return plot where all velocities in a bin transposed to the same origin.
-#' @export
 #'
 #' @examples
 #' data("tsne_dt")
@@ -127,7 +126,6 @@ plot_recentered_velocity = function(tsne_dt,
 #' @param angle_as_color if TRUE, a rainbow like scale is applied to angle.
 #'
 #' @return ggplot where regionally binned velocities are summarized.
-#' @export
 #'
 #' @examples
 #' data("tsne_dt")
@@ -274,7 +272,6 @@ plot_regional_velocity = function(tsne_dt,
 #' @param line_size numeric >0 size value of lines
 #'
 #' @return plot of
-#' @export
 #'
 #' @examples
 #' data("tsne_dt")
@@ -298,7 +295,6 @@ plot_velocity_centered = function(velocity_dt, line_alpha = .5, line_size = 1){
 #' are length, sum, mean, and median.
 #'
 #' @return a ggplot with a polar coordinate barplot.
-#' @export
 #'
 #' @examples
 #' data("tsne_dt")
@@ -356,7 +352,6 @@ plot_velocity_bins = function(velocity_dt,
 #'   points.
 #'
 #' @return ggplot of arrows indicating position in tall_var line a to tall_var line b.
-#' @export
 #'
 #' @examples
 #' data("tsne_dt")
@@ -418,7 +413,6 @@ plot_velocity_arrows = function(velocity_dt,
 #'   is FALSE.
 #'
 #' @return a tidy data.table of velocity measurements from tall_var_a to tall_var_b
-#' @export
 #'
 #' @examples
 #' data("tsne_dt")

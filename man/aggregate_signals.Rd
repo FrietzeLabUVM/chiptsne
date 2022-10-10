@@ -18,7 +18,9 @@ aggregate_signals(
 \item{by_}{}
 }
 \description{
-aggregate_signals
+aggregate_signals is retrieves a single representative value for a genomic
+region per sample by default this is the maximum anywhere in the region but
+this can be overriden using xmin/xmax and agg_FUN
 }
 \examples{
 aggregate_signals(profile_dt)

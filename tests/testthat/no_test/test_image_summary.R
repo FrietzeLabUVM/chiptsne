@@ -4,21 +4,27 @@ library(data.table)
 library(chiptsne)
 library(testthat)
 
-data("query_gr")
-data("profile_dt")
-data("tsne_dt")
+print(data("sts.test"))
 options("mc.cores" = 2)
-
+sts
 npx = 4
 npy = 3
+
+profile_dt = sts$signal_data$CTCF_features$CTCF_signal$signal_data
+class(sts@signal_data$CTCF_features$CTCF_signal)
+tsne_dt = sts@signal_data$CTCF_features$CTCF_signal@xy_data
+
 summary_dt = prep_summary(
     profile_dt,
     tsne_dt,
     x_points = 4,
     y_points = 3,
     xrng = c(-.3, .4),
-    yrng = c(-.45, .35)
+    yrng = c(-.45, .35),
+    wide_var = "wide_var",
+    tall_var = "tall_var"
 )
+debug(prep_images)
 img_res = prep_images(
     summary_dt,
     x_points = 4,
@@ -26,8 +32,8 @@ img_res = prep_images(
     xrng = c(-.3, .4),
     yrng = c(-.45, .35)
 )
-color_mapping = seqsetvis::safeBrew(2)
-names(color_mapping) = unique(summary_dt$wide_var)
+seqsetvis::safeBrew(n = summary_dt$name)
+
 plot_summary_raster(
     img_res$image_dt,
     x_points = 4,

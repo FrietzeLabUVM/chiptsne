@@ -17,28 +17,11 @@ run_tsne(
   y_var = "y",
   id_var = "id",
   wide_var = "name",
-  tall_var = "tall_none"
+  tall_var = "tall_none",
+  fun.aggregate = mean
 )
 }
 \arguments{
-\item{profile_dt}{}
-
-\item{perplexity}{}
-
-\item{n_cores}{}
-
-\item{high_topright}{}
-
-\item{norm1}{}
-
-\item{Y_init}{}
-
-\item{verbose}{}
-
-\item{force_overwrite}{}
-
-\item{wide_var}{}
-
 \item{tall_var}{}
 }
 \description{

@@ -42,33 +42,35 @@ plot_summary_glyph(
 )
 }
 \arguments{
-\item{summary_dt}{}
+\item{summary_dt}{results from prep_summary()}
 
-\item{x_points}{}
+\item{x_points}{numeric.  number of grid points to use in x dimension.}
 
-\item{y_points}{}
+\item{y_points}{numeric.  number of grid points to use in y dimension.}
 
-\item{xrng}{}
+\item{xrng}{view domain in x dimension.}
 
-\item{yrng}{}
+\item{yrng}{view domain in y dimension.}
 
-\item{ylim}{}
+\item{ylim}{ylimits per glyph}
 
-\item{p}{}
+\item{p}{an existing ggplot to overlay images onto.  Default of NULL starts a
+new plot.}
 
-\item{N_floor}{}
+\item{N_floor}{The value of N to consider 0.  bins with N values <= N_floor
+will be ignored.}
 
-\item{N_ceiling}{}
+\item{N_ceiling}{The value of N to consider 1.  bins with N values >=
+N_ceiling will have images drawn at full size.}
 
-\item{min_size}{}
+\item{min_size}{Numeric (0, 1]. The minimum size images to draw.  The default
+of .3 draws images for all bins with N values >= 30% of the way from
+N_floor to N_ceiling.}
 
-\item{return_data}{}
+\item{return_data}{if TRUE, data.table that would have been used to create
+ggplot is returned instead.}
 
-\item{color_mapping}{}
-
-\item{x_var}{}
-
-\item{y_var}{}
+\item{color_mapping}{mapping for scale_color_manual}
 
 \item{wide_var}{}
 }

@@ -2,6 +2,9 @@
 
 #' aggregate_signals
 #'
+#' aggregate_signals is retrieves a single representative value for a genomic
+#' region per sample by default this is the maximum anywhere in the region but
+#' this can be overriden using xmin/xmax and agg_FUN
 #' @param profile_dt
 #' @param agg_FUN
 #' @param xmin
@@ -9,14 +12,20 @@
 #' @param by_
 #'
 #' @return
-#' @export
 #'
 #' @examples
 #' aggregate_signals(profile_dt)
 #' aggregate_signals(profile_dt, xmin = -.2, xmax = .2, agg_FUN = mean)
-aggregate_signals = function(profile_dt, agg_FUN = max, y_ = "y", yout_ = "ynorm",
-                             xmin = -Inf, xmax = Inf, by_ = c("tall_var", "wide_var")){
-    agg_dt = profile_dt[x >= xmin & x <= xmax, .(val_ = agg_FUN(get(y_))), by = c("id", by_)]
+aggregate_signals = function(profile_dt,
+                             agg_FUN = max,
+                             y_ = "y",
+                             yout_ = "ynorm",
+                             xmin = -Inf,
+                             xmax = Inf,
+                             by_ = c("tall_var", "wide_var")){
+    agg_dt = profile_dt[x >= xmin & x <= xmax,
+                        .(val_ = agg_FUN(get(y_))),
+                        by = c("id", by_)]
     agg_dt[[yout_]] = agg_dt$val_
     agg_dt[, c(yout_, "id", by_), with = FALSE]
 }
@@ -37,10 +46,9 @@ aggregate_signals = function(profile_dt, agg_FUN = max, y_ = "y", yout_ = "ynorm
 #' @param return_data
 #'
 #' @return
-#' @export
 #'
 #' @examples
-#' agg_dt = aggregate_signals(profile_dt)#[, .(y = mean(y)), .(id, tall_var, wide_var)]
+#' agg_dt = aggregate_signals(profile_dt)
 #' agg_dt = merge(agg_dt, tsne_dt, by = c("id", "tall_var"))
 #' #control resolution in x and y separately
 #' plot_raster_summary(agg_dt, facet_ = c("tall_var", "wide_var"),

@@ -14,7 +14,11 @@ setClass("ClusteredSignal_TSNE",
 ClusteredSignal_TSNE.from_ClusteredSignal = function(object, sts_parent){
     stopifnot("ClusteredSignal" %in% class(object))
     object@signal_data = setalloccol(object@signal_data) #hacky fix
-    tsne_dt = run_tsne(object@signal_data, sts_parent@perplexity, y_var = ssvQC:::val2var[sts_parent@signal_config@cluster_value])
+    fun.aggregate = mean
+    tsne_dt = run_tsne(object@signal_data,
+                       sts_parent@perplexity,
+                       y_var = ssvQC:::val2var[sts_parent@signal_config@cluster_value],
+                       fun.aggregate = fun.aggregate)
 
     new("ClusteredSignal_TSNE",
         signal_data =  object@signal_data,
@@ -167,7 +171,12 @@ ClusteredSignal_TSNE.null = function(){
 setMethod("names", "ClusteredSignal_TSNE",
           function(x)
           {
-              c("signal_data", "query_gr", "assignment_data", "query_gr.cluster_list", "signal_data.mean_per_cluster")
+              c("signal_data",
+                "query_gr",
+                "assignment_data",
+                "query_gr.cluster_list",
+                "signal_data.mean_per_cluster",
+                "xy_data")
 
           })
 
@@ -189,6 +198,9 @@ setMethod("$", "ClusteredSignal_TSNE",
                           agg_dt = x@signal_data[, .(y = mean(get(sig_var))), c("x", "cluster_id", union(x@facet_var, x@extra_var))]
                           setnames(agg_dt, "y", sig_var)
                           agg_dt
+                      },
+                      xy_data = {
+                          x@xy_data
                       }
               )
           })

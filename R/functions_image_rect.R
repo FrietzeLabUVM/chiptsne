@@ -106,7 +106,6 @@ draw_key_image = function (data, params, size)
 #' @param ... additional parameters
 #' @return geom layer
 #' @importFrom ggplot2 layer
-#' @export
 #' @examples
 #' library("ggplot2")
 #' library("ggimage")

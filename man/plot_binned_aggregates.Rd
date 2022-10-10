@@ -26,7 +26,7 @@ plot_binned_aggregates(
 plot_binned_aggregates
 }
 \examples{
-agg_dt = aggregate_signals(profile_dt)#[, .(y = mean(y)), .(id, tall_var, wide_var)]
+agg_dt = aggregate_signals(profile_dt)
 agg_dt = merge(agg_dt, tsne_dt, by = c("id", "tall_var"))
 #control resolution in x and y separately
 plot_raster_summary(agg_dt, facet_ = c("tall_var", "wide_var"),

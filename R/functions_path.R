@@ -23,7 +23,6 @@
 #' @param arrow_FUN result of grid::arrow().  Default of NULL does not draw arrowheads.
 #'
 #' @return ggplot showing how individual ids behave across qtall_vars.
-#' @export
 #' @importFrom stats spline
 #' @importFrom ggrepel geom_text_repel geom_label_repel
 #'
@@ -286,7 +285,6 @@ plot_path = function(tsne_dt,
 #' @param arrow_FUN result of grid::arrow().  Default of NULL does not draw arrowheads.
 #'
 #' @return a ggplot
-#' @export
 #' @importFrom grDevices chull
 #'
 #' @examples
