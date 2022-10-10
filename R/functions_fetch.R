@@ -32,7 +32,6 @@
 #' @param skip_checks if TRUE, tall_var and wide_var completeness checks are skipped.
 #'   tall_var/wide_var combinations must be complete to run StsRunTsne(). Default is FALSE.
 #' @return a tidy data.table of profile data.
-#' @export
 #' @importFrom seqsetvis ssvFetchBigwig ssvFetchBam
 #' @rawNamespace import(data.table, except = c(shift, first, second, last, melt, dcast))
 #' @examples
@@ -194,7 +193,6 @@ stsFetchTsneInput = function(qdt,
 #' @param force_overwrite if TRUE, any contents of cache are overwritten.
 #'
 #' @return a tidy data.table of profile data.
-#' @export
 #' @importFrom BiocFileCache BiocFileCache
 #' @importFrom digest digest
 #' @importFrom seqsetvis ssvFetchBam
@@ -253,7 +251,7 @@ fetch_bam_dt = function(qdt,
                                n_cores = n_cores,
                                n_region_splits = 50)
     }
-    bam_dt = bfcif(bfc, rname, bam_fetch, force_overwrite = force_overwrite, verbose = verbose)
+    bam_dt = ssvQC::bfcif(bfc, rname, bam_fetch, force_overwrite = force_overwrite, verbose = verbose)
     # bam_dt$sample = NULL
     # bam_dt = bam_dt[, list(y = agg_FUN(y)), list(tall_var, id, wide_var, x)]
     bam_dt
@@ -280,7 +278,6 @@ fetch_bam_dt = function(qdt,
 #' @param force_overwrite if TRUE, any contents of cache are overwritten.
 #'
 #' @return a tidy data.table of profile data.
-#' @export
 #' @importFrom BiocFileCache BiocFileCache
 #' @importFrom digest digest
 #' @importFrom seqsetvis ssvFetchBam
@@ -336,7 +333,7 @@ fetch_bam_stranded_dt = function(qdt,
                                n_cores = n_cores,
                                n_region_splits = 50)
     }
-    bam_dt = bfcif(bfc, rname, bam_fetch, force_overwrite = force_overwrite, verbose = verbose)
+    bam_dt = ssvQC::bfcif(bfc, rname, bam_fetch, force_overwrite = force_overwrite, verbose = verbose)
     # bam_dt$sample = NULL
     # bam_dt = bam_dt[, list(y = agg_FUN(y)), list(tall_var, id, wide_var, x)]
     bam_dt
@@ -360,7 +357,6 @@ fetch_bam_stranded_dt = function(qdt,
 #'   to fetch data.
 #' @param force_overwrite if TRUE, any contents of cache are overwritten.
 #' @return a tidy data.table of bigwig profiles at qgr views
-#' @export
 #' @importFrom BiocFileCache BiocFileCache
 #' @importFrom digest digest
 #' @importFrom seqsetvis ssvFetchBigwig
@@ -417,7 +413,7 @@ fetch_bw_dt = function(qdt,
                                   n_region_splits = 50)
     }
     # browser()
-    bw_dt = bfcif(bfc, rname, bw_fetch, force_overwrite = force_overwrite, verbose = verbose)
+    bw_dt = ssvQC::bfcif(bfc, rname, bw_fetch, force_overwrite = force_overwrite, verbose = verbose)
     # bw_dt = bw_dt[, list(y = agg_FUN(y)), list(tall_var, id, wide_var, x)]
     bw_dt
 }
@@ -435,7 +431,6 @@ fetch_bw_dt = function(qdt,
 #'   will yield ids such as region_1, region_2, region_3 ...
 #'
 #' @return GRanges ready for fetching
-#' @export
 #' @examples
 #' library(GenomicRanges)
 #' qgr = GRanges("chr1", IRanges(1:10+100, 1:10+150))
@@ -508,7 +503,6 @@ prep_query_gr = function(query_gr,
 #'
 #' @return list of two items.  prepared version of prof_dt and query_gr modified
 #'   to reflect any flipping required by high_on_right.
-#' @export
 #' @rawNamespace import(data.table, except = c(shift, first, second, last, melt, dcast))
 #' @examples
 #' data(profile_dt)

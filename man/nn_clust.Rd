@@ -4,13 +4,7 @@
 \alias{nn_clust}
 \title{Title}
 \usage{
-nn_clust(
-  tsne_res,
-  nsamp = Inf,
-  nn = 100,
-  tall_var = "tall_none",
-  id_var = "id"
-)
+nn_clust(tsne_res, nsamp = Inf, nn = 100, tall_var = "tall_var", id_var = "id")
 }
 \arguments{
 \item{nn}{}

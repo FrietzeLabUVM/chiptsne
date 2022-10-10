@@ -1,63 +1,3 @@
-#' bfcif
-#'
-#' conditionally run a function or load cached results based on rname.
-#'
-#' @param bfc a BiocFileCache object, as from running \code{BiocFileCache::BiocFileCache()}
-#' @param rname character rname to save/load from cache.  \code{digest::digest(list(YOUR_ARGS))} works.
-#' @param FUN function with no args to run.
-#' @param force_overwrite if TRUE, FUN will be run and cached results replaced if present.
-#' @param return_path_only if TRUE, FUN will never be run but path to file will be returned.  Particularly useful if you need to predetermined caching and paths for parallel execution.
-#' @param verbose if TRUE, a series of status messages are output.  Default is FALSE.
-#' @return the result of running FUN or loading cached results.
-#' @export
-#' @importFrom BiocFileCache bfcnew bfcquery bfcrpath
-#'
-#' @examples
-#' library(BiocFileCache)
-#' val = 1
-#' my_fun1 = function(){message(val); val}
-#' bfc = BiocFileCache()
-#' #basic usage
-#' bfcif(bfc, "fun_results_1", my_fun1, verbose = TRUE)
-#' #note how function scoping works
-#' #be sure to update rname!
-#' val = 2
-#' bfcif(bfc, "fun_results_2", my_fun1, verbose = TRUE)
-#' #but cached results haven't changed
-#' bfcif(bfc, "fun_results_1", my_fun1, verbose = TRUE)
-#'
-#' #alternatively, we could just get the filepath
-#' bfcif(bfc, "fun_results_1", my_fun1, verbose = TRUE, return_path_only = TRUE)
-#' #this is true if results aren't yet cached
-#' bfcif(bfc, "fun_results_3", my_fun1, verbose = TRUE, return_path_only = TRUE)
-bfcif = function(bfc, rname, FUN, force_overwrite = FALSE, return_path_only = FALSE, verbose = FALSE){
-    # is rname in cache?
-    if(nrow(BiocFileCache::bfcquery(bfc, query = rname, field = "rname", exact = TRUE)) == 0){
-        if(verbose) message("results not in cache. ", appendLF = FALSE)
-        cache_path = BiocFileCache::bfcnew(bfc, rname = rname)
-
-    }else{
-        if(verbose) message("previous cache results found. ", appendLF = FALSE)
-        cache_path = BiocFileCache::bfcrpath(bfc, rname)
-    }
-    if(return_path_only){
-        if(verbose) message("returning cache path.")
-        return(cache_path)
-    }
-    # does cached file exist?
-    if(file.exists(cache_path) && !force_overwrite){
-        if(verbose) message("loading previous cache results...")
-        load(BiocFileCache::bfcrpath(bfc, rname))
-    }else{
-        if(verbose) message("running function...", appendLF = FALSE)
-        res = FUN()
-        if(verbose) message("caching results...")
-        save(res, file = cache_path)
-    }
-    # return either new results or cached results
-    res
-}
-
 #' sampleCap
 #'
 #' Handy wrapper to sample() that avoid having to check against exceeding size
@@ -68,7 +8,6 @@ bfcif = function(bfc, rname, FUN, force_overwrite = FALSE, return_path_only = FA
 #'   too high.
 #'
 #' @return x sampled down to n items.
-#' @export
 #'
 #' @examples
 #' x = seq(10)
@@ -113,7 +52,6 @@ rescale_capped = function(x, to = c(0,1), from = range(x, na.rm = TRUE, finite =
 #'   for. Defaults to range(x).
 #'
 #' @return bin assignments parall to x.
-#' @export
 #' @examples
 #' bin_values(0:10, 3)
 bin_values = function(x, n_bins, xrng = range(x)){
@@ -128,7 +66,6 @@ bin_values = function(x, n_bins, xrng = range(x)){
 #'   for. Defaults to range(x).
 #'
 #' @return numeric of length n_bins containing centers of bins.
-#' @export
 #' @examples
 #' bin_values_centers(3, 0:10)
 #' bin_values_centers(3, range(0:10))
@@ -269,7 +206,6 @@ annotate_rects = function(p,
 #'   "individual_recentered", "normal")
 #'
 #' @return data.table with directional and angle information added.
-#' @export
 #'
 #' @examples
 #' data(tsne_dt)
@@ -336,7 +272,6 @@ calc_delta = function(tsne_dt, tall_var_a, tall_var_b, x_points, y_points = x_po
 #' @param color_mapping color_mapping for wide_vars.
 #'
 #' @return a ggplot
-#' @export
 #'
 #' @examples
 #' data(profile_dt)
@@ -384,7 +319,6 @@ plot_profiles_selected = function(profile_dt,
 #' @param height height in inches for temp png, default is 8
 #'
 #' @return a ggplot object containing flat image of original
-#' @export
 #'
 #' @examples
 plot_flat = function(p, dpi = 150, width = dev.size()[1], height = dev.size()[2], panel_only = FALSE){

@@ -46,7 +46,6 @@
 #' @return returns a ggplot containing images summarizing t-sne space at
 #'   resolution determined by x_points and y_points with the space density
 #'   mapped to size.
-#' @export
 #' @examples
 #' data("profile_dt")
 #' data("tsne_dt")
@@ -310,7 +309,6 @@ stsPlotSummaryProfiles = function(## basic inputs
 #'
 #' @return summary of profiles binned across tsne space according to x_points,
 #'   y_points, and within xrng and yrng
-#' @export
 #'
 #' @examples
 #' data("profile_dt")
@@ -393,7 +391,6 @@ prep_summary = function(profile_dt,
 #' @param vertical_facet_mapping named vector of vertical facet for data
 #'
 #' @return data.table with variables
-#' @export
 #' @importFrom seqsetvis applySpline
 #' @importFrom stats quantile
 #'
@@ -636,7 +633,6 @@ set_size = function(dt, N_floor, N_ceiling, size.name = "img_size"){
 #'   N_floor to N_ceiling.
 #'
 #' @return image_dt with rect aesthetics (xmin, xmax, ymin, and ymax) added.
-#' @export
 #'
 #' @examples
 #' library(ggplot2)
@@ -704,7 +700,6 @@ set_image_rects = function(image_dt,
 #'
 #' @return ggplot containing images summarizing t-sne regions.  if return_data
 #'   is TRUE, instead the data.table containing plot info is returned.
-#' @export
 #'
 #' @examples
 #' data("profile_dt")
@@ -800,7 +795,6 @@ plot_summary_raster = function(image_dt,
 #'
 #' @return ggplot containing images summarizing t-sne regions.  if return_data
 #'   is TRUE, instead the data.table containing plot info is returned.
-#' @export
 #'
 #' @examples
 #' data("profile_dt")
@@ -901,7 +895,6 @@ plot_summary_raster_byCell = function(image_dt,
 #'
 #' @return a ggplot containing glyphs of local profile summaries arranged in
 #'   t-sne space.
-#' @export
 #' @importFrom GGally glyphs
 #'
 #' @examples

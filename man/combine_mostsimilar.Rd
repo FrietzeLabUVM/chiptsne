@@ -2,7 +2,8 @@
 % Please edit documentation in R/functions_cluster.R
 \name{combine_mostsimilar}
 \alias{combine_mostsimilar}
-\title{combine_mostsimilar}
+\title{combine_most similar
+combines 2 most similar clusters, will repeat up to n_times as long as all clusters are over min_dist apart.}
 \usage{
 combine_mostsimilar(
   p_dt,
@@ -14,8 +15,29 @@ combine_mostsimilar(
 )
 }
 \arguments{
-\item{min_dist}{}
+\item{p_dt}{plot dt containing cluster information.}
+
+\item{profile_dt}{profile data}
+
+\item{n_times}{number of times to combine}
+
+\item{min_dist}{don't combined once under this distance}
+
+\item{cluster_}{variable name of cluster assignment}
+
+\item{new_cluster_}{variable name for new cluster assignment. by default original clusters will be overwritten.}
+}
+\value{
+p_dt with clusters combined
 }
 \description{
-combine_mostsimilar
+combine_most similar
+combines 2 most similar clusters, will repeat up to n_times as long as all clusters are over min_dist apart.
+}
+\examples{
+data("profile_dt")
+data("tsne_dt")
+setalloccol(tsne_dt)
+clust_res = nn_clust(tsne_dt, nn = 5)
+combine_mostsimilar(clust_res[[1]], profile_dt, n_times = 3)
 }

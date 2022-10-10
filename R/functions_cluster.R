@@ -7,7 +7,6 @@
 #' @param h
 #'
 #' @return
-#' @export
 #' @importFrom concaveman concaveman
 #' @importFrom GGally glyphs
 #' @importFrom seqsetvis safeBrew
@@ -79,7 +78,6 @@ stsPlotClusterProfiles = function(profile_dt, cluster_dt,
 #' @param nn
 #'
 #' @return
-#' @export
 #' @importFrom RANN nn2
 #' @importFrom Matrix Matrix
 #' @importFrom igraph graph.adjacency simplify cluster_walktrap
@@ -128,20 +126,28 @@ nn_clust = function(tsne_res, nsamp = Inf, nn = 100){
     return(list(data = p_dt, plot = p))
 }
 
-#' combine_mostsimilar
+#' combine_most similar
+#' combines 2 most similar clusters, will repeat up to n_times as long as all clusters are over min_dist apart.
+#' @param p_dt plot dt containing cluster information.
+#' @param profile_dt profile data
+#' @param n_times number of times to combine
+#' @param min_dist don't combined once under this distance
+#' @param cluster_ variable name of cluster assignment
+#' @param new_cluster_ variable name for new cluster assignment. by default original clusters will be overwritten.
 #'
-#' @param p_dt
-#' @param profile_dt
-#' @param n_times
-#' @param min_dist
 #'
-#' @return
-#' @export
+#' @return p_dt with clusters combined
 #' @import reshape2
 #'
 #' @examples
+#' data("profile_dt")
+#' data("tsne_dt")
+#' setalloccol(tsne_dt)
+#' clust_res = nn_clust(tsne_dt, nn = 5)
+#' combine_mostsimilar(clust_res[[1]], profile_dt, n_times = 3)
 combine_mostsimilar = function(p_dt, profile_dt,
-                               n_times = 1, min_dist = Inf,
+                               n_times = 1,
+                               min_dist = Inf,
                                cluster_ = "cluster_id",
                                new_cluster_ = cluster_){
     p_dt = copy(p_dt)

@@ -452,8 +452,7 @@ bin_values_centers = function (n_bins, rng)
   xs
 }
 
-nn_clust = function (tsne_res, nsamp = Inf, nn = 100, tall_var = "tall_none", id_var = "id")
-{
+nn_clust = function (tsne_res, nsamp = Inf, nn = 100, tall_var = "tall_var", id_var = "id"){
   valid_vars = c(ifelse(tall_var == "tall_none", character(), tall_var), id_var)
   valid_vars = valid_vars[!is.na(valid_vars)]
   stopifnot(valid_vars %in% colnames(tsne_res))
@@ -463,11 +462,11 @@ nn_clust = function (tsne_res, nsamp = Inf, nn = 100, tall_var = "tall_none", id
   }
 
   if(nn > .2 * nrow(tsne_res)){
-
     nn = floor(.2 * nrow(tsne_res))
     message("Decreasing nearest-neighbors to ", nn, ".  Original value was too high for dataset.")
   }
-  tsne_res[, `:=`(tid, paste(get(tall_var), get(id_var)))]
+  # tsne_res[, `:=`(tid, paste(get(tall_var), get(id_var)))]
+  set(tsne_res, j = "tid", value = paste(tsne_res[[tall_var]], tsne_res[[id_var]]))
 
   mat = t(as.matrix(tsne_res[, .(tx, ty)]))
   colnames(mat) = tsne_res$tid

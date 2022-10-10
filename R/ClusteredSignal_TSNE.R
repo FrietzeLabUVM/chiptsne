@@ -99,7 +99,7 @@ ClusteredSignal_TSNE.fromConfig = function(signal_config,
                                            bfc = new_cache()){
     is_bam = grepl("bam", signal_config@read_mode)
 
-    bfcif(bfc, digest_args(), function(){
+    ssvQC::bfcif(bfc, digest_args(), function(){
         if(is_bam){
             if(signal_config@cluster_value == "RPM" | signal_config@sort_value == "RPM"){
                 if(is.null(signal_config@meta_data$mapped_reads)){
