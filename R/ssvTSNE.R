@@ -2,11 +2,11 @@
 #' @importMethodsFrom ssvQC ssvQC.runAll ssvQC.prepSignal ssvQC.plotSignal
 setClass("ssvTSNE",
          representation = list(
-           perplexity = "numeric",
-           n_glyphs_x = "numeric",
-           n_glyphs_y = "numeric",
-           n_heatmap_pixels_x = "numeric",
-           n_heatmap_pixels_y = "numeric"
+             perplexity = "numeric",
+             n_glyphs_x = "numeric",
+             n_glyphs_y = "numeric",
+             n_heatmap_pixels_x = "numeric",
+             n_heatmap_pixels_y = "numeric"
          ),
          contains = "ssvQC.complete")
 
@@ -65,135 +65,135 @@ ssvTSNE = function(features_config = NULL,
                    n_heatmap_pixels_x = 25,
                    n_heatmap_pixels_y = n_heatmap_pixels_x,
                    ...){
-  if(is.null(features_config) & is.null(signal_config)){
-    stop("At least one of features_config or signal_config must be specified.")
-  }
+    if(is.null(features_config) & is.null(signal_config)){
+        stop("At least one of features_config or signal_config must be specified.")
+    }
 
-  features_config = ssvQC:::.prep_features_config(features_config)
-  signal_config = ssvQC:::.prep_signal_config(signal_config)
+    features_config = ssvQC:::.prep_features_config(features_config)
+    signal_config = ssvQC:::.prep_signal_config(signal_config)
 
-  signal_config@cluster_value = SQC_SIGNAL_VALUES$linearQuantile
-  signal_config@sort_value = SQC_SIGNAL_VALUES$linearQuantile
-  signal_config@plot_value = SQC_SIGNAL_VALUES$linearQuantile
+    signal_config@cluster_value = SQC_SIGNAL_VALUES$linearQuantile
+    signal_config@sort_value = SQC_SIGNAL_VALUES$linearQuantile
+    signal_config@plot_value = SQC_SIGNAL_VALUES$linearQuantile
 
-  if(is.null(bfc)){
-    bfc = ssvQC:::new_cache()
-  }
+    if(is.null(bfc)){
+        bfc = ssvQC:::new_cache()
+    }
 
-  dir.create(out_dir, showWarnings = FALSE)
+    dir.create(out_dir, showWarnings = FALSE)
 
-  new("ssvTSNE",
-      features_config = features_config,
-      signal_config = signal_config,
-      signal_data = list(),
-      other_data = list(),
-      out_dir = out_dir,
-      bfc = bfc,
-      saving_enabled = TRUE,
-      perplexity = perplexity,
-      n_glyphs_x = n_glyphs_x,
-      n_glyphs_y = n_glyphs_y,
-      n_heatmap_pixels_x = n_heatmap_pixels_x,
-      n_heatmap_pixels_y = n_heatmap_pixels_y,
-      matched_only = matched_only)
+    new("ssvTSNE",
+        features_config = features_config,
+        signal_config = signal_config,
+        signal_data = list(),
+        other_data = list(),
+        out_dir = out_dir,
+        bfc = bfc,
+        saving_enabled = TRUE,
+        perplexity = perplexity,
+        n_glyphs_x = n_glyphs_x,
+        n_glyphs_y = n_glyphs_y,
+        n_heatmap_pixels_x = n_heatmap_pixels_x,
+        n_heatmap_pixels_y = n_heatmap_pixels_y,
+        matched_only = matched_only)
 }
 
 # ssvQC.runAll = ssvQC::ssvQC.runAll
 setMethod("ssvQC.runAll", "ssvTSNE", function(object){
-  object = callNextMethod()
-  message("NYI")
-  object
+    object = callNextMethod()
+    message("NYI")
+    object
 })
 
 # ssvQC.prepSignal = ssvQC::ssvQC.prepSignal
 setMethod("ssvQC.prepSignal", "ssvTSNE", function(object){
-  object = callNextMethod()
-  object@signal_data = lapply(object@signal_data, function(signal_clust_objs){
-    lapply(signal_clust_objs, function(clust_obj){
-      ClusteredSignal_TSNE.from_ClusteredSignal(clust_obj, object)
+    object = callNextMethod()
+    object@signal_data = lapply(object@signal_data, function(signal_clust_objs){
+        lapply(signal_clust_objs, function(clust_obj){
+            ClusteredSignal_TSNE.from_ClusteredSignal(clust_obj, object)
+        })
     })
-  })
-  object
+    object
 })
 
 
 # ssvQC.plotSignal = ssvQC::ssvQC.plotSignal
 setMethod("ssvQC.plotSignal", "ssvTSNE", function(object){
-  object = callNextMethod()
+    object = callNextMethod()
 
-  n_glyphs_x = object@n_glyphs_x
-  n_glyphs_y = object@n_glyphs_y
+    n_glyphs_x = object@n_glyphs_x
+    n_glyphs_y = object@n_glyphs_y
 
-  n_heatmap_pixels_x = object@n_heatmap_pixels_x
-  n_heatmap_pixels_y = object@n_heatmap_pixels_y
+    n_heatmap_pixels_x = object@n_heatmap_pixels_x
+    n_heatmap_pixels_y = object@n_heatmap_pixels_y
 
-  object@plots$TSNE$regional_glyphs = lapply(object@signal_data, function(signal_data_groups){
-    lapply(signal_data_groups, function(signal_data){
-      if(!"ClusteredSignal_TSNE" %in% class(signal_data)){
-        stop("Stored signal data is not of class ClusteredSignal_TSNE.")
-      }
-      p_summary_profiles = stsPlotSummaryProfiles(signal_data@signal_data,
-                                                  signal_data@xy_data,
-                                                  x_points = n_glyphs_x,
-                                                  y_points = n_glyphs_y,
-                                                  y_var = ssvQC:::val2var[object@signal_config@plot_value])
-      p_summary_profiles
+    object@plots$TSNE$regional_glyphs = lapply(object@signal_data, function(signal_data_groups){
+        lapply(signal_data_groups, function(signal_data){
+            if(!"ClusteredSignal_TSNE" %in% class(signal_data)){
+                stop("Stored signal data is not of class ClusteredSignal_TSNE.")
+            }
+            p_summary_profiles = stsPlotSummaryProfiles(signal_data@signal_data,
+                                                        signal_data@xy_data,
+                                                        x_points = n_glyphs_x,
+                                                        y_points = n_glyphs_y,
+                                                        y_var = ssvQC:::val2var[object@signal_config@plot_value])
+            p_summary_profiles
+        })
     })
-  })
 
-  object@plots$TSNE$cluster_glyphs = lapply(object@signal_data, function(signal_data_groups){
-    lapply(signal_data_groups, function(signal_data){
-      if(!"ClusteredSignal_TSNE" %in% class(signal_data)){
-        stop("Stored signal data is not of class ClusteredSignal_TSNE.")
-      }
+    object@plots$TSNE$cluster_glyphs = lapply(object@signal_data, function(signal_data_groups){
+        lapply(signal_data_groups, function(signal_data){
+            if(!"ClusteredSignal_TSNE" %in% class(signal_data)){
+                stop("Stored signal data is not of class ClusteredSignal_TSNE.")
+            }
 
-      use_tsne_clust = TRUE
-      if(use_tsne_clust){
-        cluster_result = nn_clust(signal_data@xy_data)
-        p_cluster_profiles = stsPlotClusterProfiles(signal_data@signal_data, cluster_result$data)
-      }else{
-        p_cluster_profiles = stsPlotClusterProfiles(signal_data@signal_data,
-                                                    merge(
-                                                      signal_data@signal_data,
-                                                      signal_data@xy_data, by = "id"))
-      }
-      p_cluster_profiles
+            use_tsne_clust = TRUE
+            if(use_tsne_clust){
+                cluster_result = nn_clust(signal_data@xy_data, tall_var = "tall_none")
+                p_cluster_profiles = stsPlotClusterProfiles(signal_data@signal_data, cluster_result$data)
+            }else{
+                p_cluster_profiles = stsPlotClusterProfiles(signal_data@signal_data,
+                                                            merge(
+                                                                signal_data@signal_data,
+                                                                signal_data@xy_data, by = "id"))
+            }
+            p_cluster_profiles
+        })
     })
-  })
 
-  object@plots$TSNE$regional_heatmap = lapply(object@signal_data, function(signal_data_groups){
-    lapply(signal_data_groups, function(signal_data){
-      if(!"ClusteredSignal_TSNE" %in% class(signal_data)){
-        stop("Stored signal data is not of class ClusteredSignal_TSNE.")
-      }
-      prof_dt = signal_data@signal_data
-      xy_dt = signal_data@xy_data
+    object@plots$TSNE$regional_heatmap = lapply(object@signal_data, function(signal_data_groups){
+        lapply(signal_data_groups, function(signal_data){
+            if(!"ClusteredSignal_TSNE" %in% class(signal_data)){
+                stop("Stored signal data is not of class ClusteredSignal_TSNE.")
+            }
+            prof_dt = signal_data@signal_data
+            xy_dt = signal_data@xy_data
 
-      x_var = "x"
-      y_var = "y"
-      id_var = "id"
-      wide_var = "name"
-      tall_var = "tall_none"
-      agg_FUN = max
+            x_var = "x"
+            y_var = "y"
+            id_var = "id"
+            wide_var = "name"
+            tall_var = "tall_none"
+            agg_FUN = max
 
-      y_var = ssvQC:::val2var[object@signal_config@plot_value]
-      y_lab = names(y_var)
+            y_var = ssvQC:::val2var[object@signal_config@plot_value]
+            y_lab = names(y_var)
 
-      xy_dt[, xbin := bin_values(tx, n_heatmap_pixels_x, c(-.5, .5))]
-      xy_dt[, ybin := bin_values(ty, n_heatmap_pixels_y, c(-.5, .5))]
+            xy_dt[, xbin := bin_values(tx, n_heatmap_pixels_x, c(-.5, .5))]
+            xy_dt[, ybin := bin_values(ty, n_heatmap_pixels_y, c(-.5, .5))]
 
-      heat_dt = merge(prof_dt, xy_dt[, .(id, xbin, ybin)], by = "id")[, .(y = agg_FUN(get(y_var))), c(id_var, wide_var, "xbin", "ybin")]
+            heat_dt = merge(prof_dt, xy_dt[, .(id, xbin, ybin)], by = "id")[, .(y = agg_FUN(get(y_var))), c(id_var, wide_var, "xbin", "ybin")]
 
-      ggplot(heat_dt, aes(x = xbin, y = ybin, fill = y)) +
-        geom_tile() +
-        facet_wrap(~name) +
-        scale_fill_viridis_c()
+            ggplot(heat_dt, aes(x = xbin, y = ybin, fill = y)) +
+                geom_tile() +
+                facet_wrap(~name) +
+                scale_fill_viridis_c()
+        })
     })
-  })
 
 
-  saveRDS(object, "dev_object.ssvQC.plotSignal.Rds")
-  object
+    saveRDS(object, "dev_object.ssvQC.plotSignal.Rds")
+    object
 })
 
 
@@ -201,12 +201,12 @@ setMethod("ssvQC.plotSignal", "ssvTSNE", function(object){
 setMethod("names", "ssvTSNE",
           function(x)
           {
-            c("plots", "signal_data", "signal_config", "features_config", "SCC", "FRIP", "correlation",
-              "perplexity",
-              "n_glyphs_x",
-              "n_glyphs_y",
-              "n_heatmap_pixels_x",
-              "n_heatmap_pixels_y")
+              c("plots", "signal_data", "signal_config", "features_config", "SCC", "FRIP", "correlation",
+                "perplexity",
+                "n_glyphs_x",
+                "n_glyphs_y",
+                "n_heatmap_pixels_x",
+                "n_heatmap_pixels_y")
 
           })
 
@@ -214,54 +214,54 @@ setMethod("names", "ssvTSNE",
 setMethod("$", "ssvTSNE",
           function(x, name)
           {
-            switch (name,
-                    plots = x@plots,
-                    signal_data = x@signal_data,
-                    SCC = x@other_data$SCC,
-                    FRIP = x@other_data$FRIP,
-                    correlation = list(read_count = x@other_data$read_count_correlation, signal_profile = x@other_data$signal_profile_correlation),
-                    bfc = x@bfc,
-                    features_config = x@features_config,
-                    signal_config = x@signal_config,
-                    perplexity = x@perplexity,
-                    n_glyphs_x = x@n_glyphs_x,
-                    n_glyphs_y = x@n_glyphs_y,
-                    n_heatmap_pixels_x = x@n_heatmap_pixels_x,
-                    n_heatmap_pixels_y = x@n_heatmap_pixels_y
+              switch (name,
+                      plots = x@plots,
+                      signal_data = x@signal_data,
+                      SCC = x@other_data$SCC,
+                      FRIP = x@other_data$FRIP,
+                      correlation = list(read_count = x@other_data$read_count_correlation, signal_profile = x@other_data$signal_profile_correlation),
+                      bfc = x@bfc,
+                      features_config = x@features_config,
+                      signal_config = x@signal_config,
+                      perplexity = x@perplexity,
+                      n_glyphs_x = x@n_glyphs_x,
+                      n_glyphs_y = x@n_glyphs_y,
+                      n_heatmap_pixels_x = x@n_heatmap_pixels_x,
+                      n_heatmap_pixels_y = x@n_heatmap_pixels_y
 
-            )
+              )
           })
 
 setReplaceMethod("$", "ssvTSNE",
                  function(x, name, value)
                  {
-                   warn_msg = "This assignment is not supported.  No effect."
-                   switch (name,
-                           features_config = {
-                             x@features_config = value
-                           },
-                           signal_config = {
-                             x@signal_config = value
-                           },
-                           perplexity = {
-                             x@perplexity = value
-                           },
-                           n_glyphs_x = {
-                             x@n_glyphs_x = value
-                           },
-                           n_glyphs_y = {
-                             x@n_glyphs_y = value
-                           },
-                           n_heatmap_pixels_x = {
-                             x@n_heatmap_pixels_x = value
-                           },
-                           n_heatmap_pixels_y = {
-                             x@n_heatmap_pixels_y = value
-                           },
-                           {warning(warn_msg)}
+                     warn_msg = "This assignment is not supported.  No effect."
+                     switch (name,
+                             features_config = {
+                                 x@features_config = value
+                             },
+                             signal_config = {
+                                 x@signal_config = value
+                             },
+                             perplexity = {
+                                 x@perplexity = value
+                             },
+                             n_glyphs_x = {
+                                 x@n_glyphs_x = value
+                             },
+                             n_glyphs_y = {
+                                 x@n_glyphs_y = value
+                             },
+                             n_heatmap_pixels_x = {
+                                 x@n_heatmap_pixels_x = value
+                             },
+                             n_heatmap_pixels_y = {
+                                 x@n_heatmap_pixels_y = value
+                             },
+                             {warning(warn_msg)}
 
-                   )
+                     )
 
-                   #TODO, some assignments may be appropriate
-                   x
+                     #TODO, some assignments may be appropriate
+                     x
                  })

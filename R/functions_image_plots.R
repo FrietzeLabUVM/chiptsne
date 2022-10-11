@@ -60,8 +60,8 @@ stsPlotSummaryProfiles = function(## basic inputs
     q_tall_vars = NULL,
     q_wide_vars = NULL,
     ## view domain
-    xrng = range(position_dt$tx),
-    yrng = range(position_dt$ty),
+    xrng = NULL,
+    yrng = NULL,
     ## plotting strategy
     plot_type = c("glyph", "raster")[1],
     ## image file path and output
@@ -120,6 +120,15 @@ stsPlotSummaryProfiles = function(## basic inputs
 
     prof_dt = copy(profile_dt[tall_var %in% q_tall_vars & wide_var %in% q_wide_vars])
     pos_dt = copy(position_dt[tall_var %in% q_tall_vars])
+
+    if(is.null(xrng)){
+        xrng = range(pos_dt$tx)
+    }
+    if(is.null(yrng)){
+        yrng = range(pos_dt$ty)
+    }
+
+
 
     if(is.null(rname)){
         rname = digest::digest(

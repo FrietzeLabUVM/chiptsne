@@ -4,13 +4,17 @@ library(chiptsne)
 library(testthat)
 options(mc.cores = 10)
 SQC_OPTIONS$SQC_FORCE_CACHE_OVERWRITE = TRUE
+SQC_OPTIONS$SQC_FORCE_CACHE_OVERWRITE = FALSE
 set.seed(0)
 features_config_file = system.file(package = "ssvQC", "extdata/ssvQC_peak_config.csv")
 features_config = QcConfigFeatures.parse(features_config_file)
 
 bam_config_file = system.file(package = "ssvQC", "extdata/ssvQC_bam_config.csv")
 bam_config = QcConfigSignal.parse(bam_config_file)
+bam_config$center_signal_at_max = TRUE
+bam_config$flip_signal_mode = "high_on_left"
 bam_config$view_size = 600
+bam_config$heatmap_limit_values = c(0, 3)
 
 bam_config$color_by
 bam_config$run_by
@@ -56,6 +60,83 @@ test_that("sts TSNE plots", {
 
 
 ctPlotBinAggregates(sts)
+ctPlotBinAggregates(sts, xbins = 5)
+ctPlotBinAggregates(sts, xbins = 5, xmin = -.1, xmax = .1)
+ctPlotBinAggregates(sts, xbins = 5, xmin = -Inf, xmax = -.3)
+ctPlotBinAggregates(sts, xbins = 5, xmin = .3, xmax = Inf)
+
+ctPlotSummaryProfiles = function(sts,
+                                 feature_name = NULL,
+                                 signal_name = NULL,
+                                 xbins = 20,
+                                 ybins = xbins,
+                                 ###
+                                 q_tall_values = NULL,
+                                 q_wide_values = NULL,
+                                 xrng = NULL,
+                                 yrng = NULL,
+                                 plot_type = c("glyph", "raster")[1],
+                                 rname = NULL,
+                                 odir = NULL,
+                                 force_rewrite = FALSE,
+                                 n_cores = getOption("mc.cores", 1),
+                                 ylim = c(0, NA),
+                                 ma_size = 2,
+                                 n_splines = 10,
+                                 p = NULL,
+                                 line_color_mapping = NULL,
+                                 N_floor = 0,
+                                 N_ceiling = NULL,
+                                 min_size = 0.3,
+                                 return_data = FALSE
+){
+    args2 = chiptsne:::.prepare_plot_inputs(sts,
+                                            feature_name = feature_name,
+                                            signal_name = signal_name)
+    for(var_name in names(args2)){
+        assign(var_name, args2[[var_name]])
+    }
+    chiptsne:::stsPlotSummaryProfiles(
+        profile_dt = prof_dt,
+        position_dt = tsne_dt,
+        x_points = xbins,
+        y_points = ybins,
+        ###
+        q_tall_values = q_tall_values,
+        q_wide_values = q_wide_values,
+        xrng = xrng,
+        yrng = yrng,
+        plot_type = plot_type,
+        rname = rname,
+        odir = odir,
+        force_rewrite = force_rewrite,
+        n_cores = n_cores,
+        apply_norm = FALSE,
+        ylim = ylim,
+        ma_size = ma_size,
+        n_splines = n_splines,
+        p = p,
+        facet_byCell = FALSE,
+        line_color_mapping = line_color_mapping,
+        vertical_facet_mapping = NULL,
+        N_floor = N_floor,
+        N_ceiling = N_ceiling,
+        min_size = min_size,
+        return_data = return_data
+        )
+}
+
+undebug(ctPlotSummaryProfiles)
+debug(chiptsne:::stsPlotSummaryProfiles)
+
+ctPlotSummaryProfiles(sts)
+ctPlotSummaryProfiles(sts, N_floor = 0, N_ceiling = 1)
+ctPlotSummaryProfiles(sts, plot_type = "raster")
+ctPlotSummaryProfiles(sts, N_floor = 0, N_ceiling = 1, plot_type = "raster")
+
+chiptsne:::stsPlotSummaryProfiles(profile_dt = )
+chiptsne:::prep_summary
+chiptsne:::plot_summary_glyph
 
 #save the test ssvTSNE object
 if(FALSE){

@@ -154,11 +154,11 @@ stsPlotSummaryProfiles = function (profile_dt,
                                    tall_var = "tall_none",
                                    q_tall_values = NULL,
                                    q_wide_values = NULL,
-                                   xrng = range(position_dt$tx),
-                                   yrng = range(position_dt$ty),
+                                   xrng = NULL,
+                                   yrng = NULL,
                                    plot_type = c("glyph", "raster")[1],
                                    rname = NULL,
-                                   odir = file.path(tempdir(), rname),
+                                   odir = NULL,
                                    force_rewrite = FALSE,
                                    n_cores = getOption("mc.cores", 1),
                                    apply_norm = TRUE,
@@ -213,13 +213,32 @@ stsPlotSummaryProfiles = function (profile_dt,
   if (!plot_type %in% c("glyph", "raster")) {
     stop("plot_type (\"", plot_type, "\") must be one of \"glyph\" or \"raster\".")
   }
-  prof_dt = copy(profile_dt[get(tall_var) %in% q_tall_values & get(wide_var) %in%
-                              q_wide_values])
-  pos_dt = copy(position_dt[get(tall_var) %in% q_tall_values])
+  k = profile_dt[[tall_var]] %in% q_tall_values &
+      profile_dt[[wide_var]] %in% q_wide_values
+  prof_dt = copy(profile_dt[k == TRUE])
+  pos_dt = copy(position_dt[position_dt[[tall_var]] %in% q_tall_values])
+  if(is.null(xrng)){
+      xrng = range(pos_dt$tx)
+  }
+  if(is.null(yrng)){
+      yrng = range(pos_dt$ty)
+  }
   if (is.null(rname)) {
-    rname = digest::digest(list(prof_dt, pos_dt, x_points,
-                                y_points, xrng, yrng, apply_norm, ylim, line_color_mapping,
-                                n_splines, ma_size, facet_byCell))
+    rname = digest::digest(list(prof_dt,
+                                pos_dt,
+                                x_points,
+                                y_points,
+                                xrng,
+                                yrng,
+                                apply_norm,
+                                ylim,
+                                line_color_mapping,
+                                n_splines,
+                                ma_size,
+                                facet_byCell))
+  }
+  if(is.null(odir)){
+      odir = file.path(tempdir(), rname)
   }
   prof_dt[[tall_var]] = factor(prof_dt[[tall_var]], levels = q_tall_values)
   prof_dt[[wide_var]] = factor(prof_dt[[wide_var]], levels = q_wide_values)

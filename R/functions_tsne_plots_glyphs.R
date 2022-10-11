@@ -96,8 +96,8 @@ plot_summary_raster = function (image_dt,
                                                   each = nrow(image_dt)))]
     setnames(col_dt, "wide_var_", wide_var)
     p = p +
-      geom_point(data = col_dt,
-                 aes_string(x = "tx", y = "ty", color = wide_var)) +
+      # geom_point(data = col_dt,
+      #            aes_string(x = "tx", y = "ty", color = wide_var)) +
       scale_color_manual(values = line_color_mapping)
   }
   p = p +
