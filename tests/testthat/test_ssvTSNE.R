@@ -58,6 +58,7 @@ test_that("sts TSNE plots", {
     expect_is(sts$plots$TSNE$regional_heatmap$CTCF_features$CTCF_signal, "ggplot")
 })
 
+debug(chiptsne:::plot_binned_aggregates)
 
 ctPlotBinAggregates(sts)
 ctPlotBinAggregates(sts, xbins = 5)
@@ -78,8 +79,11 @@ ctPlotSummaryProfiles(sts, N_floor = 0, N_ceiling = 1) +
 ctPlotSummaryProfiles(sts, N_floor = 0, N_ceiling = 1, plot_type = "raster") +
     facet_wrap(~mark)
 
+ctPlotPoints(sts)
 ctPlotPoints(sts) +
     facet_wrap(~cell+mark)
+ctPlotPoints(sts) +
+    facet_wrap(~name_split)
 
 chiptsne:::stsPlotSummaryProfiles(profile_dt = )
 chiptsne:::prep_summary

@@ -85,7 +85,7 @@ ctPlotBinAggregates = function(sts,
         xmin = xmin,
         xmax = xmax)
     agg_dt = merge(agg_dt, tsne_dt, by = "id")
-    agg_dt = merge(sts$signal_config$meta_data, agg_dt, by.y = "wide_var", by.x = "name")
+    agg_dt = as.data.table(merge(sts$signal_config$meta_data, agg_dt, by.y = "wide_var", by.x = "name"))
     facet_str = paste0(sts$signal_config$color_by, "~", sts$signal_config$run_by)
 
     extra_vars =  c(
@@ -101,7 +101,8 @@ ctPlotBinAggregates = function(sts,
         xbins = xbins,
         ybins = ybins,
         val = profile_value,
-        extra_vars = extra_vars
+        extra_vars = extra_vars,
+        facet_ = "name",
     ) +
         labs(fill = profile_value_label) +
         facet_grid(facet_str)
@@ -245,7 +246,7 @@ ctPlotPoints = function(
         xmin = xmin,
         xmax = xmax)
     agg_dt = merge(agg_dt, tsne_dt, by = "id")
-    agg_dt = merge(sts$signal_config$meta_data, agg_dt, by.y = "wide_var", by.x = "name")
+    agg_dt = as.data.table(merge(sts$signal_config$meta_data, agg_dt, by.y = "wide_var", by.x = "name"))
     facet_str = paste0(sts$signal_config$color_by, "~", sts$signal_config$run_by)
 
     ggplot(agg_dt, aes_string(x = "tx", y = "ty", color = profile_value)) +
