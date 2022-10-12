@@ -69,6 +69,44 @@ plot_summary_glyph.2 = function (tsne_dt,
   p
 }
 
+#' plot_summary_raster
+#'
+#' @param image_dt $image_dt of result from prep_images()
+#' @param x_points numeric.  number of grid points to use in x dimension.
+#' @param y_points numeric.  number of grid points to use in y dimension.
+#' @param xrng view domain in x dimension.
+#' @param yrng view domain in y dimension.
+#' @param p an existing ggplot to overlay images onto.  Default of NULL starts a
+#'   new plot.
+#' @param line_color_mapping named character vector for scale_color_manual, recommend $line_color_mapping from prep_images()
+#' @param N_floor The value of N to consider 0.  bins with N values <= N_floor
+#'   will be ignored.
+#' @param N_ceiling The value of N to consider 1.  bins with N values >=
+#'   N_ceiling will have images drawn at full size.
+#' @param min_size Numeric (0, 1]. The minimum size images to draw.  The default
+#'   of .3 draws images for all bins with N values >= 30% of the way from
+#'   N_floor to N_ceiling.
+#' @param return_data if TRUE, data.table that would have been used to create
+#'   ggplot is returned instead.
+#'
+#' @return ggplot containing images summarizing t-sne regions.  if return_data
+#'   is TRUE, instead the data.table containing plot info is returned.
+#'
+#' @examples
+#' data("profile_dt")
+#' data("tsne_dt")
+#' summary_dt = prep_summary(profile_dt, tsne_dt, 4)
+#' img_res = prep_images(summary_dt, 4)
+#' #zoom on top-right quadrant
+#'
+#' summary_dt.zoom = prep_summary(profile_dt, tsne_dt, 8, xrng = c(0, .5), yrng = c(0, .5))
+#' img_res.zoom = prep_images(summary_dt.zoom, 8, xrng = c(0, .5), yrng = c(0, .5))
+#' plot_summary_raster(img_res$image_dt,
+#'               x_points = img_res$x_points)
+#' plot_summary_raster(img_res.zoom$image_dt,
+#'               x_points = img_res.zoom$x_points,
+#'               xrng = img_res.zoom$xrng,
+#'               yrng = img_res.zoom$yrng, min_size = 0)
 plot_summary_raster = function (image_dt,
                                 x_points,
                                 y_points = x_points,
@@ -118,6 +156,46 @@ plot_summary_raster = function (image_dt,
   p
 }
 
+
+#' plot_summary_raster_byCell
+#'
+#' @param image_dt $image_dt of result from prep_images()
+#' @param x_points numeric.  number of grid points to use in x dimension.
+#' @param y_points numeric.  number of grid points to use in y dimension.
+#' @param xrng view domain in x dimension.
+#' @param yrng view domain in y dimension.
+#' @param p an existing ggplot to overlay images onto.  Default of NULL starts a
+#'   new plot.
+#' @param line_color_mapping named character vector for scale_color_manual, recommend $line_color_mapping from prep_images()
+#' @param N_floor The value of N to consider 0.  bins with N values <= N_floor
+#'   will be ignored.
+#' @param N_ceiling The value of N to consider 1.  bins with N values >=
+#'   N_ceiling will have images drawn at full size.
+#' @param min_size Numeric (0, 1]. The minimum size images to draw.  The default
+#'   of .3 draws images for all bins with N values >= 30% of the way from
+#'   N_floor to N_ceiling.
+#' @param return_data if TRUE, data.table that would have been used to create
+#'   ggplot is returned instead.
+#'
+#' @return ggplot containing images summarizing t-sne regions.  if return_data
+#'   is TRUE, instead the data.table containing plot info is returned.
+#'
+#' @examples
+#' data("profile_dt")
+#' data("tsne_dt")
+#' summary_dt = prep_summary(profile_dt, tsne_dt, 4, facet_by = "tall_var")
+#' img_res = prep_images(summary_dt, 4, facet_by = "tall_var")
+#' #zoom on top-right quadrant
+#' summary_dt.zoom = prep_summary(profile_dt, tsne_dt, 4, facet_by = "tall_var",
+#'     xrng = c(0, .5), yrng = c(0, .5))
+#' img_res.zoom = prep_images(summary_dt.zoom, 4, facet_by = "tall_var",
+#'     xrng = c(0, .5), yrng = c(0, .5))
+#' plot_summary_raster_byCell(img_res$image_dt,
+#'               x_points = img_res$x_points)
+#' plot_summary_raster_byCell(img_res.zoom$image_dt,
+#'               x_points = img_res.zoom$x_points,
+#'               xrng = img_res.zoom$xrng,
+#'               yrng = img_res.zoom$yrng)
 plot_summary_raster_byCell = function (image_dt,
                                        x_points,
                                        y_points = x_points,
@@ -152,28 +230,40 @@ plot_summary_raster_byCell = function (image_dt,
   p
 }
 
-#' Title
+
+#' plot_summary_glyph
 #'
-#' @param summary_dt
-#' @param x_points
-#' @param y_points
-#' @param xrng
-#' @param yrng
-#' @param ylim
-#' @param p
-#' @param N_floor
-#' @param N_ceiling
-#' @param min_size
-#' @param return_data
-#' @param color_mapping
-#' @param x_var
-#' @param y_var
-#' @param wide_var
+#' @param summary_dt results from prep_summary()
+#' @param x_points numeric.  number of grid points to use in x dimension.
+#' @param y_points numeric.  number of grid points to use in y dimension.
+#' @param xrng view domain in x dimension.
+#' @param yrng view domain in y dimension.
+#' @param ylim ylimits per glyph
+#' @param p an existing ggplot to overlay images onto.  Default of NULL starts a
+#'   new plot.
+#' @param N_floor The value of N to consider 0.  bins with N values <= N_floor
+#'   will be ignored.
+#' @param N_ceiling The value of N to consider 1.  bins with N values >=
+#'   N_ceiling will have images drawn at full size.
+#' @param min_size Numeric (0, 1]. The minimum size images to draw.  The default
+#'   of .3 draws images for all bins with N values >= 30% of the way from
+#'   N_floor to N_ceiling.
+#' @param return_data if TRUE, data.table that would have been used to create
+#'   ggplot is returned instead.
+#' @param color_mapping mapping for scale_color_manual
 #'
-#' @return
+#' @return a ggplot containing glyphs of local profile summaries arranged in
+#'   t-sne space.
 #' @importFrom GGally glyphs
 #'
 #' @examples
+#' data("profile_dt")
+#' data("tsne_dt")
+#' n_points = 12
+#' summary_dt = prep_summary(profile_dt = profile_dt,
+#'     position_dt = tsne_dt, x_points = n_points)
+#' plot_summary_glyph(summary_dt,
+#'     x_points = n_points)
 plot_summary_glyph = function (summary_dt,
                                x_points,
                                y_points = x_points,
@@ -253,6 +343,51 @@ set_size = function (dt, N_floor, N_ceiling, size.name = "img_size")
   dt
 }
 
+#' prep_images
+#'
+#' Prepares images summarizing profiles in t-sne regions and returns ggimage
+#' compatible data.frame for plotting.
+#'
+#' @param summary_dt a tidy data.table from prep_summary()
+#' @param x_points numeric.  number of grid points to use in x dimension.
+#' @param y_points numeric.  number of grid points to use in y dimension.
+#'   Defaults to same value as x_points.
+#' @param xrng view domain in x dimension, default is range of position_dt$tx.
+#' @param yrng view domain in y dimension, default is range of position_dt$ty.
+#' @param rname prefix for image files.  existing image files are used if
+#'   present.
+#' @param odir output directory for image files.
+#' @param force_rewrite if TRUE, images are overwritten even if they exist.
+#' @param apply_norm if TRUE, y values are trimmed to 95th percentile and
+#'   transformed ot domain of [0,1]. Default is TRUE.
+#' @param ylim y-limits of regional summary plots.  Default of c(0, 1) is
+#'   compatible with apply_norm = TRUE.
+#' @param facet_by character. varaible name to facet profile_dt by when
+#'   constructing images. The only valid non-null value with chiptsne functions
+#'   is "tall_var".
+#' @param n_splines number of points to interpolate with splines.
+#' @param ma_size moving average size when smoothing profiles.
+#' @param n_cores number of cores to use when writing images.  Default is value
+#'   of mc.cores option if set or 1.
+#' @param line_color_mapping named vector of line color.  Names correspond to
+#'   values of profile_dt 'wide_var' variable and values are colors.
+#' @param vertical_facet_mapping named vector of vertical facet for data
+#'
+#' @return data.table with variables
+#' @importFrom seqsetvis applySpline
+#' @importFrom stats quantile
+#'
+#' @examples
+#' data("profile_dt")
+#' data("tsne_dt")
+#' summary_dt = prep_summary(profile_dt, tsne_dt, 4)
+#' img_res = prep_images(summary_dt, 4)
+#' #zoom on top-right quadrant
+#' summary_dt.zoom = prep_summary(profile_dt, tsne_dt, 4,
+#'     xrng = c(0, .5), yrng = c(0, .5))
+#' img_res.zoom = prep_images(summary_dt.zoom, 4,
+#'     xrng = c(0, .5), yrng = c(0, .5))
+#' #use results with plot_summary_raster() to make plots
 prep_images = function (summary_dt,
                         x_points,
                         y_points = x_points,
@@ -375,3 +510,67 @@ prep_images = function (summary_dt,
               x_points = x_points, y_points = y_points, xrng = xrng,
               yrng = yrng, line_color_mapping = line_color_mapping))
 }
+
+#' set_image_rects
+#'
+#' configures result of prep_images by setting rectangle parameters
+#'
+#' @param image_dt $image_dt of result from prep_images()
+#' @param x_points numeric.  number of grid points to use in x dimension.
+#' @param y_points numeric.  number of grid points to use in y dimension.
+#' @param xrng view domain in x dimension.
+#' @param yrng view domain in y dimension.
+#' @param N_floor The value of N to consider 0.  bins with N values <= N_floor
+#'   will be ignored.
+#' @param N_ceiling The value of N to consider 1.  bins with N values >=
+#'   N_ceiling will have images drawn at full size.
+#' @param min_size Numeric (0, 1]. The minimum size images to draw.  The default
+#'   of .3 draws images for all bins with N values >= 30% of the way from
+#'   N_floor to N_ceiling.
+#'
+#' @return image_dt with rect aesthetics (xmin, xmax, ymin, and ymax) added.
+#'
+#' @examples
+#' library(ggplot2)
+#' data("profile_dt")
+#' data("tsne_dt")
+#' summary_dt = prep_summary(profile_dt,
+#'                       tsne_dt,
+#'                       x_points = 4)
+#' img_res = prep_images(summary_dt, 4)
+#' img_rect = set_image_rects(img_res$image_dt,
+#'                            x_points = img_res$x_points,
+#'                            y_points = img_res$y_points,
+#'                            xrng = img_res$xrng,
+#'                            yrng = img_res$yrng)
+#' ggplot(img_rect, aes(xmin = xmin, xmax = xmax,
+#'     ymin = ymin, ymax = ymax)) + geom_rect()
+#' ggplot(img_rect, aes(xmin = xmin, xmax = xmax,
+#'     ymin = ymin, ymax = ymax, image = png_file)) + geom_image.rect()
+set_image_rects = function(image_dt,
+                           x_points,
+                           y_points,
+                           xrng,
+                           yrng,
+                           N_floor = 0,
+                           N_ceiling = NULL,
+                           min_size = .3) {
+    image_dt = set_size(image_dt, N_floor, N_ceiling, size.name = "img_size")
+    # image_dt[, img_size := N]
+    # image_dt[img_size > N_ceiling, img_size := N_ceiling]
+    # image_dt[img_size < N_floor, img_size := N_floor]
+    #
+    # image_dt[, img_size := img_size - N_floor]
+    # image_dt[, img_size := img_size / N_ceiling]
+    image_dt = image_dt[img_size >= min_size]
+
+    xspc = diff(xrng) / x_points / 2
+    yspc = diff(yrng) / y_points / 2
+
+    image_dt[, xmin := tx - xspc * img_size]
+    image_dt[, xmax := tx + xspc * img_size]
+    image_dt[, ymin := ty - yspc * img_size]
+    image_dt[, ymax := ty + yspc * img_size]
+    image_dt[]
+}
+

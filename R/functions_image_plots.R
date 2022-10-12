@@ -1,55 +1,4 @@
-#' stsPlotSummaryProfiles
-#'
-#' @param profile_dt a tidy data.table for profile data as retrieved by
-#'   stsFetchTsneInput.  Expected variable names are id, tall_var, wide_var, x, and y.
-#' @param position_dt a tidy data.table containing t-sne embedding.  Expected
-#'   variable names are tx, ty, id, and tall_var.
-#' @param x_points numeric.  number of grid points to use in x dimension.
-#' @param y_points numeric.  number of grid points to use in y dimension.
-#'   Defaults to same value as x_points.
-#' @param q_tall_vars character vector of tall_vars to plot. Default of NULL plots all.
-#' @param q_wide_vars character vector of wide_vars to plot.  Default of NULL plots all.
-#' @param xrng view domain in x dimension, default is range of position_dt$tx.
-#' @param yrng view domain in y dimension, default is range of position_dt$ty.
-#' @param plot_type character, must be one of "glyph" or "raster".  raster
-#' uses ggimage::geom_image to embed images where glyph uses GGally::glyphs
-#' @param rname prefix for image files.  existing image files are used if
-#'   present.
-#' @param odir output directory for image files.
-#' @param force_rewrite if TRUE, images are overwritten even if they exist.
-#' @param n_cores number of cores to use when writing images.  Default is value
-#'   of mc.cores option if set or 1.
-#' @param apply_norm if TRUE, y values are trimmed to 95th percentile and
-#'   transformed ot domain of [0,1]. Default is TRUE.
-#' @param ylim y-limits of regional summary plots.  Default of c(0, 1) is
-#'   compatible with apply_norm = TRUE.
-#' @param ma_size moving average size when smoothing profiles.
-#' @param n_splines number of points to interpolate with splines.
-#' @param p an existing ggplot to overlay images onto.  Default of NULL starts a
-#'   new plot.
-#' @param facet_byCell boolean. If TRUE, plots are facetted by tall_var.
-#' @param line_color_mapping named vector of line color.  Names correspond to
-#'   values of profile_dt 'wide_var' variable and values are colors.
-#' @param vertical_facet_mapping named vector of groups.  vertical_facet_mapping
-#'   names are wide_vars and order of first occurence determines vertical position
-#'   top to bottom.
-#' @param N_floor The value of N to consider 0.  bins with N values <= N_floor
-#'   will be ignored.
-#' @param N_ceiling The value of N to consider 1.  bins with N values >=
-#'   N_ceiling will have images drawn at full size.
-#' @param min_size Numeric (0, 1]. The minimum size images to draw.  The default
-#'   of .3 draws images for all bins with N values >= 30% of the way from
-#'   N_floor to N_ceiling.
-#' @param return_data if TRUE, data.table that would have been used to create
-#'   ggplot is returned instead.
-#'
-#' @return returns a ggplot containing images summarizing t-sne space at
-#'   resolution determined by x_points and y_points with the space density
-#'   mapped to size.
-#' @examples
-#' data("profile_dt")
-#' data("tsne_dt")
-#' stsPlotSummaryProfiles(profile_dt, tsne_dt, x_points = 4)
+
 stsPlotSummaryProfiles = function(## basic inputs
     profile_dt,
     position_dt,
@@ -624,68 +573,6 @@ set_size = function(dt, N_floor, N_ceiling, size.name = "img_size"){
     dt
 }
 
-#' set_image_rects
-#'
-#' configures result of prep_images by setting rectangle parameters
-#'
-#' @param image_dt $image_dt of result from prep_images()
-#' @param x_points numeric.  number of grid points to use in x dimension.
-#' @param y_points numeric.  number of grid points to use in y dimension.
-#' @param xrng view domain in x dimension.
-#' @param yrng view domain in y dimension.
-#' @param N_floor The value of N to consider 0.  bins with N values <= N_floor
-#'   will be ignored.
-#' @param N_ceiling The value of N to consider 1.  bins with N values >=
-#'   N_ceiling will have images drawn at full size.
-#' @param min_size Numeric (0, 1]. The minimum size images to draw.  The default
-#'   of .3 draws images for all bins with N values >= 30% of the way from
-#'   N_floor to N_ceiling.
-#'
-#' @return image_dt with rect aesthetics (xmin, xmax, ymin, and ymax) added.
-#'
-#' @examples
-#' library(ggplot2)
-#' data("profile_dt")
-#' data("tsne_dt")
-#' summary_dt = prep_summary(profile_dt,
-#'                       tsne_dt,
-#'                       x_points = 4)
-#' img_res = prep_images(summary_dt, 4)
-#' img_rect = set_image_rects(img_res$image_dt,
-#'                            x_points = img_res$x_points,
-#'                            y_points = img_res$y_points,
-#'                            xrng = img_res$xrng,
-#'                            yrng = img_res$yrng)
-#' ggplot(img_rect, aes(xmin = xmin, xmax = xmax,
-#'     ymin = ymin, ymax = ymax)) + geom_rect()
-#' ggplot(img_rect, aes(xmin = xmin, xmax = xmax,
-#'     ymin = ymin, ymax = ymax, image = png_file)) + geom_image.rect()
-set_image_rects = function(image_dt,
-                           x_points,
-                           y_points,
-                           xrng,
-                           yrng,
-                           N_floor = 0,
-                           N_ceiling = NULL,
-                           min_size = .3) {
-    image_dt = set_size(image_dt, N_floor, N_ceiling, size.name = "img_size")
-    # image_dt[, img_size := N]
-    # image_dt[img_size > N_ceiling, img_size := N_ceiling]
-    # image_dt[img_size < N_floor, img_size := N_floor]
-    #
-    # image_dt[, img_size := img_size - N_floor]
-    # image_dt[, img_size := img_size / N_ceiling]
-    image_dt = image_dt[img_size >= min_size]
-
-    xspc = diff(xrng) / x_points / 2
-    yspc = diff(yrng) / y_points / 2
-
-    image_dt[, xmin := tx - xspc * img_size]
-    image_dt[, xmax := tx + xspc * img_size]
-    image_dt[, ymin := ty - yspc * img_size]
-    image_dt[, ymax := ty + yspc * img_size]
-    image_dt[]
-}
 
 #' plot_summary_raster
 #'
@@ -782,7 +669,7 @@ plot_summary_raster = function(image_dt,
     p
 }
 
-#' plot_summary_raster
+#' plot_summary_raster_byCell
 #'
 #' @param image_dt $image_dt of result from prep_images()
 #' @param x_points numeric.  number of grid points to use in x dimension.
