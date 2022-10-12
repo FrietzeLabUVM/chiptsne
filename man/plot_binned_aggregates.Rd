@@ -14,6 +14,7 @@ plot_binned_aggregates(
   bxval = "tx",
   byval = "ty",
   facet_ = "wide_var",
+  extra_vars = character(),
   bin_met = mean,
   min_size = 1,
   return_data = FALSE

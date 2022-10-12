@@ -65,6 +65,7 @@ plot_binned_aggregates = function(agg_dt,
                                bxval = "tx",
                                byval = "ty",
                                facet_ = "wide_var",
+                               extra_vars = character(),
                                bin_met = mean,
                                min_size = 1, return_data = FALSE){
 
@@ -77,7 +78,7 @@ plot_binned_aggregates = function(agg_dt,
     agg_dt[, bx := bin_values(get(bxval), n_bins = xbins, xrng = xrng)]
     agg_dt[, by := bin_values(get(byval), n_bins = ybins, xrng = yrng)]
 
-    bin_dt = agg_dt[, .(y = bin_met(get(val)), N = .N), c(facet_, "bx", "by")]
+    bin_dt = agg_dt[, .(y = bin_met(get(val)), N = .N), c(unique(c(facet_, extra_vars, "bx", "by")))]
     # if(min_size > 1){
     #     bin_dt = bin_dt[N >= min_size]
     # }

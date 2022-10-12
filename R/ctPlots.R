@@ -1,4 +1,4 @@
-.prepare_plot_inputs = function(sts, feature_name, signal_name){
+.prepare_plot_inputs = function(sts, feature_name, signal_name, env = parent.frame()){
     if(is.null(feature_name)){
         feature_name = names(sts$signal_data)[1]
     }
@@ -19,7 +19,18 @@
     prof_dt[, wide_var := name]
 
     tsne_dt = sts$signal_data[[feature_name]][[signal_name]]$xy_data
-    return(list(
+    args = list(
+        feature_name = feature_name,
+        signal_name = signal_name,
+        prof_dt = prof_dt,
+        tsne_dt = tsne_dt
+    )
+
+    for(var_name in names(args)){
+        assign(var_name, args[[var_name]], pos = env)
+    }
+
+    invisible(list(
         feature_name = feature_name,
         signal_name = signal_name,
         prof_dt = prof_dt,
@@ -29,11 +40,14 @@
 
 #' ctPlotBinAggregates
 #'
+#'
 #' @param sts
 #' @param feature_name
 #' @param signal_name
 #' @param xmin
 #' @param xmax
+#' @param profile_value
+#' @param profile_value_label
 #' @param agg_FUN
 #' @param xbins
 #' @param ybins
@@ -49,39 +63,61 @@ ctPlotBinAggregates = function(sts,
                                signal_name = NULL,
                                xmin = -Inf,
                                xmax = Inf,
+                               profile_value = ssvQC:::val2var[sts$signal_config$plot_value],
+                               profile_value_label = ssvQC:::val2lab[sts$signal_config$plot_value],
                                agg_FUN = max,
                                xbins = 20,
                                ybins = xbins){
-    args2 = .prepare_plot_inputs(sts, feature_name, signal_name)
-    for(var_name in names(args2)){
-        assign(var_name, args2[[var_name]])
-    }
+    .prepare_plot_inputs(
+        sts,
+        feature_name,
+        signal_name
+    )
 
     #aggregate_signals is retrieves a single representative value for a genomic region per sample
     #by default this is the maximum anywhere in the region but this can be
     #overriden using xmin/xmax and agg_FUN
     agg_dt = aggregate_signals(
         prof_dt,
-        yout_ = "y",
+        y_ = profile_value,
+        yout_ = profile_value,
         agg_FUN = agg_FUN,
         xmin = xmin,
         xmax = xmax)
     agg_dt = merge(agg_dt, tsne_dt, by = "id")
+    agg_dt = merge(sts$signal_config$meta_data, agg_dt, by.y = "wide_var", by.x = "name")
+    facet_str = paste0(sts$signal_config$color_by, "~", sts$signal_config$run_by)
+
+    extra_vars =  c(
+        sts$signal_config$run_by,
+        sts$signal_config$color_by,
+        "name",
+        "name_split"
+    )
+    extra_vars = extra_vars[extra_vars %in% colnames(agg_dt)]
 
     plot_binned_aggregates(
         agg_dt = agg_dt,
         xbins = xbins,
-        ybins = ybins)
+        ybins = ybins,
+        val = profile_value,
+        extra_vars = extra_vars
+    ) +
+        labs(fill = profile_value_label) +
+        facet_grid(facet_str)
 }
 
 
 #' ctPlotSummaryProfiles
+#'
 #'
 #' @param sts
 #' @param feature_name
 #' @param signal_name
 #' @param xbins
 #' @param ybins
+#' @param profile_value
+#' @param profile_value_label
 #' @param q_tall_values
 #' @param q_wide_values
 #' @param xrng
@@ -105,11 +141,15 @@ ctPlotBinAggregates = function(sts,
 #' @export
 #'
 #' @examples
+#' data(sts.test)
+#' ctPlotSummaryProfiles(sts)
 ctPlotSummaryProfiles = function(sts,
                                  feature_name = NULL,
                                  signal_name = NULL,
                                  xbins = 20,
                                  ybins = xbins,
+                                 profile_value = ssvQC:::val2var[sts$signal_config$plot_value],
+                                 profile_value_label = ssvQC:::val2lab[sts$signal_config$plot_value],
                                  ###
                                  q_tall_values = NULL,
                                  q_wide_values = NULL,
@@ -130,17 +170,17 @@ ctPlotSummaryProfiles = function(sts,
                                  min_size = 0.3,
                                  return_data = FALSE
 ){
-    args2 = chiptsne:::.prepare_plot_inputs(sts,
-                                            feature_name = feature_name,
-                                            signal_name = signal_name)
-    for(var_name in names(args2)){
-        assign(var_name, args2[[var_name]])
-    }
+    .prepare_plot_inputs(
+        sts,
+        feature_name = feature_name,
+        signal_name = signal_name
+    )
     chiptsne:::stsPlotSummaryProfiles(
         profile_dt = prof_dt,
         position_dt = tsne_dt,
         x_points = xbins,
         y_points = ybins,
+        y_var = profile_value,
         ###
         q_tall_values = q_tall_values,
         q_wide_values = q_wide_values,
@@ -164,4 +204,56 @@ ctPlotSummaryProfiles = function(sts,
         min_size = min_size,
         return_data = return_data
     )
+}
+
+#' ctPlotPoints
+#'
+#'
+#' @param sts
+#' @param xmin
+#' @param xmax
+#' @param profile_value
+#' @param profile_value_label
+#' @param bg_color
+#' @param agg_FUN
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' data(sts.test)
+#' ctPlotPoints(sts)
+#'
+ctPlotPoints = function(
+        sts,
+        xmin = -Inf,
+        xmax = Inf,
+        profile_value = ssvQC:::val2var[sts$signal_config$plot_value],
+        profile_value_label = ssvQC:::val2lab[sts$signal_config$plot_value],
+        bg_color = "gray20",
+        agg_FUN = max
+){
+    chiptsne:::.prepare_plot_inputs(sts, NULL, NULL)
+
+    sts$signal_config$run_by
+
+    agg_dt = chiptsne:::aggregate_signals(
+        prof_dt,
+        y_ = profile_value,
+        yout_ = profile_value,
+        agg_FUN = agg_FUN,
+        xmin = xmin,
+        xmax = xmax)
+    agg_dt = merge(agg_dt, tsne_dt, by = "id")
+    agg_dt = merge(sts$signal_config$meta_data, agg_dt, by.y = "wide_var", by.x = "name")
+    facet_str = paste0(sts$signal_config$color_by, "~", sts$signal_config$run_by)
+
+    ggplot(agg_dt, aes_string(x = "tx", y = "ty", color = profile_value)) +
+        geom_point() +
+        facet_grid(facet_str) +
+        scale_color_viridis_c() +
+        theme(
+            panel.background = element_rect(fill = bg_color),
+            panel.grid = element_blank()) +
+        labs(color = profile_value_label)
 }
