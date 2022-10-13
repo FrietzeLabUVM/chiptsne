@@ -30,3 +30,6 @@ plot to a temporary png and redraw as a flat image
 \details{
 useful when svg would be too expensive due to high number of items
 }
+\examples{
+chiptsne:::plot_flat(ggplot())
+}

@@ -18,7 +18,7 @@ ClusteredSignal_TSNE.from_ClusteredSignal = function(object, sts_parent){
                        sts_parent@perplexity,
                        y_var = ssvQC:::val2var[sts_parent@signal_config@cluster_value],
                        fun.aggregate = fun.aggregate,
-                       norm1 = FALSE)
+                       norm1 = TRUE)
 
     new("ClusteredSignal_TSNE",
         signal_data =  object@signal_data,

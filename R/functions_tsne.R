@@ -1,29 +1,28 @@
 
 #' run_tsne
 #'
-#' @param profile_dt
-#' @param perplexity
-#' @param n_cores
-#' @param high_topright
-#' @param norm1
-#' @param Y_init
-#' @param verbose
-#' @param force_overwrite
-#' @param wide_var
-#' @param tall_var
+#' @param profile_dt Tidy data.table of profile information. As returned by seqsetvis::ssvFetchBam.
+#' @param perplexity perplexity value for t-SNE. Passed to Rtsne::Rtsne.
+#' @param n_cores Number of threads for running t-SNE.
+#' @param high_topright If TRUE, flip tx/ty as needed such that most points are in the top-right quadrant.
+#' @param norm1 If TRUE, rescale tx and ty to be centered at 0,0 with total size of 1.
+#' @param Y_init Optional initial coordinates for tx and ty.
+#' @param wide_var Wide variable.  Spreads matrix into columns. Each regions tSNE position will be based on one profile for every value of wide_var.
+#' @param tall_var Tall variable. Repeats matrix entries down rows. Each region will appear once per value of tall_var in final tSNE.
 #'
-#' @return
+#' @return Return data.table mapping each id_var entry to tSNE space: defined by tx and ty
 #' @import Rtsne
 #'
 #' @examples
+#' data("profile_dt")
+#' setalloccol(profile_dt)
+#' chiptsne:::run_tsne(profile_dt, wide_var = "wide_var", tall_var = "tall_var")
 run_tsne = function (profile_dt,
                      perplexity = 100,
                      n_cores = getOption("mc.cores", 1),
                      high_topright = TRUE,
                      norm1 = TRUE,
                      Y_init = NULL,
-                     verbose = TRUE,
-                     force_overwrite = FALSE,
                      x_var = "x",
                      y_var = "y",
                      id_var = "id",
@@ -42,8 +41,8 @@ run_tsne = function (profile_dt,
                     x_var = x_var,
                     y_var = y_var,
                     id_var = id_var,
-                    wide_var = wide_var,
-                    tall_var = tall_var,
+                    wide_var_ = wide_var,
+                    tall_var_ = tall_var,
                     fun.aggregate = fun.aggregate)
   bad_col = apply(tsne_mat, 2, stats::var) == 0
   if (any(bad_col)) {
@@ -87,7 +86,7 @@ run_tsne = function (profile_dt,
     tsne_dt$tx = rescale_capped(tsne_dt$tx) - 0.5
     tsne_dt$ty = rescale_capped(tsne_dt$ty) - 0.5
   }
-  if (high_topright) {
+  if (high_topright) {#flip tx/ty if needed so that
     rs = rowSums(tsne_mat)
     tsne_dt$rs = rs[tsne_dt$rn]
     x_cutoff = mean(range(tsne_dt$tx))
@@ -118,24 +117,24 @@ dt2mat = function (prof_dt,
                    x_var = "x",
                    y_var = "y",
                    id_var = "id",
-                   wide_var = "name",
-                   tall_var = "tall_none",
+                   wide_var_ = "name",
+                   tall_var_ = "tall_none",
                    fun.aggregate = mean){
-  if(is.null(prof_dt[[tall_var]])){
-    if(tall_var == "tall_none"){
-      prof_dt[[tall_var]] = "none"
+  if(is.null(prof_dt[[tall_var_]])){
+    if(tall_var_ == "tall_none"){
+      prof_dt[[tall_var_]] = "none"
     }
   }
-  stopifnot(c(id_var, wide_var, tall_var, x_var, y_var) %in% colnames(prof_dt))
+  stopifnot(c(id_var, wide_var_, tall_var_, x_var, y_var) %in% colnames(prof_dt))
   for (m in wide_values) {
     if (m == wide_values[1]) {
-      dt = reshape2::dcast(prof_dt[get(wide_var) == m], paste0(id_var, "+", tall_var, "~", x_var), value.var = y_var, fun.aggregate = fun.aggregate)
+      dt = reshape2::dcast(prof_dt[get(wide_var_) == m], paste0(id_var, "+", tall_var_, "~", x_var), value.var = y_var, fun.aggregate = fun.aggregate)
       wide_mat = as.matrix(dt[, -seq_len(2)])
-      rn = paste(dt[[id_var]], dt[[tall_var]])
+      rn = paste(dt[[id_var]], dt[[tall_var_]])
     }
     else {
-      dt = reshape2::dcast(prof_dt[get(wide_var) == m], paste(id_var, "+", tall_var, "~", x_var), value.var = y_var)
-      stopifnot(all(paste(dt[[id_var]], dt[[tall_var]]) == rn))
+      dt = reshape2::dcast(prof_dt[get(wide_var_) == m], paste(id_var, "+", tall_var_, "~", x_var), value.var = y_var)
+      stopifnot(all(paste(dt[[id_var]], dt[[tall_var_]]) == rn))
       wide_mat = cbind(wide_mat, as.matrix(dt[, -seq_len(2)]))
     }
   }

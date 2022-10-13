@@ -321,6 +321,7 @@ plot_profiles_selected = function(profile_dt,
 #' @return a ggplot object containing flat image of original
 #'
 #' @examples
+#' chiptsne:::plot_flat(ggplot())
 plot_flat = function(p, dpi = 150, width = dev.size()[1], height = dev.size()[2], panel_only = FALSE){
     if(panel_only){
         pan = p +

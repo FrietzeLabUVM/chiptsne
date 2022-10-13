@@ -17,77 +17,104 @@
 #' setalloccol(profile_dt)
 #' cluster_dt = chiptsne:::nn_clust(tsne_dt, nn = 5)
 #'
+#' debug(chiptsne:::stsPlotClusterProfiles)
 #' chiptsne:::stsPlotClusterProfiles(profile_dt, cluster_dt)
-stsPlotClusterProfiles = function(profile_dt,
-                                  cluster_dt,
-                                  cluster_ = "cluster_id",
-                                  w = .05,
-                                  h = .05){
+#'
+#' chiptsne:::stsPlotClusterProfiles(profile_dt, cluster_dt, w = .1, h = .1) +
+#'   scale_color_manual(values = c("H3K4me3" = "forestgreen", "H3K27me3" = "firebrick"))
+#'
+#' cluster_dt.reduced = chiptsne:::combine_most_similar(cluster_dt, profile_dt, n_times = 3)
+#' chiptsne:::stsPlotClusterProfiles(profile_dt, cluster_dt.reduced, w = .1, h = .1) +
+#'   scale_color_manual(values = c("H3K4me3" = "forestgreen", "H3K27me3" = "firebrick"))
+stsPlotClusterProfiles = function (profile_dt,
+                                   cluster_dt = profile_dt,
+                                   cluster_ = "cluster_id",
+                                   w = 0.05,
+                                   h = 0.05,
+                                   x_var = "x",
+                                   y_var = "y",
+                                   id_var = "id",
+                                   wide_var = "wide_var",
+                                   tall_var = "tall_var") {
     stopifnot(cluster_ %in% colnames(cluster_dt))
-    cent_dt = cluster_dt[, .(tx = median(tx), ty = median(ty)), by = cluster_]
+    cent_dt = cluster_dt[, .(tx = median(tx), ty = median(ty)),
+                         by = cluster_]
+    if(is.null(profile_dt[[tall_var]])){
+        set(profile_dt, j = tall_var, value = "none")
+    }
+    set(profile_dt, j = "tid", value = paste(profile_dt[[tall_var]], profile_dt[[id_var]]))
 
-    profile_dt[, tid := paste(tall_var, id)]
-    cprof_dt = merge(profile_dt, cluster_dt[, c("tid", cluster_), with = FALSE], by = "tid")
-    cprof_dt = cprof_dt[, .(y = mean(y)), c("wide_var", cluster_, "x")]
+    if(is.null(cluster_dt[["tid"]])){
+        if(is.null(cluster_dt[[tall_var]])){
+            set(cluster_dt, j = "tid", value = cluster_dt[[id_var]])
+        }else{
+            set(cluster_dt, j = "tid", value = paste(cluster_dt[[tall_var]], cluster_dt[[id_var]]))
+        }
+    }
+
+    cprof_dt = merge(profile_dt[, setdiff(colnames(profile_dt), cluster_),  with = FALSE],
+                     unique(cluster_dt[, c("tid", cluster_), with = FALSE]),
+                     by = "tid")
+    cprof_dt = cprof_dt[, .(y = mean(y)), c(wide_var, cluster_, x_var)]
     cprof_dt = merge(cprof_dt, cent_dt, by = cluster_)
-
-
-    cent_dt[, xmin := tx - w / 2]
-    cent_dt[, xmax := tx + w / 2]
-    cent_dt[, ymin := ty - h / 2]
-    cent_dt[, ymax := ty + h / 2]
-
+    cent_dt[, `:=`(xmin, tx - w/2)]
+    cent_dt[, `:=`(xmax, tx + w/2)]
+    cent_dt[, `:=`(ymin, ty - h/2)]
+    cent_dt[, `:=`(ymax, ty + h/2)]
     glyph_dt = as.data.table(GGally::glyphs(cprof_dt,
                                             x_major = "tx",
-                                            x_minor = "x",
+                                            x_minor = x_var,
                                             y_major = "ty",
-                                            y_minor = "y",
-                                            width = w, height = h))
-
-    my_chull = function(x, y){
-        # ch = chull(x, y)
-        # list(x[ch], y[ch])
-        ch = concaveman::concaveman(cbind(x, y),
-                                    concavity = 1.4, length_threshold = .005)
-        list(tx = ch[,1], ty = ch[,2])
+                                            y_minor = y_var,
+                                            width = w,
+                                            height = h))
+    my_chull = function(x, y) {
+        ch = concaveman::concaveman(cbind(x, y), concavity = 1.4,
+                                    length_threshold = 0.005)
+        list(tx = ch[, 1], ty = ch[, 2])
     }
     ch_dt = cluster_dt[, my_chull(tx, ty), by = c(cluster_)]
     cols = seqsetvis::safeBrew(length(unique(ch_dt[[cluster_]])))
-    if(is.numeric(ch_dt[[cluster_]])){
-        ch_dt[[cluster_]] = factor(
-            as.character(ch_dt[[cluster_]]),
-            levels = as.character(sort(unique(ch_dt[[cluster_]])))
-        )
+    if (is.numeric(ch_dt[[cluster_]])) {
+        ch_dt[[cluster_]] = factor(as.character(ch_dt[[cluster_]]),
+                                   levels = as.character(sort(unique(ch_dt[[cluster_]]))))
     }
+
+    set(glyph_dt, j = "group", value = paste(glyph_dt$gid, glyph_dt[[wide_var]]))
 
     p_clust_big = ggplot() +
         geom_polygon(data = ch_dt,
-                     mapping = aes_string(
-                         x = "tx",
-                         y = "ty",
-                         fill = cluster_
-                     )) +
-        scale_fill_manual(values = cols)
-
-    p_clust_big +
+                     mapping = aes_string(x = "tx",
+                                          y = "ty",
+                                          fill = cluster_)) +
+        scale_fill_manual(values = cols) +
         geom_rect(data = cent_dt,
-                  aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
-                  fill = "white", color = "black") +
+                  aes(xmin = xmin,
+                      xmax = xmax,
+                      ymin = ymin,
+                      ymax = ymax),
+                  fill = "white",
+                  color = "black") +
         geom_path(data = glyph_dt,
-                  aes(gx, gy, group = paste(gid, wide_var), color = wide_var)) +
+                  aes_string(x = "gx",
+                             y = "gy",
+                             group = "group",
+                             color = wide_var)) +
         labs(x = "tx", y = "ty") +
         coord_fixed()
+    p_clust_big
 }
 
 #' combine_most similar
+#'
 #' combines 2 most similar clusters, will repeat up to n_times as long as all clusters are over min_dist apart.
+#'
 #' @param p_dt plot dt containing cluster information.
 #' @param profile_dt profile data
 #' @param n_times number of times to combine
 #' @param min_dist don't combined once under this distance
 #' @param cluster_ variable name of cluster assignment
 #' @param new_cluster_ variable name for new cluster assignment. by default original clusters will be overwritten.
-#'
 #'
 #' @return p_dt with clusters combined
 #' @import reshape2
@@ -99,11 +126,12 @@ stsPlotClusterProfiles = function(profile_dt,
 #' clust_res = chiptsne:::nn_clust(tsne_dt, nn = 5, return_plot = TRUE)
 #' clust_res[[2]]
 #' chiptsne:::combine_most_similar(clust_res[[1]], profile_dt, n_times = 3)
-combine_most_similar = function(p_dt, profile_dt,
-                               n_times = 1,
-                               min_dist = Inf,
-                               cluster_ = "cluster_id",
-                               new_cluster_ = cluster_){
+combine_most_similar = function(p_dt,
+                                profile_dt,
+                                n_times = 1,
+                                min_dist = Inf,
+                                cluster_ = "cluster_id",
+                                new_cluster_ = cluster_){
     p_dt = copy(p_dt)
     profile_dt[, tid := paste(tall_var, id)]
     if(new_cluster_ != cluster_){
@@ -154,11 +182,11 @@ combine_most_similar = function(p_dt, profile_dt,
 
     if(n_times > 1){
         p_dt = combine_most_similar(p_dt,
-                                   profile_dt,
-                                   n_times = n_times - 1,
-                                   min_dist = min_dist,
-                                   cluster_ = new_cluster_,
-                                   new_cluster_ = new_cluster_)
+                                    profile_dt,
+                                    n_times = n_times - 1,
+                                    min_dist = min_dist,
+                                    cluster_ = new_cluster_,
+                                    new_cluster_ = new_cluster_)
     }
     # if(new_cluster_ != "meta"){
     #     p_dt[[new_cluster_]] = p_dt$meta
@@ -178,7 +206,7 @@ combine_most_similar = function(p_dt, profile_dt,
 #' @param show_plot If TRUE, print plot to graphics device. Default is FALSE.
 #' @param return_plot If TRUE, return plot in list with cluster results. Default is FALSE.
 #'
-#' @return
+#' @return data.table mapping id_var entries to clusters ("cluster_id")
 #'
 #' @importFrom RANN nn2
 #' @importFrom Matrix Matrix

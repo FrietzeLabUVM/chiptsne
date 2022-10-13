@@ -13,8 +13,8 @@ stsPlotClusterProfiles(
   x_var = "x",
   y_var = "y",
   id_var = "id",
-  wide_var = "name",
-  tall_var = "tall_none"
+  wide_var = "wide_var",
+  tall_var = "tall_var"
 )
 }
 \arguments{
@@ -39,7 +39,15 @@ data("profile_dt")
 data("tsne_dt")
 setalloccol(tsne_dt)
 setalloccol(profile_dt)
-cluster_dt = nn_clust(tsne_dt, nn = 5)
+cluster_dt = chiptsne:::nn_clust(tsne_dt, nn = 5)
 
-stsPlotClusterProfiles(profile_dt, cluster_dt)
+debug(chiptsne:::stsPlotClusterProfiles)
+chiptsne:::stsPlotClusterProfiles(profile_dt, cluster_dt)
+
+chiptsne:::stsPlotClusterProfiles(profile_dt, cluster_dt, w = .1, h = .1) +
+  scale_color_manual(values = c("H3K4me3" = "forestgreen", "H3K27me3" = "firebrick"))
+
+cluster_dt.reduced = chiptsne:::combine_most_similar(cluster_dt, profile_dt, n_times = 3)
+chiptsne:::stsPlotClusterProfiles(profile_dt, cluster_dt.reduced, w = .1, h = .1) +
+  scale_color_manual(values = c("H3K4me3" = "forestgreen", "H3K27me3" = "firebrick"))
 }

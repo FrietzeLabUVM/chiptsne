@@ -11,8 +11,6 @@ run_tsne(
   high_topright = TRUE,
   norm1 = TRUE,
   Y_init = NULL,
-  verbose = TRUE,
-  force_overwrite = FALSE,
   x_var = "x",
   y_var = "y",
   id_var = "id",
@@ -22,8 +20,30 @@ run_tsne(
 )
 }
 \arguments{
-\item{tall_var}{}
+\item{profile_dt}{Tidy data.table of profile information. As returned by seqsetvis::ssvFetchBam.}
+
+\item{perplexity}{perplexity value for t-SNE. Passed to Rtsne::Rtsne.}
+
+\item{n_cores}{Number of threads for running t-SNE.}
+
+\item{high_topright}{If TRUE, flip tx/ty as needed such that most points are in the top-right quadrant.}
+
+\item{norm1}{If TRUE, rescale tx and ty to be centered at 0,0 with total size of 1.}
+
+\item{Y_init}{Optional initial coordinates for tx and ty.}
+
+\item{wide_var}{Wide variable.  Spreads matrix into columns. Each regions tSNE position will be based on one profile for every value of wide_var.}
+
+\item{tall_var}{Tall variable. Repeats matrix entries down rows. Each region will appear once per value of tall_var in final tSNE.}
+}
+\value{
+Return data.table mapping each id_var entry to tSNE space: defined by tx and ty
 }
 \description{
 run_tsne
+}
+\examples{
+data("profile_dt")
+setalloccol(profile_dt)
+chiptsne:::run_tsne(profile_dt, wide_var = "wide_var", tall_var = "tall_var")
 }
