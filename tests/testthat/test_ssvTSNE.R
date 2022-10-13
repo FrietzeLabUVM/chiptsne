@@ -93,6 +93,12 @@ chiptsne:::stsPlotSummaryProfiles(profile_dt = )
 chiptsne:::prep_summary
 chiptsne:::plot_summary_glyph
 
+#tsne clustering and plots
+nn_clust
+combine_most_similar
+ctPlotClusterProfiles
+stsPlotClusterProfiles
+
 #save the test ssvTSNE object
 if(FALSE){
     save(sts, file = "data/sts.test.rda")

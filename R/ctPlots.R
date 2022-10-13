@@ -1,42 +1,4 @@
-.prepare_plot_inputs = function(sts, feature_name, signal_name, env = parent.frame()){
-    if(is.null(feature_name)){
-        feature_name = names(sts$signal_data)[1]
-    }
-    if(!feature_name %in% names(sts$signal_data)){
-        stop(feature_name, " not a valid feature name. Valid: ",
-             paste(names(sts$signal_data), collapse = ", "))
-    }
-    if(is.null(signal_name)){
-        signal_name = names(sts$signal_data[[feature_name]])[1]
-    }
-    if(!signal_name %in% names(sts$signal_data[[feature_name]])){
-        stop(signal_name, " not a valid signal name. Valid: ",
-             paste(names(sts$signal_data[[feature_name]]), collapse = ", "))
-    }
 
-    prof_dt = sts$signal_data[[feature_name]][[signal_name]]$signal_data
-    prof_dt[, tall_var := "none"]
-    prof_dt[, wide_var := name]
-
-    tsne_dt = sts$signal_data[[feature_name]][[signal_name]]$xy_data
-    args = list(
-        feature_name = feature_name,
-        signal_name = signal_name,
-        prof_dt = prof_dt,
-        tsne_dt = tsne_dt
-    )
-
-    for(var_name in names(args)){
-        assign(var_name, args[[var_name]], pos = env)
-    }
-
-    invisible(list(
-        feature_name = feature_name,
-        signal_name = signal_name,
-        prof_dt = prof_dt,
-        tsne_dt = tsne_dt
-    ))
-}
 
 #' ctPlotBinAggregates
 #'
@@ -263,4 +225,44 @@ ctPlotPoints = function(
             panel.background = element_rect(fill = bg_color),
             panel.grid = element_blank()) +
         labs(color = profile_value_label)
+}
+
+.prepare_plot_inputs = function(sts, feature_name, signal_name, env = parent.frame()){
+    if(is.null(feature_name)){
+        feature_name = names(sts$signal_data)[1]
+    }
+    if(!feature_name %in% names(sts$signal_data)){
+        stop(feature_name, " not a valid feature name. Valid: ",
+             paste(names(sts$signal_data), collapse = ", "))
+    }
+    if(is.null(signal_name)){
+        signal_name = names(sts$signal_data[[feature_name]])[1]
+    }
+    if(!signal_name %in% names(sts$signal_data[[feature_name]])){
+        stop(signal_name, " not a valid signal name. Valid: ",
+             paste(names(sts$signal_data[[feature_name]]), collapse = ", "))
+    }
+
+    prof_dt = sts$signal_data[[feature_name]][[signal_name]]$signal_data
+    prof_dt[, tall_var := "none"]
+    prof_dt[, wide_var := name]
+
+    tsne_dt = sts$signal_data[[feature_name]][[signal_name]]$xy_data
+    args = list(
+        feature_name = feature_name,
+        signal_name = signal_name,
+        prof_dt = prof_dt,
+        tsne_dt = tsne_dt
+    )
+
+    for(var_name in names(args)){
+        assign(var_name, args[[var_name]], pos = env)
+    }
+
+    invisible(list(
+        feature_name = feature_name,
+        signal_name = signal_name,
+        prof_dt = prof_dt,
+        tsne_dt = tsne_dt
+    ))
 }

@@ -29,87 +29,87 @@ run_tsne = function (profile_dt,
                      wide_var = "name",
                      tall_var = "tall_none",
                      fun.aggregate = mean) {
-  valid_vars = c(ifelse(tall_var == "tall_none", character(), tall_var), wide_var, x_var, y_var, id_var)
-  valid_vars = valid_vars[!is.na(valid_vars)]
-  stopifnot(valid_vars %in% colnames(profile_dt))
+    valid_vars = c(ifelse(tall_var == "tall_none", character(), tall_var), wide_var, x_var, y_var, id_var)
+    valid_vars = valid_vars[!is.na(valid_vars)]
+    stopifnot(valid_vars %in% colnames(profile_dt))
 
-  if(is.null(profile_dt[[tall_var]])){
-    set(profile_dt, j = tall_var, value = "none")
-  }
-  tsne_mat = dt2mat(profile_dt,
-                    unique(profile_dt[[wide_var]]),
-                    x_var = x_var,
-                    y_var = y_var,
-                    id_var = id_var,
-                    wide_var_ = wide_var,
-                    tall_var_ = tall_var,
-                    fun.aggregate = fun.aggregate)
-  bad_col = apply(tsne_mat, 2, stats::var) == 0
-  if (any(bad_col)) {
-    warning("zero variance columns detected in tsne matrix input.",
-         "\n", round(sum(bad_col)/length(bad_col) * 100,
-                     2), "% of columns removed.")
-    tsne_mat = tsne_mat[, bad_col, drop = FALSE]
-  }
-  if (is.data.table(Y_init)) {
-    if(tall_var != "tall_none"){
-      Y_init = as.matrix(Y_init[, .(tx, ty)], rownames.value = paste(Y_init[[id_var]],
-                                                                     Y_init[[tall_var]]))
-    }else{
-      Y_init = as.matrix(Y_init[, .(tx, ty)], rownames.value = paste(Y_init[[id_var]], "none"))
+    if(is.null(profile_dt[[tall_var]])){
+        set(profile_dt, j = tall_var, value = "none")
     }
-
-    Y_init = Y_init[rownames(tsne_mat), ]
-    stopifnot(ncol(Y_init) == 2)
-  }
-  else {
-    stopifnot(is.null(Y_init))
-  }
-  max_perplexity = floor(nrow(tsne_mat)/4)
-  if(perplexity > max_perplexity){
-    perplexity = max_perplexity
-    warning("Reducing perplexity to ", perplexity, " to accommodate data of ", nrow(tsne_mat), " rows.")
-  }
-  res_tsne = Rtsne::Rtsne(tsne_mat,
-                          Y_init = Y_init,
-                          num_threads = n_cores,
-                          perplexity = perplexity,
-                          check_duplicates = FALSE)
-  tsne_dt = as.data.table(res_tsne$Y)
-  setnames(tsne_dt, c("tx", "ty"))
-  tsne_dt$rn = rownames(tsne_mat)
-
-  tsne_dt[, `:=`(c(id_var, tall_var), tstrsplit(rn, " ", keep = seq(2)))]
-
-
-  if (norm1) {
-    tsne_dt$tx = rescale_capped(tsne_dt$tx) - 0.5
-    tsne_dt$ty = rescale_capped(tsne_dt$ty) - 0.5
-  }
-  if (high_topright) {#flip tx/ty if needed so that
-    rs = rowSums(tsne_mat)
-    tsne_dt$rs = rs[tsne_dt$rn]
-    x_cutoff = mean(range(tsne_dt$tx))
-    x_flip = sum(tsne_dt[tx > x_cutoff]$rs) < sum(tsne_dt[tx < x_cutoff]$rs)
-    if (x_flip) {
-      tsne_dt[, `:=`(tx, max(tx) - tx + min(tx))]
+    tsne_mat = dt2mat(profile_dt,
+                      unique(profile_dt[[wide_var]]),
+                      x_var = x_var,
+                      y_var = y_var,
+                      id_var = id_var,
+                      wide_var_ = wide_var,
+                      tall_var_ = tall_var,
+                      fun.aggregate = fun.aggregate)
+    bad_col = apply(tsne_mat, 2, stats::var) == 0
+    if (any(bad_col)) {
+        warning("zero variance columns detected in tsne matrix input.",
+                "\n", round(sum(bad_col)/length(bad_col) * 100,
+                            2), "% of columns removed.")
+        tsne_mat = tsne_mat[, bad_col, drop = FALSE]
     }
-    y_cutoff = mean(range(tsne_dt$ty))
-    y_flip = sum(tsne_dt[ty > y_cutoff]$rs) < sum(tsne_dt[ty < y_cutoff]$rs)
-    if (y_flip) {
-      tsne_dt[, `:=`(ty, max(ty) - ty + min(ty))]
+    if (is.data.table(Y_init)) {
+        if(tall_var != "tall_none"){
+            Y_init = as.matrix(Y_init[, .(tx, ty)], rownames.value = paste(Y_init[[id_var]],
+                                                                           Y_init[[tall_var]]))
+        }else{
+            Y_init = as.matrix(Y_init[, .(tx, ty)], rownames.value = paste(Y_init[[id_var]], "none"))
+        }
+
+        Y_init = Y_init[rownames(tsne_mat), ]
+        stopifnot(ncol(Y_init) == 2)
     }
-    tsne_dt$rs = NULL
-  }
-  tsne_dt$rn = NULL
-  tsne_dt[]
+    else {
+        stopifnot(is.null(Y_init))
+    }
+    max_perplexity = floor(nrow(tsne_mat)/4)
+    if(perplexity > max_perplexity){
+        perplexity = max_perplexity
+        warning("Reducing perplexity to ", perplexity, " to accommodate data of ", nrow(tsne_mat), " rows.")
+    }
+    res_tsne = Rtsne::Rtsne(tsne_mat,
+                            Y_init = Y_init,
+                            num_threads = n_cores,
+                            perplexity = perplexity,
+                            check_duplicates = FALSE)
+    tsne_dt = as.data.table(res_tsne$Y)
+    setnames(tsne_dt, c("tx", "ty"))
+    tsne_dt$rn = rownames(tsne_mat)
+
+    tsne_dt[, `:=`(c(id_var, tall_var), tstrsplit(rn, " ", keep = seq(2)))]
+
+
+    if (norm1) {
+        tsne_dt$tx = rescale_capped(tsne_dt$tx) - 0.5
+        tsne_dt$ty = rescale_capped(tsne_dt$ty) - 0.5
+    }
+    if (high_topright) {#flip tx/ty if needed so that
+        rs = rowSums(tsne_mat)
+        tsne_dt$rs = rs[tsne_dt$rn]
+        x_cutoff = mean(range(tsne_dt$tx))
+        x_flip = sum(tsne_dt[tx > x_cutoff]$rs) < sum(tsne_dt[tx < x_cutoff]$rs)
+        if (x_flip) {
+            tsne_dt[, `:=`(tx, max(tx) - tx + min(tx))]
+        }
+        y_cutoff = mean(range(tsne_dt$ty))
+        y_flip = sum(tsne_dt[ty > y_cutoff]$rs) < sum(tsne_dt[ty < y_cutoff]$rs)
+        if (y_flip) {
+            tsne_dt[, `:=`(ty, max(ty) - ty + min(ty))]
+        }
+        tsne_dt$rs = NULL
+    }
+    tsne_dt$rn = NULL
+    tsne_dt[]
 }
 
 rescale_capped = function (x, to = c(0, 1), from = range(x, na.rm = TRUE, finite = TRUE)){
-  y = scales::rescale(x, to, from)
-  y[y > max(to)] = max(to)
-  y[y < min(to)] = min(to)
-  y
+    y = scales::rescale(x, to, from)
+    y[y > max(to)] = max(to)
+    y[y < min(to)] = min(to)
+    y
 }
 
 dt2mat = function (prof_dt,
@@ -120,26 +120,26 @@ dt2mat = function (prof_dt,
                    wide_var_ = "name",
                    tall_var_ = "tall_none",
                    fun.aggregate = mean){
-  if(is.null(prof_dt[[tall_var_]])){
-    if(tall_var_ == "tall_none"){
-      prof_dt[[tall_var_]] = "none"
+    if(is.null(prof_dt[[tall_var_]])){
+        if(tall_var_ == "tall_none"){
+            prof_dt[[tall_var_]] = "none"
+        }
     }
-  }
-  stopifnot(c(id_var, wide_var_, tall_var_, x_var, y_var) %in% colnames(prof_dt))
-  for (m in wide_values) {
-    if (m == wide_values[1]) {
-      dt = reshape2::dcast(prof_dt[get(wide_var_) == m], paste0(id_var, "+", tall_var_, "~", x_var), value.var = y_var, fun.aggregate = fun.aggregate)
-      wide_mat = as.matrix(dt[, -seq_len(2)])
-      rn = paste(dt[[id_var]], dt[[tall_var_]])
+    stopifnot(c(id_var, wide_var_, tall_var_, x_var, y_var) %in% colnames(prof_dt))
+    for (m in wide_values) {
+        if (m == wide_values[1]) {
+            dt = reshape2::dcast(prof_dt[get(wide_var_) == m], paste0(id_var, "+", tall_var_, "~", x_var), value.var = y_var, fun.aggregate = fun.aggregate)
+            wide_mat = as.matrix(dt[, -seq_len(2)])
+            rn = paste(dt[[id_var]], dt[[tall_var_]])
+        }
+        else {
+            dt = reshape2::dcast(prof_dt[get(wide_var_) == m], paste(id_var, "+", tall_var_, "~", x_var), value.var = y_var)
+            stopifnot(all(paste(dt[[id_var]], dt[[tall_var_]]) == rn))
+            wide_mat = cbind(wide_mat, as.matrix(dt[, -seq_len(2)]))
+        }
     }
-    else {
-      dt = reshape2::dcast(prof_dt[get(wide_var_) == m], paste(id_var, "+", tall_var_, "~", x_var), value.var = y_var)
-      stopifnot(all(paste(dt[[id_var]], dt[[tall_var_]]) == rn))
-      wide_mat = cbind(wide_mat, as.matrix(dt[, -seq_len(2)]))
-    }
-  }
-  rownames(wide_mat) = rn
-  wide_mat
+    rownames(wide_mat) = rn
+    wide_mat
 }
 #' stsPlotSummaryProfiles
 #'
@@ -224,250 +224,255 @@ stsPlotSummaryProfiles = function (profile_dt,
                                    N_ceiling = NULL,
                                    min_size = 0.3,
                                    return_data = FALSE) {
-  if(is.null(profile_dt[[tall_var]])){
-    profile_dt[[tall_var]] = "none"
-  }
-  if (is.null(q_tall_values)) {
+    if(is.null(profile_dt[[tall_var]])){
+        profile_dt[[tall_var]] = "none"
+    }
+    if (is.null(q_tall_values)) {
+        if (is.factor(profile_dt[[tall_var]])) {
+            q_tall_values = levels(profile_dt[[tall_var]])
+        }
+        else {
+            q_tall_values = sort(unique(profile_dt[[tall_var]]))
+        }
+    }
+    if (is.null(q_wide_values)) {
+        if (is.factor(profile_dt[[wide_var]])) {
+            q_wide_values = levels(profile_dt[[wide_var]])
+        }
+        else {
+            q_wide_values = sort(unique(profile_dt[[wide_var]]))
+        }
+    }
+    if (is.null(line_color_mapping)) {
+        line_color_mapping = seqsetvis::safeBrew(length(unique(profile_dt[[wide_var]])))
+        names(line_color_mapping) = unique(profile_dt[[wide_var]])
+    }
+    line_color_mapping = line_color_mapping[names(line_color_mapping) %in%
+                                                q_wide_values]
     if (is.factor(profile_dt[[tall_var]])) {
-      q_tall_values = levels(profile_dt[[tall_var]])
+        stopifnot(q_tall_values %in% levels(profile_dt[[tall_var]]))
     }
     else {
-      q_tall_values = sort(unique(profile_dt[[tall_var]]))
+        stopifnot(q_tall_values %in% unique(profile_dt[[tall_var]]))
     }
-  }
-  if (is.null(q_wide_values)) {
     if (is.factor(profile_dt[[wide_var]])) {
-      q_wide_values = levels(profile_dt[[wide_var]])
+        stopifnot(q_wide_values %in% levels(profile_dt[[wide_var]]))
     }
     else {
-      q_wide_values = sort(unique(profile_dt[[wide_var]]))
+        stopifnot(q_wide_values %in% unique(profile_dt[[wide_var]]))
     }
-  }
-  if (is.null(line_color_mapping)) {
-    line_color_mapping = seqsetvis::safeBrew(length(unique(profile_dt[[wide_var]])))
-    names(line_color_mapping) = unique(profile_dt[[wide_var]])
-  }
-  line_color_mapping = line_color_mapping[names(line_color_mapping) %in%
-                                            q_wide_values]
-  if (is.factor(profile_dt[[tall_var]])) {
-    stopifnot(q_tall_values %in% levels(profile_dt[[tall_var]]))
-  }
-  else {
-    stopifnot(q_tall_values %in% unique(profile_dt[[tall_var]]))
-  }
-  if (is.factor(profile_dt[[wide_var]])) {
-    stopifnot(q_wide_values %in% levels(profile_dt[[wide_var]]))
-  }
-  else {
-    stopifnot(q_wide_values %in% unique(profile_dt[[wide_var]]))
-  }
-  if (!plot_type %in% c("glyph", "raster")) {
-    stop("plot_type (\"", plot_type, "\") must be one of \"glyph\" or \"raster\".")
-  }
-  k = profile_dt[[tall_var]] %in% q_tall_values &
-      profile_dt[[wide_var]] %in% q_wide_values
-  prof_dt = copy(profile_dt[k == TRUE])
-  pos_dt = copy(position_dt[position_dt[[tall_var]] %in% q_tall_values])
-  if(is.null(xrng)){
-      xrng = range(pos_dt$tx)
-  }
-  if(is.null(yrng)){
-      yrng = range(pos_dt$ty)
-  }
-  if (is.null(rname)) {
-    rname = digest::digest(list(prof_dt,
-                                pos_dt,
-                                x_points,
-                                y_points,
-                                xrng,
-                                yrng,
-                                apply_norm,
-                                ylim,
-                                line_color_mapping,
-                                n_splines,
-                                ma_size,
-                                facet_byCell))
-  }
-  if(is.null(odir)){
-      odir = file.path(tempdir(), rname)
-  }
-  prof_dt[[tall_var]] = factor(prof_dt[[tall_var]], levels = q_tall_values)
-  prof_dt[[wide_var]] = factor(prof_dt[[wide_var]], levels = q_wide_values)
-  pos_dt[[tall_var]] = factor(pos_dt[[tall_var]], levels = q_tall_values)
-  if (plot_type == "raster") {
-    if (!facet_byCell) {
-      summary_dt = prep_summary(profile_dt = prof_dt,
-                                position_dt = pos_dt,
-                                x_points = x_points,
-                                y_points = y_points,
+    if (!plot_type %in% c("glyph", "raster")) {
+        stop("plot_type (\"", plot_type, "\") must be one of \"glyph\" or \"raster\".")
+    }
+    k = profile_dt[[tall_var]] %in% q_tall_values &
+        profile_dt[[wide_var]] %in% q_wide_values
+    prof_dt = copy(profile_dt[k == TRUE])
+    pos_dt = copy(position_dt[position_dt[[tall_var]] %in% q_tall_values])
+    if(is.null(xrng)){
+        xrng = range(pos_dt$tx)
+    }
+    if(is.null(yrng)){
+        yrng = range(pos_dt$ty)
+    }
+    if (is.null(rname)) {
+        rname = digest::digest(list(prof_dt,
+                                    pos_dt,
+                                    x_points,
+                                    y_points,
+                                    xrng,
+                                    yrng,
+                                    apply_norm,
+                                    ylim,
+                                    line_color_mapping,
+                                    n_splines,
+                                    ma_size,
+                                    facet_byCell))
+    }
+    if(is.null(odir)){
+        odir = file.path(tempdir(), rname)
+    }
+    prof_dt[[tall_var]] = factor(prof_dt[[tall_var]], levels = q_tall_values)
+    prof_dt[[wide_var]] = factor(prof_dt[[wide_var]], levels = q_wide_values)
+    pos_dt[[tall_var]] = factor(pos_dt[[tall_var]], levels = q_tall_values)
+    #### raster ####
+    if (plot_type == "raster") {
+        #### raster - no facet ####
+        if (!facet_byCell) {
+            summary_dt = prep_summary(profile_dt = prof_dt,
+                                      position_dt = pos_dt,
+                                      x_points = x_points,
+                                      y_points = y_points,
+                                      xrng = xrng,
+                                      yrng = yrng,
+                                      facet_by = NULL,
+                                      x_var = x_var,
+                                      y_var = y_var,
+                                      id_var = id_var,
+                                      wide_var = wide_var,
+                                      tall_var = tall_var,
+                                      extra_vars = extra_vars)
+            img_res = prep_images(summary_dt = summary_dt,
+                                  xrng = xrng,
+                                  yrng = yrng,
+                                  x_points = x_points,
+                                  y_points = y_points,
+                                  rname = rname,
+                                  odir = odir,
+                                  force_rewrite = force_rewrite,
+                                  apply_norm = apply_norm,
+                                  ylim = ylim,
+                                  ma_size = ma_size,
+                                  n_splines = n_splines,
+                                  n_cores = n_cores,
+                                  line_color_mapping = line_color_mapping,
+                                  vertical_facet_mapping = vertical_facet_mapping,
+                                  wide_var = wide_var,
+                                  x_var = x_var,
+                                  y_var = y_var)
+            plot_summary_raster(image_dt = img_res$image_dt,
                                 xrng = xrng,
                                 yrng = yrng,
-                                facet_by = NULL,
-                                x_var = x_var,
-                                y_var = y_var,
-                                id_var = id_var,
-                                wide_var = wide_var,
-                                tall_var = tall_var,
-                                extra_vars = extra_vars)
-      img_res = prep_images(summary_dt = summary_dt,
-                            xrng = xrng,
-                            yrng = yrng,
-                            x_points = x_points,
-                            y_points = y_points,
-                            rname = rname,
-                            odir = odir,
-                            force_rewrite = force_rewrite,
-                            apply_norm = apply_norm,
-                            ylim = ylim,
-                            ma_size = ma_size,
-                            n_splines = n_splines,
-                            n_cores = n_cores,
-                            line_color_mapping = line_color_mapping,
-                            vertical_facet_mapping = vertical_facet_mapping,
-                            wide_var = wide_var,
-                            x_var = x_var,
-                            y_var = y_var)
-      plot_summary_raster(image_dt = img_res$image_dt,
-                          xrng = xrng,
-                          yrng = yrng,
-                          x_points = x_points,
-                          y_points = y_points,
-                          p = p,
-                          line_color_mapping = img_res$line_color_mapping,
-                          N_floor = N_floor,
-                          N_ceiling = N_ceiling,
-                          min_size = min_size,
-                          return_data = return_data,
-                          wide_var = wide_var)
-    }
-    else {
-      summary_dt = prep_summary(profile_dt = prof_dt,
-                                position_dt = pos_dt,
                                 x_points = x_points,
                                 y_points = y_points,
-                                xrng = xrng,
-                                yrng = yrng,
-                                facet_by = tall_var,
-                                x_var = x_var,
-                                y_var = y_var,
-                                id_var = id_var,
-                                wide_var = wide_var,
-                                extra_vars = extra_vars)
-      img_res = prep_images(summary_dt = summary_dt,
-                            xrng = xrng,
-                            yrng = yrng,
-                            x_points = x_points,
-                            y_points = y_points,
-                            rname = rname,
-                            odir = odir,
-                            force_rewrite = force_rewrite,
-                            apply_norm = apply_norm,
-                            ylim = ylim,
-                            ma_size = ma_size,
-                            n_splines = n_splines,
-                            n_cores = n_cores,
-                            line_color_mapping = line_color_mapping,
-                            vertical_facet_mapping = vertical_facet_mapping,
-                            wide_var = wide_var,
-                            x_var = x_var,
-                            y_var = y_var)
-      plot_summary_raster_byCell(image_dt = img_res$image_dt,
-                                 xrng = xrng,
-                                 yrng = yrng,
-                                 x_points = x_points,
-                                 y_points = y_points,
-                                 p = p,
-                                 line_color_mapping = img_res$line_color_mapping,
-                                 N_floor = N_floor,
-                                 N_ceiling = N_ceiling,
-                                 min_size = min_size,
-                                 return_data = return_data)
+                                p = p,
+                                line_color_mapping = img_res$line_color_mapping,
+                                N_floor = N_floor,
+                                N_ceiling = N_ceiling,
+                                min_size = min_size,
+                                return_data = return_data,
+                                wide_var = wide_var)
+            #### raster - facet ####
+        } else {
+            summary_dt = prep_summary(profile_dt = prof_dt,
+                                      position_dt = pos_dt,
+                                      x_points = x_points,
+                                      y_points = y_points,
+                                      xrng = xrng,
+                                      yrng = yrng,
+                                      facet_by = tall_var,
+                                      x_var = x_var,
+                                      y_var = y_var,
+                                      id_var = id_var,
+                                      wide_var = wide_var,
+                                      extra_vars = extra_vars)
+            img_res = prep_images(summary_dt = summary_dt,
+                                  xrng = xrng,
+                                  yrng = yrng,
+                                  x_points = x_points,
+                                  y_points = y_points,
+                                  rname = rname,
+                                  odir = odir,
+                                  force_rewrite = force_rewrite,
+                                  apply_norm = apply_norm,
+                                  ylim = ylim,
+                                  ma_size = ma_size,
+                                  n_splines = n_splines,
+                                  n_cores = n_cores,
+                                  line_color_mapping = line_color_mapping,
+                                  vertical_facet_mapping = vertical_facet_mapping,
+                                  wide_var = wide_var,
+                                  x_var = x_var,
+                                  y_var = y_var)
+            plot_summary_raster_byCell(image_dt = img_res$image_dt,
+                                       xrng = xrng,
+                                       yrng = yrng,
+                                       x_points = x_points,
+                                       y_points = y_points,
+                                       p = p,
+                                       line_color_mapping = img_res$line_color_mapping,
+                                       N_floor = N_floor,
+                                       N_ceiling = N_ceiling,
+                                       min_size = min_size,
+                                       return_data = return_data)
+        }
     }
-  }
-  else if (plot_type == "glyph") {
-    if (!facet_byCell) {
-      summary_dt = prep_summary(profile_dt = prof_dt,
-                                position_dt = pos_dt,
-                                x_points = x_points,
-                                y_points = y_points,
-                                xrng = xrng,
-                                yrng = yrng,
-                                facet_by = NULL,
-                                x_var = x_var,
-                                y_var = y_var,
-                                id_var = id_var,
-                                wide_var = wide_var,
-                                tall_var = tall_var,
-                                extra_vars = extra_vars)
-      plot_summary_glyph(summary_dt = summary_dt,
-                         xrng = xrng,
-                         yrng = yrng,
-                         x_points = x_points,
-                         y_points = y_points,
-                         p = p,
-                         ylim = ylim,
-                         N_floor = N_floor,
-                         N_ceiling = N_ceiling,
-                         min_size = min_size,
-                         color_mapping = line_color_mapping,
-                         return_data = return_data,
-                         x_var = x_var,
-                         y_var = y_var,
-                         wide_var = wide_var)
-    } else {
-      summary_dt_l = lapply(q_tall_values, function(cl) {
-        prep_summary(prof_dt[get(tall_var) == cl],
-                     position_dt = pos_dt,
-                     x_points = x_points,
-                     y_points = y_points,
-                     xrng = xrng,
-                     yrng = yrng,
-                     facet_by = NULL,
-                     x_var = x_var,
-                     y_var = y_var,
-                     id_var = id_var,
-                     wide_var = wide_var,
-                     tall_var = tall_var,
-                     extra_vars = extra_vars)
-      })
-      names(summary_dt_l) = q_tall_values
-      summary_dt = rbindlist(summary_dt_l,
-                             use.names = TRUE,
-                             idcol = tall_var)
-      if (return_data) {
-        plot_summary_glyph(summary_dt = summary_dt,
-                           xrng = xrng,
-                           yrng = yrng,
-                           x_points = x_points,
-                           y_points = y_points,
-                           ylim = ylim,
-                           N_floor = N_floor,
-                           N_ceiling = N_ceiling,
-                           min_size = min_size,
-                           color_mapping = line_color_mapping,
-                           return_data = return_data,
-                           x_var = x_var,
-                           y_var = y_var,
-                           wide_var = wide_var)
-      }
-      else {
-        plot_summary_glyph(summary_dt,
-                           x_points = x_points,
-                           y_points = y_points,
-                           xrng = xrng,
-                           yrng = yrng,
-                           ylim = ylim,
-                           N_floor = N_floor,
-                           N_ceiling = N_ceiling,
-                           min_size = min_size,
-                           color_mapping = line_color_mapping,
-                           x_var = x_var,
-                           y_var = y_var,
-                           wide_var = wide_var) +
-          facet_wrap(paste0("~", tall_var))
-      }
+    #### glyph ####
+    else if (plot_type == "glyph") {
+        #### glyph - no facet ####
+        if (!facet_byCell) {
+            summary_dt = prep_summary(profile_dt = prof_dt,
+                                      position_dt = pos_dt,
+                                      x_points = x_points,
+                                      y_points = y_points,
+                                      xrng = xrng,
+                                      yrng = yrng,
+                                      facet_by = NULL,
+                                      x_var = x_var,
+                                      y_var = y_var,
+                                      id_var = id_var,
+                                      wide_var = wide_var,
+                                      tall_var = tall_var,
+                                      extra_vars = extra_vars)
+            plot_summary_glyph(summary_dt = summary_dt,
+                               xrng = xrng,
+                               yrng = yrng,
+                               x_points = x_points,
+                               y_points = y_points,
+                               p = p,
+                               ylim = ylim,
+                               N_floor = N_floor,
+                               N_ceiling = N_ceiling,
+                               min_size = min_size,
+                               color_mapping = line_color_mapping,
+                               return_data = return_data,
+                               x_var = x_var,
+                               y_var = y_var,
+                               wide_var = wide_var)
+            #### glyph - facet ####
+        } else {
+            summary_dt_l = lapply(q_tall_values, function(cl) {
+                prep_summary(prof_dt[get(tall_var) == cl],
+                             position_dt = pos_dt,
+                             x_points = x_points,
+                             y_points = y_points,
+                             xrng = xrng,
+                             yrng = yrng,
+                             facet_by = NULL,
+                             x_var = x_var,
+                             y_var = y_var,
+                             id_var = id_var,
+                             wide_var = wide_var,
+                             tall_var = tall_var,
+                             extra_vars = extra_vars)
+            })
+            names(summary_dt_l) = q_tall_values
+            summary_dt = rbindlist(summary_dt_l,
+                                   use.names = TRUE,
+                                   idcol = tall_var)
+            if (return_data) {
+                plot_summary_glyph(summary_dt = summary_dt,
+                                   xrng = xrng,
+                                   yrng = yrng,
+                                   x_points = x_points,
+                                   y_points = y_points,
+                                   ylim = ylim,
+                                   N_floor = N_floor,
+                                   N_ceiling = N_ceiling,
+                                   min_size = min_size,
+                                   color_mapping = line_color_mapping,
+                                   return_data = return_data,
+                                   x_var = x_var,
+                                   y_var = y_var,
+                                   wide_var = wide_var)
+            }
+            else {
+                plot_summary_glyph(summary_dt,
+                                   x_points = x_points,
+                                   y_points = y_points,
+                                   xrng = xrng,
+                                   yrng = yrng,
+                                   ylim = ylim,
+                                   N_floor = N_floor,
+                                   N_ceiling = N_ceiling,
+                                   min_size = min_size,
+                                   color_mapping = line_color_mapping,
+                                   x_var = x_var,
+                                   y_var = y_var,
+                                   wide_var = wide_var) +
+                    facet_wrap(paste0("~", tall_var))
+            }
+        }
     }
-  }
 }
 
 #' prep_summary
@@ -511,46 +516,46 @@ prep_summary = function (profile_dt,
                          wide_var = "name",
                          tall_var = "tall_none",
                          extra_vars = character()){
-  position_dt = copy(position_dt[tx >= min(xrng) & tx <= max(xrng) &
-                                   ty >= min(yrng) & ty <= max(yrng)])
-  position_dt = position_dt[get(id_var) %in% unique(profile_dt[[id_var]])]
-  if (is.null(position_dt$bx))
-    position_dt[, `:=`(bx, bin_values(tx, x_points,
-                                      xrng = xrng))]
-  if (is.null(position_dt$by))
-    position_dt[, `:=`(by, bin_values(ty, y_points,
-                                      xrng = yrng))]
-  summary_dt = merge(profile_dt, position_dt[, c("bx", "by", tall_var, id_var), with = FALSE],
-                     allow.cartesian = TRUE,
-                     by = intersect(colnames(profile_dt), c(tall_var, id_var)))
-  if (is.null(summary_dt[[wide_var]]))
-    summary_dt[[wide_var]] = "signal"
-  if (is.null(facet_by)) {
-    summary_dt = summary_dt[, list(y_tmp_ = mean(get(y_var))), c(unique(c("bx", "by", x_var, wide_var, extra_vars)))]
-  }
-  else {
-    summary_dt = summary_dt[, list(y_tmp_ = mean(get(y_var))), c(unique(c("bx", "by", x_var, wide_var, facet_by, extra_vars)))]
-  }
-  setnames(summary_dt, "y_tmp_", y_var)
-  N_dt = position_dt[, .(.N), by = .(bx, by)]
-  summary_dt = merge(summary_dt, N_dt, by = c("bx", "by"))
-  summary_dt[, `:=`(plot_id, paste(bx, by, sep = "_"))]
-  summary_dt[]
+    position_dt = copy(position_dt[tx >= min(xrng) & tx <= max(xrng) &
+                                       ty >= min(yrng) & ty <= max(yrng)])
+    position_dt = position_dt[get(id_var) %in% unique(profile_dt[[id_var]])]
+    if (is.null(position_dt$bx))
+        position_dt[, `:=`(bx, bin_values(tx, x_points,
+                                          xrng = xrng))]
+    if (is.null(position_dt$by))
+        position_dt[, `:=`(by, bin_values(ty, y_points,
+                                          xrng = yrng))]
+    summary_dt = merge(profile_dt, position_dt[, c("bx", "by", tall_var, id_var), with = FALSE],
+                       allow.cartesian = TRUE,
+                       by = intersect(colnames(profile_dt), c(tall_var, id_var)))
+    if (is.null(summary_dt[[wide_var]]))
+        summary_dt[[wide_var]] = "signal"
+    if (is.null(facet_by)) {
+        summary_dt = summary_dt[, list(y_tmp_ = mean(get(y_var))), c(unique(c("bx", "by", x_var, wide_var, extra_vars)))]
+    }
+    else {
+        summary_dt = summary_dt[, list(y_tmp_ = mean(get(y_var))), c(unique(c("bx", "by", x_var, wide_var, facet_by, extra_vars)))]
+    }
+    setnames(summary_dt, "y_tmp_", y_var)
+    N_dt = position_dt[, .(.N), by = .(bx, by)]
+    summary_dt = merge(summary_dt, N_dt, by = c("bx", "by"))
+    summary_dt[, `:=`(plot_id, paste(bx, by, sep = "_"))]
+    summary_dt[]
 }
 
 bin_values = function (x, n_bins, xrng = range(x))
 {
-  stopifnot(length(xrng) == 2)
-  floor(rescale_capped(x, 0:1, xrng) * (n_bins - 1e-05)) +
-    1
+    stopifnot(length(xrng) == 2)
+    floor(rescale_capped(x, 0:1, xrng) * (n_bins - 1e-05)) +
+        1
 }
 
 bin_values_centers = function (n_bins, rng)
 {
-  if (length(rng) != 2)
-    rng = range(rng)
-  stopifnot(length(rng) == 2)
-  xspc = diff(rng)/n_bins/2
-  xs = seq(min(rng) + xspc, max(rng) - xspc, diff(rng)/(n_bins))
-  xs
+    if (length(rng) != 2)
+        rng = range(rng)
+    stopifnot(length(rng) == 2)
+    xspc = diff(rng)/n_bins/2
+    xs = seq(min(rng) + xspc, max(rng) - xspc, diff(rng)/(n_bins))
+    xs
 }
