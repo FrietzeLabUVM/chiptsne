@@ -21,7 +21,32 @@ plot_binned_aggregates(
 )
 }
 \arguments{
-\item{return_data}{}
+\item{agg_dt}{data.table as returned by chiptsne:::aggregate_signals}
+
+\item{xbins}{Number of bins (pixel) in the x direction}
+
+\item{ybins}{Number of bins (pixel) in the y direction. Default reuses xbins.}
+
+\item{xrng}{numeric vector of length 2 defining range of x-axis. Default is full range of agg_dt.}
+
+\item{yrng}{numeric vector of length 2 defining range of y-axis. Default is full range of agg_dt.}
+
+\item{val}{The value mapped to fill in final plot.}
+
+\item{bxval}{The variable defining individual points x position in agg_dt.}
+
+\item{byval}{The variable defining individual points y position in agg_dt.}
+
+\item{facet_}{Variable in agg_dt to facet plot upon.}
+
+\item{bin_met}{Function applied to all points in bin on the value of val}
+
+\item{min_size}{Bins must contain at least this many points to appear in final plot.}
+
+\item{return_data}{If TRUE, return data.table, not ggplot.}
+}
+\value{
+A ggplot object where TSNE space is summarized by a xbins*ybins raster image colored according to val.
 }
 \description{
 plot_binned_aggregates

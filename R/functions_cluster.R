@@ -1,17 +1,25 @@
-#' Title
+#' stsPlotClusterProfiles
 #'
-#' @param profile_dt
-#' @param cluster_dt
-#' @param cluster_
-#' @param w
-#' @param h
+#' @param profile_dt Tidy data.table of profile information. As returned by seqsetvis::ssvFetchBam.
+#' @param cluster_dt Tidy data.table of cluster information. As returned by chiptsne:::nn_clust or chiptsne:::combine_most_similar
+#' @param cluster_ Variable name of cluster assignment in cluster_dt.
+#' @param w Relative width of profile glpyhs as fraction of total plot range.
+#' @param h Relative height of profile glpyhs as fraction of total plot range.
 #'
-#' @return
+#' @return a ggplot of TSNE point clusters overlayed with summary profiles.
 #' @importFrom concaveman concaveman
 #' @importFrom GGally glyphs
 #' @importFrom seqsetvis safeBrew
 #' @examples
-stsPlotClusterProfiles = function(profile_dt, cluster_dt,
+#' data("profile_dt")
+#' data("tsne_dt")
+#' setalloccol(tsne_dt)
+#' setalloccol(profile_dt)
+#' cluster_dt = chiptsne:::nn_clust(tsne_dt, nn = 5)
+#'
+#' chiptsne:::stsPlotClusterProfiles(profile_dt, cluster_dt)
+stsPlotClusterProfiles = function(profile_dt,
+                                  cluster_dt,
                                   cluster_ = "cluster_id",
                                   w = .05,
                                   h = .05){
@@ -71,61 +79,6 @@ stsPlotClusterProfiles = function(profile_dt, cluster_dt,
         coord_fixed()
 }
 
-#' Title
-#'
-#' @param tsne_res
-#' @param nsamp
-#' @param nn
-#'
-#' @return
-#' @importFrom RANN nn2
-#' @importFrom Matrix Matrix
-#' @importFrom igraph graph.adjacency simplify cluster_walktrap
-#' @examples
-nn_clust = function(tsne_res, nsamp = Inf, nn = 100){
-    tsne_res[, tid := paste(tall_var, id)]
-    mat = t(as.matrix(tsne_res[, .(tx, ty)]))
-    colnames(mat) = tsne_res$tid
-    mat = mat[, sampleCap(seq(ncol(mat)), nsamp)]
-    knn.info <- RANN::nn2(t(mat), k=nn)
-    knn <- knn.info$nn.idx
-    colnames(knn) = c("tid", paste0("V", seq(nn-1)))
-    knn = as.data.table(knn)
-    mknn = reshape2::melt(knn, id.vars = "tid")
-
-    # adj <- matrix(0, ncol(mat), ncol(mat))
-    # rownames(adj) <- colnames(adj) <- colnames(mat)
-    # for(i in seq_len(ncol(mat))) {
-    #     adj[i,colnames(mat)[knn[i,]]] <- 1
-    # }
-    ADJ = Matrix::Matrix(0, ncol(mat), ncol(mat))
-    ADJ[cbind(mknn$tid, mknn$value)] = 1
-    rownames(ADJ) = colnames(mat)
-    colnames(ADJ) = colnames(mat)
-    g <- igraph::graph.adjacency(ADJ, mode="undirected")
-    g <- igraph::simplify(g) ## remove self loops
-    # V(g)$color <- rainbow(G)[group[names(V(g))]] ## color nodes by group
-    # plot(g, vertex.label=NA)
-    km <- igraph::cluster_walktrap(g)
-    ## community membership
-    com <- km$membership
-    names(com) <- km$names
-    com_dt = data.table(tid = names(com), cluster_id = com)
-
-    p_dt = merge(tsne_res, com_dt, by = "tid")
-    # p_dt[, coms := paste("cluster", com)]
-    # ggplot(p_dt, aes(x = tx, y = ty, color = coms)) +
-    #     annotate("point", x  = p_dt$tx, y = p_dt$ty, size = .2) +
-    #     geom_point(size = .5) +
-    #     facet_wrap("coms")
-    p = ggplot(p_dt, aes(x = tx, y = ty, color = as.character(cluster_id))) +
-        labs(color = "cluster_id") +
-        # annotate("point", x  = p_dt$tx, y = p_dt$ty, size = .2) +
-        geom_point(size = .5) #+
-    # facet_wrap("coms")
-    return(list(data = p_dt, plot = p))
-}
-
 #' combine_most similar
 #' combines 2 most similar clusters, will repeat up to n_times as long as all clusters are over min_dist apart.
 #' @param p_dt plot dt containing cluster information.
@@ -143,9 +96,10 @@ nn_clust = function(tsne_res, nsamp = Inf, nn = 100){
 #' data("profile_dt")
 #' data("tsne_dt")
 #' setalloccol(tsne_dt)
-#' clust_res = nn_clust(tsne_dt, nn = 5)
-#' combine_mostsimilar(clust_res[[1]], profile_dt, n_times = 3)
-combine_mostsimilar = function(p_dt, profile_dt,
+#' clust_res = chiptsne:::nn_clust(tsne_dt, nn = 5, return_plot = TRUE)
+#' clust_res[[2]]
+#' chiptsne:::combine_most_similar(clust_res[[1]], profile_dt, n_times = 3)
+combine_most_similar = function(p_dt, profile_dt,
                                n_times = 1,
                                min_dist = Inf,
                                cluster_ = "cluster_id",
@@ -199,7 +153,7 @@ combine_mostsimilar = function(p_dt, profile_dt,
     p_dt[get(new_cluster_) %in% c(ddt$Var1[1], ddt$Var2[1]), ][[new_cluster_]] = new_meta
 
     if(n_times > 1){
-        p_dt = combine_mostsimilar(p_dt,
+        p_dt = combine_most_similar(p_dt,
                                    profile_dt,
                                    n_times = n_times - 1,
                                    min_dist = min_dist,
@@ -213,3 +167,81 @@ combine_mostsimilar = function(p_dt, profile_dt,
     p_dt[]
 }
 
+
+#' nn_clust
+#'
+#' performs nearest neighbor clustering on tsne coordinates.
+#'
+#' @param tsne_res data.table with tsne results. (needs tx, ty, tall_var, id)
+#' @param nsamp Downsample profile values down to this value. Default of Inf skips downsampling.
+#' @param nn Number of neighbors to use for clustering.  Default of 100.
+#' @param show_plot If TRUE, print plot to graphics device. Default is FALSE.
+#' @param return_plot If TRUE, return plot in list with cluster results. Default is FALSE.
+#'
+#' @return
+#'
+#' @importFrom RANN nn2
+#' @importFrom Matrix Matrix
+#' @importFrom igraph graph.adjacency simplify cluster_walktrap
+#' @examples
+#' data("profile_dt")
+#' data("tsne_dt")
+#' setalloccol(tsne_dt)
+#' setalloccol(profile_dt)
+#' clust_res = chiptsne:::nn_clust(tsne_dt, nn = 5, return_plot = TRUE)
+#' clust_res$plot
+#' clust_res$data
+#'
+#' #just data by default
+#' chiptsne:::nn_clust(tsne_dt, nn = 5)
+nn_clust = function (tsne_res,
+                     nsamp = Inf,
+                     nn = 100,
+                     tall_var = "tall_var",
+                     id_var = "id",
+                     show_plot = FALSE,
+                     return_plot = FALSE){
+    valid_vars = c(ifelse(tall_var == "tall_none", character(), tall_var), id_var)
+    valid_vars = valid_vars[!is.na(valid_vars)]
+    stopifnot(valid_vars %in% colnames(tsne_res))
+
+    if(is.null(tsne_res[[tall_var]])){
+        tsne_res[[tall_var]] = "none"
+    }
+
+    if(nn > .2 * nrow(tsne_res)){
+        nn = floor(.2 * nrow(tsne_res))
+        message("Decreasing nearest-neighbors to ", nn, ".  Original value was too high for dataset.")
+    }
+    set(tsne_res, j = "tid", value = paste(tsne_res[[tall_var]], tsne_res[[id_var]]))
+
+    mat = t(as.matrix(tsne_res[, .(tx, ty)]))
+    colnames(mat) = tsne_res$tid
+    mat = mat[, sampleCap(seq(ncol(mat)), nsamp)]
+    knn.info <- RANN::nn2(t(mat), k = nn)
+    knn <- knn.info$nn.idx
+    colnames(knn) = c("tid", paste0("V", seq(nn - 1)))
+    knn = as.data.table(knn)
+    mknn = melt(knn, id.vars = "tid")
+    ADJ = Matrix::Matrix(0, ncol(mat), ncol(mat))
+    ADJ[cbind(mknn$tid, mknn$value)] = 1
+    rownames(ADJ) = colnames(mat)
+    colnames(ADJ) = colnames(mat)
+    g <- igraph::graph.adjacency(ADJ, mode = "undirected")
+    g <- igraph::simplify(g)
+    km <- igraph::cluster_walktrap(g)
+    com <- km$membership
+    names(com) <- km$names
+    com_dt = data.table(tid = names(com), cluster_id = com)
+    p_dt = merge(tsne_res, com_dt, by = "tid")
+
+    p = ggplot(p_dt, aes(x = tx, y = ty, color = as.character(cluster_id))) +
+        labs(color = "cluster_id") +
+        geom_point(size = 1.5)
+    if(show_plot) plot(p)
+    if(return_plot){
+        return(list(data = p_dt, plot = p))
+    }else{
+        return(p_dt)
+    }
+}

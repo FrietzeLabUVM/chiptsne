@@ -11,6 +11,7 @@ stsPlotSummaryProfiles(
   y_points = x_points,
   x_var = "x",
   y_var = "y",
+  extra_vars = character(),
   id_var = "id",
   wide_var = "name",
   tall_var = "tall_none",

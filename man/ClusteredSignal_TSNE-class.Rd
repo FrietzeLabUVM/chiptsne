@@ -5,5 +5,11 @@
 \alias{ClusteredSignal_TSNE-class}
 \title{ClusteredSignal_TSNE}
 \description{
-ClusteredSignal_TSNE
+adds support for xy coordinate (tsne result) data to ClusteredSignal class.
 }
+\section{Slots}{
+
+\describe{
+\item{\code{xy_data}}{data.table.}
+}}
+

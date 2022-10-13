@@ -11,8 +11,11 @@ ClusteredSignal_TSNE.fromConfig(
   nclust = 6,
   facet_var = "name_split",
   extra_var = character(),
-  bfc = new_cache()
+  bfc = ssvQC:::new_cache()
 )
+}
+\value{
+A ClusteredSignal_TSNE object containing clustering and TSNE information.
 }
 \description{
 ClusteredSignal_TSNE.fromConfig
@@ -28,8 +31,7 @@ bam_config = QcConfigSignal.parse(bam_config_file)
 
 sqc = ssvQC(feature_config, bam_config)
 
-prepS
 query_gr = feature_config$assessment_features$CTCF_features
-sclust = ClusteredSignal_TSNE(sqc@signal_profile, sqc@feature_config$assessment_features)
+sclust = ClusteredSignal_TSNE.fromConfig(sqc$signal_config, sqc$features_config$assessment_features)
 sclust$
 }

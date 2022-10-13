@@ -58,23 +58,27 @@ test_that("sts TSNE plots", {
     expect_is(sts$plots$TSNE$regional_heatmap$CTCF_features$CTCF_signal, "ggplot")
 })
 
-debug(chiptsne:::plot_binned_aggregates)
-
 ctPlotBinAggregates(sts)
 ctPlotBinAggregates(sts, xbins = 5)
 ctPlotBinAggregates(sts, xbins = 5, xmin = -.1, xmax = .1)
 ctPlotBinAggregates(sts, xbins = 5, xmin = -Inf, xmax = -.3)
-
 ctPlotBinAggregates(sts, xbins = 5, xmin = .3, xmax = Inf) +
     facet_wrap(~cell+mark)
+ctPlotBinAggregates(sts, xbins = 5, xmin = .3, xmax = Inf) +
+    facet_wrap(~name_split)
 
 ctPlotSummaryProfiles(sts)
 ctPlotSummaryProfiles(sts, N_floor = 0, N_ceiling = 1)
 ctPlotSummaryProfiles(sts, plot_type = "raster")
 ctPlotSummaryProfiles(sts, N_floor = 0, N_ceiling = 1, plot_type = "raster")
 
+# undebug(chiptsne:::stsPlotSummaryProfiles)
+ctPlotSummaryProfiles(sts, N_floor = 0, N_ceiling = 1, plot_type = "raster")
+
+# debug(chiptsne:::stsPlotSummaryProfiles)
+# undebug(chiptsne:::prep_summary)
 ctPlotSummaryProfiles(sts, N_floor = 0, N_ceiling = 1) +
-    facet_wrap(~cell)
+    facet_wrap(~cell+mark)
 
 ctPlotSummaryProfiles(sts, N_floor = 0, N_ceiling = 1, plot_type = "raster") +
     facet_wrap(~mark)

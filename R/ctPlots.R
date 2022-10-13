@@ -123,11 +123,6 @@ ctPlotBinAggregates = function(sts,
 #' @param q_wide_values
 #' @param xrng
 #' @param yrng
-#' @param plot_type
-#' @param rname
-#' @param odir
-#' @param force_rewrite
-#' @param n_cores
 #' @param ylim
 #' @param ma_size
 #' @param n_splines
@@ -156,32 +151,44 @@ ctPlotSummaryProfiles = function(sts,
                                  q_wide_values = NULL,
                                  xrng = NULL,
                                  yrng = NULL,
-                                 plot_type = c("glyph", "raster")[1],
-                                 rname = NULL,
-                                 odir = NULL,
-                                 force_rewrite = FALSE,
-                                 n_cores = getOption("mc.cores", 1),
                                  ylim = c(0, NA),
                                  ma_size = 2,
                                  n_splines = 10,
                                  p = NULL,
-                                 line_color_mapping = NULL,
                                  N_floor = 0,
                                  N_ceiling = NULL,
                                  min_size = 0.3,
                                  return_data = FALSE
 ){
+    #these are only used by raster
+    plot_type = "glyph" #raster not supported due to facetting.
+    force_rewrite = FALSE
+    n_cores = getOption("mc.cores", 1)
+    rname = NULL
+    odir = NULL
+
     .prepare_plot_inputs(
         sts,
         feature_name = feature_name,
         signal_name = signal_name
     )
-    chiptsne:::stsPlotSummaryProfiles(
+
+    extra_vars =  c(
+        sts$signal_config$run_by,
+        sts$signal_config$color_by,
+        "name",
+        "name_split"
+    )
+    extra_vars = extra_vars[extra_vars %in% colnames(prof_dt)]
+
+    p = stsPlotSummaryProfiles(
         profile_dt = prof_dt,
         position_dt = tsne_dt,
         x_points = xbins,
         y_points = ybins,
         y_var = profile_value,
+        extra_vars = extra_vars,
+        wide_var = sts$signal_config$color_by,
         ###
         q_tall_values = q_tall_values,
         q_wide_values = q_wide_values,
@@ -198,13 +205,15 @@ ctPlotSummaryProfiles = function(sts,
         n_splines = n_splines,
         p = p,
         facet_byCell = FALSE,
-        line_color_mapping = line_color_mapping,
+        line_color_mapping = unlist(sts$signal_config$color_mapping),
         vertical_facet_mapping = NULL,
         N_floor = N_floor,
         N_ceiling = N_ceiling,
         min_size = min_size,
         return_data = return_data
     )
+    facet_str = paste0("~", sts$signal_config$run_by)
+    p +  facet_wrap(facet_str)
 }
 
 #' ctPlotPoints
@@ -234,11 +243,8 @@ ctPlotPoints = function(
         bg_color = "gray20",
         agg_FUN = max
 ){
-    chiptsne:::.prepare_plot_inputs(sts, NULL, NULL)
-
-    sts$signal_config$run_by
-
-    agg_dt = chiptsne:::aggregate_signals(
+    .prepare_plot_inputs(sts, NULL, NULL)
+    agg_dt = aggregate_signals(
         prof_dt,
         y_ = profile_value,
         yout_ = profile_value,

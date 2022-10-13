@@ -1,10 +1,9 @@
 #' ClusteredSignal_TSNE
 #'
-#' @slot signal_data
-#' @slot query_gr
-#' @slot signal_var
-#' @slot facet_var
-#' @slot extra_var
+#' adds support for xy coordinate (tsne result) data to ClusteredSignal class.
+#'
+#' @slot xy_data data.table.
+#'
 #' @export
 setClass("ClusteredSignal_TSNE",
          representation = list(
@@ -30,20 +29,26 @@ ClusteredSignal_TSNE.from_ClusteredSignal = function(object, sts_parent){
         xy_data = tsne_dt)
 }
 
-#' Title
+#' ClusteredSignal_TSNE
 #'
-#' @param signal_profile_dt
-#' @param query_gr
-#' @param manual_assigned
-#' @param nclust
-#' @param signal_var
-#' @param facet_var
-#' @param extra_var
+#' @param signal_profile_dt Tidy data.table containing profile information.  See output of seqsetvis::ssvFetchBam.
+#' @param query_gr A GRanges containing regions to retrieve signal data at.
+#' @param manual_assigned NYI but should allow manual cluster assignment.
+#' @param nclust Number of k-means clusters to calculate. Default is 6.
+#' @param signal_var Variable name for signal information to cluster upon in signal_profile_dt. Default is "y".
+#' @param signal_var.within Variable name for ranking items within clusters.  The Default is the same as signal_var.
+#' @param facet_var Variable that will eventually be used in heatmap facets.  Ensures it is preserved and not aggregated away.  Default is "name_split".
+#' @param extra_var Any extra variables to preserve and avaoid aggregating away.
+#' @param bfc BiocFileCache to use, uses default location otherwise.
 #'
-#' @return
+#' @return A ClusteredSignal_TSNE object containing clustering and TSNE information.
 #' @export
 #'
 #' @examples
+#' signal_profile_dt = seqsetvis::CTCF_in_10a_profiles_dt
+#' setnames(signal_profile_dt, "sample", "name_split")
+#' query_gr = seqsetvis::CTCF_in_10a_overlaps_gr
+#' clust_sig = ClusteredSignal_TSNE(signal_profile_dt, query_gr)
 ClusteredSignal_TSNE = function(signal_profile_dt,
                                 query_gr,
                                 manual_assigned = list(),
@@ -73,7 +78,7 @@ ClusteredSignal_TSNE = function(signal_profile_dt,
 
 #' ClusteredSignal_TSNE.fromConfig
 #'
-#' @return
+#' @return A ClusteredSignal_TSNE object containing clustering and TSNE information.
 #' @export
 #'
 #' @examples
@@ -87,9 +92,8 @@ ClusteredSignal_TSNE = function(signal_profile_dt,
 #'
 #' sqc = ssvQC(feature_config, bam_config)
 #'
-#' prepS
 #' query_gr = feature_config$assessment_features$CTCF_features
-#' sclust = ClusteredSignal_TSNE(sqc@signal_profile, sqc@feature_config$assessment_features)
+#' sclust = ClusteredSignal_TSNE.fromConfig(sqc$signal_config, sqc$features_config$assessment_features)
 #' sclust$
 ClusteredSignal_TSNE.fromConfig = function(signal_config,
                                            query_gr,
@@ -97,7 +101,7 @@ ClusteredSignal_TSNE.fromConfig = function(signal_config,
                                            nclust = 6,
                                            facet_var = "name_split",
                                            extra_var = character(),
-                                           bfc = new_cache()){
+                                           bfc = ssvQC:::new_cache()){
     is_bam = grepl("bam", signal_config@read_mode)
 
     ssvQC::bfcif(bfc, digest_args(), function(){
@@ -154,12 +158,13 @@ ClusteredSignal_TSNE.fromConfig = function(signal_config,
     })
 }
 
-#' Title
+#' ClusteredSignal_TSNE.null
 #'
-#' @return
+#' @return A "null" ClusteredSignal_TSNE object containing no information.
 #' @export
 #'
 #' @examples
+#' ClusteredSignal_TSNE.null()
 ClusteredSignal_TSNE.null = function(){
     new("ClusteredSignal_TSNE",
         signal_data =  data.table(),

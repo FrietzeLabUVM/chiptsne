@@ -5,13 +5,17 @@
 #' aggregate_signals is retrieves a single representative value for a genomic
 #' region per sample by default this is the maximum anywhere in the region but
 #' this can be overriden using xmin/xmax and agg_FUN
-#' @param profile_dt
-#' @param agg_FUN
-#' @param xmin
-#' @param xmax
-#' @param by_
 #'
-#' @return
+#' @param profile_dt Tidy data.table of profile information. As returned by seqsetvis::ssvFetchBam.
+#' @param agg_FUN A function appled to all y_ values in xmin to xmax range. Must accept single numeric vector and return 1 value.
+#' @param y_ Variable name containing profile scores.
+#' @param yout_ Variable name in output containing aggregate profile score information.
+#' @param xmin The min range of x-values to apply agg_FUN to
+#' @param xmax The max range of x-values to apply agg_FUN to
+#' @param by_ Character vector of variable names to apply agg_FUN by.
+
+#'
+#' @return A data.table summarizing every profile with a single value. Suitable for input to chiptsne:::plot_binned_aggregates.
 #'
 #' @examples
 #' aggregate_signals(profile_dt)
@@ -32,20 +36,20 @@ aggregate_signals = function(profile_dt,
 
 #' plot_binned_aggregates
 #'
-#' @param agg_dt
-#' @param xbins
-#' @param ybins
-#' @param xrng
-#' @param yrng
-#' @param val
-#' @param bxval
-#' @param byval
-#' @param facet_
-#' @param bin_met
-#' @param min_size
-#' @param return_data
+#' @param agg_dt data.table as returned by chiptsne:::aggregate_signals
+#' @param xbins Number of bins (pixel) in the x direction
+#' @param ybins Number of bins (pixel) in the y direction. Default reuses xbins.
+#' @param xrng numeric vector of length 2 defining range of x-axis. Default is full range of agg_dt.
+#' @param yrng numeric vector of length 2 defining range of y-axis. Default is full range of agg_dt.
+#' @param val The value mapped to fill in final plot.
+#' @param bxval The variable defining individual points x position in agg_dt.
+#' @param byval The variable defining individual points y position in agg_dt.
+#' @param facet_ Variable in agg_dt to facet plot upon.
+#' @param bin_met Function applied to all points in bin on the value of val
+#' @param min_size Bins must contain at least this many points to appear in final plot.
+#' @param return_data If TRUE, return data.table, not ggplot.
 #'
-#' @return
+#' @return A ggplot object where TSNE space is summarized by a xbins*ybins raster image colored according to val.
 #'
 #' @examples
 #' agg_dt = aggregate_signals(profile_dt)
@@ -79,9 +83,6 @@ plot_binned_aggregates = function(agg_dt,
     agg_dt[, by := bin_values(get(byval), n_bins = ybins, xrng = yrng)]
 
     bin_dt = agg_dt[, .(y = bin_met(get(val)), N = .N), c(unique(c(facet_, extra_vars, "bx", "by")))]
-    # if(min_size > 1){
-    #     bin_dt = bin_dt[N >= min_size]
-    # }
     bxvc = bin_values_centers(n_bins = xbins, xrng)
     w = diff(bxvc[1:2])
     byvc = bin_values_centers(n_bins = ybins, yrng)

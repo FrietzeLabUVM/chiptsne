@@ -15,7 +15,22 @@ aggregate_signals(
 )
 }
 \arguments{
-\item{by_}{}
+\item{profile_dt}{Tidy data.table of profile information. As returned by seqsetvis::ssvFetchBam.}
+
+\item{agg_FUN}{A function appled to all y_ values in xmin to xmax range. Must accept single numeric vector and return 1 value.}
+
+\item{y_}{Variable name containing profile scores.}
+
+\item{yout_}{Variable name in output containing aggregate profile score information.}
+
+\item{xmin}{The min range of x-values to apply agg_FUN to}
+
+\item{xmax}{The max range of x-values to apply agg_FUN to}
+
+\item{by_}{Character vector of variable names to apply agg_FUN by.}
+}
+\value{
+A data.table summarizing every profile with a single value. Suitable for input to chiptsne:::plot_binned_aggregates.
 }
 \description{
 aggregate_signals is retrieves a single representative value for a genomic

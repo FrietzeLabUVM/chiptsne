@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions_cluster.R
 \name{stsPlotClusterProfiles}
 \alias{stsPlotClusterProfiles}
-\title{Title}
+\title{stsPlotClusterProfiles}
 \usage{
 stsPlotClusterProfiles(
   profile_dt,
@@ -18,8 +18,28 @@ stsPlotClusterProfiles(
 )
 }
 \arguments{
-\item{h}{}
+\item{profile_dt}{Tidy data.table of profile information. As returned by seqsetvis::ssvFetchBam.}
+
+\item{cluster_dt}{Tidy data.table of cluster information. As returned by chiptsne:::nn_clust or chiptsne:::combine_most_similar}
+
+\item{cluster_}{Variable name of cluster assignment in cluster_dt.}
+
+\item{w}{Relative width of profile glpyhs as fraction of total plot range.}
+
+\item{h}{Relative height of profile glpyhs as fraction of total plot range.}
+}
+\value{
+a ggplot of TSNE point clusters overlayed with summary profiles.
 }
 \description{
-Title
+stsPlotClusterProfiles
+}
+\examples{
+data("profile_dt")
+data("tsne_dt")
+setalloccol(tsne_dt)
+setalloccol(profile_dt)
+cluster_dt = nn_clust(tsne_dt, nn = 5)
+
+stsPlotClusterProfiles(profile_dt, cluster_dt)
 }

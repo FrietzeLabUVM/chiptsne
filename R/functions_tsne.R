@@ -200,6 +200,7 @@ stsPlotSummaryProfiles = function (profile_dt,
                                    y_points = x_points,
                                    x_var = "x",
                                    y_var = "y",
+                                   extra_vars = character(),
                                    id_var = "id",
                                    wide_var = "name",
                                    tall_var = "tall_none",
@@ -307,7 +308,8 @@ stsPlotSummaryProfiles = function (profile_dt,
                                 y_var = y_var,
                                 id_var = id_var,
                                 wide_var = wide_var,
-                                tall_var = tall_var)
+                                tall_var = tall_var,
+                                extra_vars = extra_vars)
       img_res = prep_images(summary_dt = summary_dt,
                             xrng = xrng,
                             yrng = yrng,
@@ -350,7 +352,8 @@ stsPlotSummaryProfiles = function (profile_dt,
                                 x_var = x_var,
                                 y_var = y_var,
                                 id_var = id_var,
-                                wide_var = wide_var)
+                                wide_var = wide_var,
+                                extra_vars = extra_vars)
       img_res = prep_images(summary_dt = summary_dt,
                             xrng = xrng,
                             yrng = yrng,
@@ -395,7 +398,8 @@ stsPlotSummaryProfiles = function (profile_dt,
                                 y_var = y_var,
                                 id_var = id_var,
                                 wide_var = wide_var,
-                                tall_var = tall_var)
+                                tall_var = tall_var,
+                                extra_vars = extra_vars)
       plot_summary_glyph(summary_dt = summary_dt,
                          xrng = xrng,
                          yrng = yrng,
@@ -424,7 +428,8 @@ stsPlotSummaryProfiles = function (profile_dt,
                      y_var = y_var,
                      id_var = id_var,
                      wide_var = wide_var,
-                     tall_var = tall_var)
+                     tall_var = tall_var,
+                     extra_vars = extra_vars)
       })
       names(summary_dt_l) = q_tall_values
       summary_dt = rbindlist(summary_dt_l,
@@ -505,7 +510,8 @@ prep_summary = function (profile_dt,
                          y_var = "y",
                          id_var = "id",
                          wide_var = "name",
-                         tall_var = "tall_none"){
+                         tall_var = "tall_none",
+                         extra_vars = character()){
   position_dt = copy(position_dt[tx >= min(xrng) & tx <= max(xrng) &
                                    ty >= min(yrng) & ty <= max(yrng)])
   position_dt = position_dt[get(id_var) %in% unique(profile_dt[[id_var]])]
@@ -521,10 +527,10 @@ prep_summary = function (profile_dt,
   if (is.null(summary_dt[[wide_var]]))
     summary_dt[[wide_var]] = "signal"
   if (is.null(facet_by)) {
-    summary_dt = summary_dt[, list(y_tmp_ = mean(get(y_var))), c("bx", "by", x_var, wide_var)]
+    summary_dt = summary_dt[, list(y_tmp_ = mean(get(y_var))), c(unique(c("bx", "by", x_var, wide_var, extra_vars)))]
   }
   else {
-    summary_dt = summary_dt[, list(y_tmp_ = mean(get(y_var))), c("bx", "by", x_var, wide_var, facet_by)]
+    summary_dt = summary_dt[, list(y_tmp_ = mean(get(y_var))), c(unique(c("bx", "by", x_var, wide_var, facet_by, extra_vars)))]
   }
   setnames(summary_dt, "y_tmp_", y_var)
   N_dt = position_dt[, .(.N), by = .(bx, by)]
@@ -548,44 +554,4 @@ bin_values_centers = function (n_bins, rng)
   xspc = diff(rng)/n_bins/2
   xs = seq(min(rng) + xspc, max(rng) - xspc, diff(rng)/(n_bins))
   xs
-}
-
-nn_clust = function (tsne_res, nsamp = Inf, nn = 100, tall_var = "tall_var", id_var = "id"){
-  valid_vars = c(ifelse(tall_var == "tall_none", character(), tall_var), id_var)
-  valid_vars = valid_vars[!is.na(valid_vars)]
-  stopifnot(valid_vars %in% colnames(tsne_res))
-
-  if(is.null(tsne_res[[tall_var]])){
-    tsne_res[[tall_var]] = "none"
-  }
-
-  if(nn > .2 * nrow(tsne_res)){
-    nn = floor(.2 * nrow(tsne_res))
-    message("Decreasing nearest-neighbors to ", nn, ".  Original value was too high for dataset.")
-  }
-  # tsne_res[, `:=`(tid, paste(get(tall_var), get(id_var)))]
-  set(tsne_res, j = "tid", value = paste(tsne_res[[tall_var]], tsne_res[[id_var]]))
-
-  mat = t(as.matrix(tsne_res[, .(tx, ty)]))
-  colnames(mat) = tsne_res$tid
-  mat = mat[, sampleCap(seq(ncol(mat)), nsamp)]
-  knn.info <- RANN::nn2(t(mat), k = nn)
-  knn <- knn.info$nn.idx
-  colnames(knn) = c("tid", paste0("V", seq(nn - 1)))
-  knn = as.data.table(knn)
-  mknn = melt(knn, id.vars = "tid")
-  ADJ = Matrix::Matrix(0, ncol(mat), ncol(mat))
-  ADJ[cbind(mknn$tid, mknn$value)] = 1
-  rownames(ADJ) = colnames(mat)
-  colnames(ADJ) = colnames(mat)
-  g <- igraph::graph.adjacency(ADJ, mode = "undirected")
-  g <- igraph::simplify(g)
-  km <- igraph::cluster_walktrap(g)
-  com <- km$membership
-  names(com) <- km$names
-  com_dt = data.table(tid = names(com), cluster_id = com)
-  p_dt = merge(tsne_res, com_dt, by = "tid")
-  p = ggplot(p_dt, aes(x = tx, y = ty, color = as.character(cluster_id))) +
-    labs(color = "cluster_id") + geom_point(size = 0.5)
-  return(list(data = p_dt, plot = p))
 }
