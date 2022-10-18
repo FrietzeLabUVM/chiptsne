@@ -9,17 +9,41 @@ ssvTSNE(
   signal_config = NULL,
   out_dir = getwd(),
   bfc = NULL,
-  matched_only = TRUE,
   perplexity = 50,
-  n_glyphs_x = 10,
+  n_glyphs_x = 8,
   n_glyphs_y = n_glyphs_x,
   n_heatmap_pixels_x = 25,
-  n_heatmap_pixels_y = n_heatmap_pixels_x,
-  ...
+  n_heatmap_pixels_y = n_heatmap_pixels_x
 )
 }
 \arguments{
-\item{...}{}
+\item{features_config}{Controls features configuration.  May be a:
+QcConfigFeatures object, path to a file defining configuration via
+QcConfigFeatures.parse, features files to define via
+QcConfigFeatures.files, or a data.frame to pass to QcConfigFeatures.}
+
+\item{signal_config}{Controls signal configuration.  May be a: QcConfigSignal
+object, path to a file defining configuration via QcConfigSignal.parse,
+features files to define via QcConfigSignal.files, or a data.frame to pass
+to QcConfigSignal.}
+
+\item{out_dir}{NYI}
+
+\item{bfc}{BiocFileCache object to use for caching. If NULL, default
+new_cache() will be used.}
+
+\item{perplexity}{passed to Rtsne::Rtsne()}
+
+\item{n_glyphs_x}{number of glyphs across x-axis to summarize profiles in t-SNE space. Default is 8.}
+
+\item{n_glyphs_y}{number of glyphs across y-axis. Default is the same as n_glyphs_x.}
+
+\item{n_heatmap_pixels_x}{number of pixels to use in heatmap across x-axis in t-SNE space. Default is 25.}
+
+\item{n_heatmap_pixels_y}{number of pixels to use in heatmap across y-axis in t-SNE space. Default is same as n_heatmap_pixels_x.}
+}
+\value{
+a valid ssvTSNE object.
 }
 \description{
 ssvTSNE

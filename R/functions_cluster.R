@@ -36,6 +36,7 @@ stsPlotClusterProfiles = function (profile_dt,
                                    id_var = "id",
                                    wide_var = "wide_var",
                                    tall_var = "tall_var") {
+    setalloccol(profile_dt)
     stopifnot(cluster_ %in% colnames(cluster_dt))
     cent_dt = cluster_dt[, .(tx = median(tx), ty = median(ty)),
                          by = cluster_]
@@ -132,6 +133,9 @@ combine_most_similar = function(p_dt,
                                 min_dist = Inf,
                                 cluster_ = "cluster_id",
                                 new_cluster_ = cluster_){
+    if(n_times < 1){
+        return(p_dt)
+    }
     p_dt = copy(p_dt)
     profile_dt[, tid := paste(tall_var, id)]
     if(new_cluster_ != cluster_){
@@ -151,7 +155,8 @@ combine_most_similar = function(p_dt,
     }
     new_meta = paste("meta", max_meta + 1)
     stopifnot(!new_meta %in% uniq)
-    clust_dt = merge(profile_dt, p_dt[, c("tid", "tx", "ty", new_cluster_), with = FALSE], by = "tid")
+    prof_cn = setdiff(colnames(profile_dt), new_cluster_)
+    clust_dt = merge(profile_dt[, prof_cn, with = FALSE], p_dt[, c("tid", "tx", "ty", new_cluster_), with = FALSE], by = "tid")
     agg_dt = clust_dt[, .(
         ymean = mean(y)
     ), c(new_cluster_, "wide_var", "x")]
@@ -192,6 +197,9 @@ combine_most_similar = function(p_dt,
     #     p_dt[[new_cluster_]] = p_dt$meta
     #     p_dt$meta = NULL
     # }
+    p_dt[[new_cluster_]] = factor(p_dt[[new_cluster_]])
+    levels(p_dt[[new_cluster_]]) = seq_along(levels(p_dt[[new_cluster_]]))
+
     p_dt[]
 }
 
@@ -229,12 +237,13 @@ nn_clust = function (tsne_res,
                      id_var = "id",
                      show_plot = FALSE,
                      return_plot = FALSE){
+    setalloccol(tsne_res)
     valid_vars = c(ifelse(tall_var == "tall_none", character(), tall_var), id_var)
     valid_vars = valid_vars[!is.na(valid_vars)]
     stopifnot(valid_vars %in% colnames(tsne_res))
 
     if(is.null(tsne_res[[tall_var]])){
-        tsne_res[[tall_var]] = "none"
+        set(tsne_res, j = tall_var, value = "none")
     }
 
     if(nn > .2 * nrow(tsne_res)){
@@ -262,6 +271,7 @@ nn_clust = function (tsne_res,
     names(com) <- km$names
     com_dt = data.table(tid = names(com), cluster_id = com)
     p_dt = merge(tsne_res, com_dt, by = "tid")
+    p_dt$cluster_id = factor(p_dt$cluster_id)
 
     p = ggplot(p_dt, aes(x = tx, y = ty, color = as.character(cluster_id))) +
         labs(color = "cluster_id") +

@@ -8,12 +8,10 @@ ctPlotSummaryProfiles(
   sts,
   feature_name = NULL,
   signal_name = NULL,
-  xbins = 20,
+  xbins = 10,
   ybins = xbins,
   profile_value = ssvQC:::val2var[sts$signal_config$plot_value],
   profile_value_label = ssvQC:::val2lab[sts$signal_config$plot_value],
-  q_tall_values = NULL,
-  q_wide_values = NULL,
   xrng = NULL,
   yrng = NULL,
   ylim = c(0, NA),
@@ -22,12 +20,58 @@ ctPlotSummaryProfiles(
   p = NULL,
   N_floor = 0,
   N_ceiling = NULL,
-  min_size = 0.3,
+  min_fraction = 0.2,
   return_data = FALSE
 )
 }
 \arguments{
+\item{sts}{A ssvTSNE object with ssvQC.prepSignal already called.}
+
+\item{feature_name}{Feature name present in sts.  With default of NULL, first
+feature name will be used.}
+
+\item{signal_name}{Signal name present in sts.  With default of NULL, first
+signal name will be used.}
+
+\item{xbins}{Number of bins (pixel) in the x direction}
+
+\item{ybins}{Number of bins (pixel) in the y direction. Default reuses xbins.}
+
+\item{profile_value}{Value to use for profiles. Default is the plot_value
+defined in the signal config of sts.}
+
+\item{profile_value_label}{Label to use for profile scale. Default is the
+plot_value label defined in the signal config of sts.}
+
+\item{xrng}{numeric vector of length 2 defining range of x-axis. Default is full range.}
+
+\item{yrng}{numeric vector of length 2 defining range of y-axis. Default is full range.}
+
+\item{ylim}{Range of y-axis within profile glyphs. Default is 0 to max.}
+
+\item{ma_size}{Number of profile x-values to use for moving average.}
+
+\item{n_splines}{Number of splines to use to smooth after moving average.}
+
+\item{p}{Previous ggplot to plot over.}
+
+\item{N_floor}{Profiles with N_floor points will have the minimum size.}
+
+\item{N_ceiling}{Profiles with N_ceiling or more points will have the maximum
+size.}
+
+\item{min_fraction}{Minimum fraction between N_floor and N_ceiling required
+to be included. For example 1) if N_floor is 5, and min_fraction is 0,
+profiles with fewer than 5 points will be omitted 2) if N_ceiling is 25 and
+min_fraction is 1, all profiles will be plotted at max size and profiles
+with fewer than 25 points will be dropped 3) N_floor is 5 and N_ceiling is
+25 and min_fraction is .5, profiles with 15 points will be half size and
+profiles will fewer than 15 points will be omitted.}
+
 \item{return_data}{}
+}
+\value{
+ggplot where profiles present in bins are summarized by glyphs.
 }
 \description{
 ctPlotSummaryProfiles

@@ -278,7 +278,8 @@ plot_summary_glyph = function (summary_dt,
                                color_mapping = NULL,
                                x_var = "x",
                                y_var = "y",
-                               wide_var = "name")
+                               wide_var = "name",
+                               extra_vars = character())
 {
     group_size = gx = gy = gid = NULL
     summary_dt = set_size(summary_dt, N_floor, N_ceiling, size.name = "group_size")
@@ -321,8 +322,14 @@ plot_summary_glyph = function (summary_dt,
     if (is.null(p)) {
         p = ggplot()
     }
-    glyph_dt[, glyph_group := paste(gid, get(wide_var))]
-    p + geom_path(data = glyph_dt,
+    glyph_groups = apply(glyph_dt[, c(unique(c("gid", wide_var, extra_vars))), with = FALSE],
+                         1,
+                         function(x){
+                             paste(x, collapse = " ")
+                         }
+    )
+    set(glyph_dt, j = "glyph_group", value = glyph_groups)
+    p = p + geom_path(data = glyph_dt,
                   aes_string("gx",
                              "gy",
                              group = "glyph_group",
@@ -330,6 +337,7 @@ plot_summary_glyph = function (summary_dt,
         labs(x = "tx", y = "ty") +
         scale_color_manual(values = color_mapping) +
         coord_cartesian(xlim = xrng, ylim = yrng)
+    p
 }
 
 set_size = function (dt, N_floor, N_ceiling, size.name = "img_size")

@@ -417,7 +417,8 @@ stsPlotSummaryProfiles = function (profile_dt,
                                return_data = return_data,
                                x_var = x_var,
                                y_var = y_var,
-                               wide_var = wide_var)
+                               wide_var = wide_var,
+                               extra_vars = extra_vars)
             #### glyph - facet ####
         } else {
             summary_dt_l = lapply(q_tall_values, function(cl) {
@@ -468,7 +469,8 @@ stsPlotSummaryProfiles = function (profile_dt,
                                    color_mapping = line_color_mapping,
                                    x_var = x_var,
                                    y_var = y_var,
-                                   wide_var = wide_var) +
+                                   wide_var = wide_var,
+                                   extra_vars = extra_vars) +
                     facet_wrap(paste0("~", tall_var))
             }
         }

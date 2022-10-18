@@ -2,19 +2,30 @@
 
 #' ctPlotBinAggregates
 #'
+#' Divide t-SNE space into xbins*ybins and summarize signal in each bean as the
+#' mean value results from agg_FUN on xmin:xmax of signal profiles present.
 #'
-#' @param sts
-#' @param feature_name
-#' @param signal_name
-#' @param xmin
-#' @param xmax
-#' @param profile_value
-#' @param profile_value_label
-#' @param agg_FUN
-#' @param xbins
-#' @param ybins
+#' @param sts A ssvTSNE object with ssvQC.prepSignal already called.
+#' @param feature_name Feature name present in sts.  With default of NULL, first
+#'   feature name will be used.
+#' @param signal_name Signal name present in sts.  With default of NULL, first
+#'   signal name will be used.
+#' @param xmin The min range of x-values to apply agg_FUN to.
+#' @param xmax The max range of x-values to apply agg_FUN to.
+#' @param profile_value Value to use for profiles. Default is the plot_value
+#'   defined in the signal config of sts.
+#' @param profile_value_label Label to use for profile scale. Default is the
+#'   plot_value label defined in the signal config of sts.
+#' @param agg_FUN A function appled to all y_ values in xmin to xmax range. Must
+#'   accept single numeric vector and return 1 value.
+#' @param xbins Number of bins (pixel) in the x direction
+#' @param ybins Number of bins (pixel) in the y direction. Default reuses xbins.
+#' @param bg_color Color to use for plot background. Default is "gray60".
+#' @param min_size Bins must contain at least this many points to appear in
+#'   final plot.
 #'
-#' @return
+#' @return ggplot summarizing signal profiles across t-SNE space in heatmap
+#'   style plot.
 #' @export
 #'
 #' @examples
@@ -28,8 +39,10 @@ ctPlotBinAggregates = function(sts,
                                profile_value = ssvQC:::val2var[sts$signal_config$plot_value],
                                profile_value_label = ssvQC:::val2lab[sts$signal_config$plot_value],
                                agg_FUN = max,
-                               xbins = 20,
-                               ybins = xbins){
+                               xbins = 50,
+                               ybins = xbins,
+                               bg_color = "gray60",
+                               min_size = 5){
     .prepare_plot_inputs(
         sts,
         feature_name,
@@ -65,37 +78,50 @@ ctPlotBinAggregates = function(sts,
         val = profile_value,
         extra_vars = extra_vars,
         facet_ = "name",
+        min_size = min_size
     ) +
         labs(fill = profile_value_label) +
-        facet_grid(facet_str)
+        facet_grid(facet_str) +
+        theme(
+            panel.background = element_rect(fill = bg_color),
+            panel.grid = element_blank()
+        )
 }
 
 
 #' ctPlotSummaryProfiles
 #'
 #'
-#' @param sts
-#' @param feature_name
-#' @param signal_name
-#' @param xbins
-#' @param ybins
-#' @param profile_value
-#' @param profile_value_label
-#' @param q_tall_values
-#' @param q_wide_values
-#' @param xrng
-#' @param yrng
-#' @param ylim
-#' @param ma_size
-#' @param n_splines
-#' @param p
-#' @param line_color_mapping
-#' @param N_floor
-#' @param N_ceiling
-#' @param min_size
+#' @param sts A ssvTSNE object with ssvQC.prepSignal already called.
+#' @param feature_name Feature name present in sts.  With default of NULL, first
+#'   feature name will be used.
+#' @param signal_name Signal name present in sts.  With default of NULL, first
+#'   signal name will be used.
+#' @param xbins Number of bins (pixel) in the x direction
+#' @param ybins Number of bins (pixel) in the y direction. Default reuses xbins.
+#' @param profile_value Value to use for profiles. Default is the plot_value
+#'   defined in the signal config of sts.
+#' @param profile_value_label Label to use for profile scale. Default is the
+#'   plot_value label defined in the signal config of sts.
+#' @param xrng numeric vector of length 2 defining range of x-axis. Default is full range.
+#' @param yrng numeric vector of length 2 defining range of y-axis. Default is full range.
+#' @param ylim Range of y-axis within profile glyphs. Default is 0 to max.
+#' @param ma_size Number of profile x-values to use for moving average.
+#' @param n_splines Number of splines to use to smooth after moving average.
+#' @param p Previous ggplot to plot over.
+#' @param N_floor Profiles with N_floor points will have the minimum size.
+#' @param N_ceiling Profiles with N_ceiling or more points will have the maximum
+#'   size.
+#' @param min_fraction Minimum fraction between N_floor and N_ceiling required
+#'   to be included. For example 1) if N_floor is 5, and min_fraction is 0,
+#'   profiles with fewer than 5 points will be omitted 2) if N_ceiling is 25 and
+#'   min_fraction is 1, all profiles will be plotted at max size and profiles
+#'   with fewer than 25 points will be dropped 3) N_floor is 5 and N_ceiling is
+#'   25 and min_fraction is .5, profiles with 15 points will be half size and
+#'   profiles will fewer than 15 points will be omitted.
 #' @param return_data
 #'
-#' @return
+#' @return ggplot where profiles present in bins are summarized by glyphs.
 #' @export
 #'
 #' @examples
@@ -104,13 +130,11 @@ ctPlotBinAggregates = function(sts,
 ctPlotSummaryProfiles = function(sts,
                                  feature_name = NULL,
                                  signal_name = NULL,
-                                 xbins = 20,
+                                 xbins = 10,
                                  ybins = xbins,
                                  profile_value = ssvQC:::val2var[sts$signal_config$plot_value],
                                  profile_value_label = ssvQC:::val2lab[sts$signal_config$plot_value],
                                  ###
-                                 q_tall_values = NULL,
-                                 q_wide_values = NULL,
                                  xrng = NULL,
                                  yrng = NULL,
                                  ylim = c(0, NA),
@@ -119,9 +143,11 @@ ctPlotSummaryProfiles = function(sts,
                                  p = NULL,
                                  N_floor = 0,
                                  N_ceiling = NULL,
-                                 min_size = 0.3,
+                                 min_fraction = 0.2,
                                  return_data = FALSE
 ){
+    q_tall_values = NULL
+    q_wide_values = NULL
     #these are only used by raster
     plot_type = "glyph" #raster not supported due to facetting.
     force_rewrite = FALSE
@@ -171,7 +197,7 @@ ctPlotSummaryProfiles = function(sts,
         vertical_facet_mapping = NULL,
         N_floor = N_floor,
         N_ceiling = N_ceiling,
-        min_size = min_size,
+        min_size = min_fraction,
         return_data = return_data
     )
     facet_str = paste0("~", sts$signal_config$run_by)
@@ -181,15 +207,23 @@ ctPlotSummaryProfiles = function(sts,
 #' ctPlotPoints
 #'
 #'
-#' @param sts
-#' @param xmin
-#' @param xmax
-#' @param profile_value
-#' @param profile_value_label
-#' @param bg_color
-#' @param agg_FUN
+#' @param sts A ssvTSNE object with ssvQC.prepSignal already called.
+#' @param feature_name Feature name present in sts.  With default of NULL, first
+#'   feature name will be used.
+#' @param signal_name Signal name present in sts.  With default of NULL, first
+#'   signal name will be used.
+#' @param xmin The min range of x-values to apply agg_FUN to.
+#' @param xmax The max range of x-values to apply agg_FUN to.
+#' @param profile_value Value to use for profiles. Default is the plot_value
+#'   defined in the signal config of sts.
+#' @param profile_value_label Label to use for profile scale. Default is the
+#'   plot_value label defined in the signal config of sts.
+#' @param bg_color Color to use for plot background. Default is "gray60".
+#' @param agg_FUN A function appled to all y_ values in xmin to xmax range. Must
+#'   accept single numeric vector and return 1 value.
+#' @param point_size Size to plot points at. Default is 1.
 #'
-#' @return
+#' @return ggplot where each profile is summarized by a single point in t-SNE space.
 #' @export
 #'
 #' @examples
@@ -198,14 +232,17 @@ ctPlotSummaryProfiles = function(sts,
 #'
 ctPlotPoints = function(
         sts,
+        feature_name = NULL,
+        signal_name = NULL,
         xmin = -Inf,
         xmax = Inf,
         profile_value = ssvQC:::val2var[sts$signal_config$plot_value],
         profile_value_label = ssvQC:::val2lab[sts$signal_config$plot_value],
-        bg_color = "gray20",
-        agg_FUN = max
+        bg_color = "gray60",
+        agg_FUN = max,
+        point_size = 1
 ){
-    .prepare_plot_inputs(sts, NULL, NULL)
+    .prepare_plot_inputs(sts, feature_name = feature_name, signal_name = signal_name)
     agg_dt = aggregate_signals(
         prof_dt,
         y_ = profile_value,
@@ -218,13 +255,86 @@ ctPlotPoints = function(
     facet_str = paste0(sts$signal_config$color_by, "~", sts$signal_config$run_by)
 
     ggplot(agg_dt, aes_string(x = "tx", y = "ty", color = profile_value)) +
-        geom_point() +
+        geom_point(size = point_size) +
         facet_grid(facet_str) +
         scale_color_viridis_c() +
         theme(
             panel.background = element_rect(fill = bg_color),
             panel.grid = element_blank()) +
         labs(color = profile_value_label)
+}
+
+#' ctPlotPointsAnnotation
+#'
+#' @param sts A ssvTSNE object with ssvQC.prepSignal already called.
+#' @param feature_name Feature name present in sts.  With default of NULL, first
+#'   feature name will be used.
+#' @param signal_name Signal name present in sts.  With default of NULL, first
+#'   signal name will be used.
+#' @param meta_data A data.frame containing "id" and anno_var. Will use cluster assignment if not set.
+#' @param anno_var Variable to extract from meta_data for plotting.
+#' @param anno_var_label Label to use for color legend. Default is anno_var.
+#' @param bg_color Color to use for plot background. Default is "gray60".
+#' @param return_data
+#'
+#' @return ggplot with color of t-SNE points determined by annotation in meta_data.
+#' @export
+#'
+#' @examples
+#' data(sts.test)
+#' ctPlotPointsAnnotation(sts)
+#'
+#' #example using peak call
+#' query_gr = sts$features_config$assessment_features$CTCF_features
+#' meta_data = data.table(id = names(query_gr), MCF10CA1_CTCF_rep1 = query_gr$`MCF10CA1\nCTCF\nrep1`)
+#' ctPlotPointsAnnotation(sts, meta_data = meta_data, anno_var = "MCF10CA1_CTCF_rep1")
+ctPlotPointsAnnotation = function(
+        sts,
+        meta_data = NULL,
+        feature_name = NULL,
+        signal_name = NULL,
+        anno_var = NULL,
+        anno_var_label = anno_var,
+        bg_color = "gray60",
+        return_data = FALSE
+){
+    .prepare_plot_inputs(sts, feature_name = feature_name, signal_name = signal_name)
+    if(is.null(meta_data)){
+        meta_data = sts$signal_data[[feature_name]][[signal_name]]$assignment_data
+        anno_var = "cluster_id"
+        message("No meta_data given, annotating points with clustering assignment.")
+    }
+    if(is.null(anno_var)){
+        stop("anno_var must be set.")
+    }
+    if(!anno_var %in% colnames(meta_data)){
+        stop("anno_var must be present in meta_data.")
+    }
+    # if(anno_var %in% colnames(tsne_dt)){
+    #     stop(anno_var, " anno_var must not be present in tsne_dt")
+    # }
+    # sts$signal_data[[feature_name]][[signal_name]]$xy_data
+    # ko_cn = setdiff(colnames(meta_data), colnames(tsne_dt))
+    # ko_cn = union(ko_cn, "id")
+
+    ko_meta_data = setdiff(colnames(meta_data), c("tx", "ty"))
+    ko_tsne_dt = setdiff(colnames(tsne_dt), c(anno_var))
+
+    tsne_dt = merge(meta_data[, ko_meta_data, with = FALSE], tsne_dt[, ko_tsne_dt, with = FALSE], by = "id")
+    # facet_str = paste0(sts$signal_config$color_by, "~", sts$signal_config$run_by)
+
+    if(return_data){
+        return(tsne_dt)
+    }
+
+    ggplot(tsne_dt, aes_string(x = "tx", y = "ty", color = anno_var)) +
+        geom_point() +
+        # facet_grid(facet_str) +
+        # scale_color_viridis_c() +
+        theme(
+            panel.background = element_blank(),
+            panel.grid = element_blank()) +
+        labs(color = anno_var_label)
 }
 
 .prepare_plot_inputs = function(sts, feature_name, signal_name, env = parent.frame()){
@@ -266,3 +376,42 @@ ctPlotPoints = function(
         tsne_dt = tsne_dt
     ))
 }
+
+
+#' ctClusterPoints
+#'
+#' @param sts A ssvTSNE object with ssvQC.prepSignal already called.
+#' @param n_clust number of nearest neighbor clusters to calculate.  Reached to calling too many clusters and iteratively combining most similar clusters.
+#'
+#' @return A data.table containing id and cluster_id information. Suitable for ctPlotPointsAnnotation.
+#' @export
+#'
+#' @examples
+#' data(sts.test)
+#' clust_dt =ctClusterPoints(sts, n_clust = 3)
+#'
+#' ctPlotPointsAnnotation(sts, meta_data = clust_dt, anno_var = "cluster_id")
+ctClusterPoints = function(sts, feature_name = NULL, signal_name = NULL, n_clust = 6){
+    .prepare_plot_inputs(sts, feature_name = feature_name, signal_name = signal_name)
+
+    nn_clust.k = function(tsne_dt, tall_var = "tall_var", n_clust = n_clust){
+        chiptsne:::nn_clust(tsne_dt,
+                            tall_var = tall_var,
+                            nn = ceiling(nrow(tsne_dt)/n_clust))
+    }
+
+    # tsne_dt.clust = chiptsne:::nn_clust(tsne_dt, tall_var = "tall_none", nn = 500)
+    # tsne_dt.clust$cluster_id
+    tsne_dt.clust = nn_clust.k(tsne_dt, tall_var = "tall_none", n_clust = n_clust*2)
+
+    n_found = length(unique(tsne_dt.clust$cluster_id))
+    if(n_found > n_clust){
+        tsne_dt.clust = chiptsne:::combine_most_similar(tsne_dt.clust, prof_dt, n_times = n_found - n_clust)
+    }else if(n_found < n_clust){
+        message("Too few clusters found by nn_clust to reach requested n_clust.")
+    }
+    # ggplot(tsne_dt.clust, aes(x = tx, y = ty, color = cluster_id)) +
+    #     geom_point()
+    tsne_dt.clust[, .(id, cluster_id)]
+}
+

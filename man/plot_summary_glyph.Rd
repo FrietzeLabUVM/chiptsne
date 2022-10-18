@@ -19,7 +19,8 @@ plot_summary_glyph(
   color_mapping = NULL,
   x_var = "x",
   y_var = "y",
-  wide_var = "name"
+  wide_var = "name",
+  extra_vars = character()
 )
 }
 \arguments{

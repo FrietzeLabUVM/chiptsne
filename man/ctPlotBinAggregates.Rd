@@ -13,15 +13,50 @@ ctPlotBinAggregates(
   profile_value = ssvQC:::val2var[sts$signal_config$plot_value],
   profile_value_label = ssvQC:::val2lab[sts$signal_config$plot_value],
   agg_FUN = max,
-  xbins = 20,
-  ybins = xbins
+  xbins = 50,
+  ybins = xbins,
+  bg_color = "gray60",
+  min_size = 5
 )
 }
 \arguments{
-\item{ybins}{}
+\item{sts}{A ssvTSNE object with ssvQC.prepSignal already called.}
+
+\item{feature_name}{Feature name present in sts.  With default of NULL, first
+feature name will be used.}
+
+\item{signal_name}{Signal name present in sts.  With default of NULL, first
+signal name will be used.}
+
+\item{xmin}{The min range of x-values to apply agg_FUN to.}
+
+\item{xmax}{The max range of x-values to apply agg_FUN to.}
+
+\item{profile_value}{Value to use for profiles. Default is the plot_value
+defined in the signal config of sts.}
+
+\item{profile_value_label}{Label to use for profile scale. Default is the
+plot_value label defined in the signal config of sts.}
+
+\item{agg_FUN}{A function appled to all y_ values in xmin to xmax range. Must
+accept single numeric vector and return 1 value.}
+
+\item{xbins}{Number of bins (pixel) in the x direction}
+
+\item{ybins}{Number of bins (pixel) in the y direction. Default reuses xbins.}
+
+\item{bg_color}{Color to use for plot background. Default is "gray60".}
+
+\item{min_size}{Bins must contain at least this many points to appear in
+final plot.}
+}
+\value{
+ggplot summarizing signal profiles across t-SNE space in heatmap
+  style plot.
 }
 \description{
-ctPlotBinAggregates
+Divide t-SNE space into xbins*ybins and summarize signal in each bean as the
+mean value results from agg_FUN on xmin:xmax of signal profiles present.
 }
 \examples{
 data(sts.test)
