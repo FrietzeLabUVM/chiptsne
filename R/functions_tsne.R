@@ -126,19 +126,30 @@ dt2mat = function (prof_dt,
         }
     }
     stopifnot(c(id_var, wide_var_, tall_var_, x_var, y_var) %in% colnames(prof_dt))
-    for (m in wide_values) {
-        if (m == wide_values[1]) {
-            dt = reshape2::dcast(prof_dt[get(wide_var_) == m], paste0(id_var, "+", tall_var_, "~", x_var), value.var = y_var, fun.aggregate = fun.aggregate)
-            wide_mat = as.matrix(dt[, -seq_len(2)])
-            rn = paste(dt[[id_var]], dt[[tall_var_]])
-        }
-        else {
-            dt = reshape2::dcast(prof_dt[get(wide_var_) == m], paste(id_var, "+", tall_var_, "~", x_var), value.var = y_var)
-            stopifnot(all(paste(dt[[id_var]], dt[[tall_var_]]) == rn))
-            wide_mat = cbind(wide_mat, as.matrix(dt[, -seq_len(2)]))
-        }
+    # for (m in wide_values) {
+        # if (m == wide_values[1]) {
+        #     dt = reshape2::dcast(prof_dt[get(wide_var_) == m], paste0(id_var, "+", tall_var_, "~", x_var), value.var = y_var, fun.aggregate = fun.aggregate)
+        #     wide_mat = as.matrix(dt[, -seq_len(2)])
+        #     rn = paste(dt[[id_var]], dt[[tall_var_]])
+        # }
+        # else {
+        #     dt = reshape2::dcast(prof_dt[get(wide_var_) == m], paste(id_var, "+", tall_var_, "~", x_var), value.var = y_var)
+        #     stopifnot(all(paste(dt[[id_var]], dt[[tall_var_]]) == rn))
+        #     wide_mat = cbind(wide_mat, as.matrix(dt[, -seq_len(2)]))
+        # }
+    # }
+    dt = reshape2::dcast(data = prof_dt[get(wide_var_) %in% wide_values],
+                    formula = paste0(id_var, "+", tall_var_, "~", x_var, "+", wide_var_),
+                    value.var = y_var,
+                    fun.aggregate = fun.aggregate)
+    wide_mat = as.matrix(dt[, -seq_len(2)])
+    rownames(wide_mat) = paste(dt[[id_var]], dt[[tall_var_]])
+    if(!all(table(colnames(wide_mat)) == 1)){
+        stop("Not all colnames of matrix were unique.")
     }
-    rownames(wide_mat) = rn
+    if(!all(table(rownames(wide_mat)) == 1)){
+        stop("Not all colnames of matrix were unique.")
+    }
     wide_mat
 }
 #' stsPlotSummaryProfiles
