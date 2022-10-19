@@ -141,11 +141,24 @@ setMethod("ssvQC.plotSignal", "ssvTSNE", function(object){
             if(!"ClusteredSignal_TSNE" %in% class(signal_data)){
                 stop("Stored signal data is not of class ClusteredSignal_TSNE.")
             }
-            p_summary_profiles = stsPlotSummaryProfiles(signal_data@signal_data,
-                                                        signal_data@xy_data,
-                                                        x_points = n_glyphs_x,
-                                                        y_points = n_glyphs_y,
-                                                        y_var = ssvQC:::val2var[object@signal_config@plot_value])
+            extra_vars =  c(
+                sts$signal_config$run_by,
+                sts$signal_config$color_by,
+                "name",
+                "name_split"
+            )
+            extra_vars = extra_vars[extra_vars %in% colnames(signal_data@signal_data)]
+
+            p_summary_profiles = stsPlotSummaryProfiles(
+                signal_data@signal_data,
+                signal_data@xy_data,
+                x_points = n_glyphs_x,
+                y_points = n_glyphs_y,
+                y_var = ssvQC:::val2var[object@signal_config@plot_value],
+                extra_vars = extra_vars,
+                wide_var = sts$signal_config$color_by,
+                line_color_mapping = unlist(sts$signal_config$color_mapping)
+            )
             p_summary_profiles
         })
     })
@@ -159,14 +172,19 @@ setMethod("ssvQC.plotSignal", "ssvTSNE", function(object){
             use_tsne_clust = TRUE
             if(use_tsne_clust){
                 cluster_result = nn_clust(signal_data@xy_data, tall_var = "tall_none")
-                p_cluster_profiles = stsPlotClusterProfiles(signal_data@signal_data, cluster_result)
+                p_cluster_profiles = stsPlotClusterProfiles(
+                    signal_data@signal_data,
+                    cluster_result,
+                    wide_var = object$signal_config$color_by)
             }else{
-                p_cluster_profiles = stsPlotClusterProfiles(signal_data@signal_data,
-                                                            merge(
-                                                                signal_data@signal_data,
-                                                                signal_data@xy_data, by = "id"))
+                p_cluster_profiles = stsPlotClusterProfiles(
+                    signal_data@signal_data,
+                    merge(
+                        signal_data@signal_data,
+                        signal_data@xy_data, by = "id"),
+                    wide_var = object$signal_config$color_by)
             }
-            p_cluster_profiles
+            p_cluster_profiles + scale_color_manual(values = unlist(object@signal_config$color_mapping))
         })
     })
 
@@ -181,7 +199,7 @@ setMethod("ssvQC.plotSignal", "ssvTSNE", function(object){
             x_var = "x"
             y_var = "y"
             id_var = "id"
-            wide_var = "name"
+            wide_var = object$signal_config$color_by
             tall_var = "tall_none"
             agg_FUN = max
 
@@ -193,9 +211,10 @@ setMethod("ssvQC.plotSignal", "ssvTSNE", function(object){
 
             heat_dt = merge(prof_dt, xy_dt[, .(id, xbin, ybin)], by = "id")[, .(y = agg_FUN(get(y_var))), c(id_var, wide_var, "xbin", "ybin")]
 
+            facet_str = paste0("~", wide_var)
             ggplot(heat_dt, aes(x = xbin, y = ybin, fill = y)) +
                 geom_tile() +
-                facet_wrap(~name) +
+                facet_wrap(facet_str) +
                 scale_fill_viridis_c()
         })
     })
@@ -283,8 +302,17 @@ setReplaceMethod("$", "ssvTSNE",
 #' @export
 #'
 #' @examples
-#' data(sts.test)
-#' ssvTSNE.runTSNE(sts)
+#' library(chiptsne)
+#' library(ssvQC)
+#' query_bed_file = system.file(package = "chiptsne", "extdata/query_gr.bed")
+#' query_gr = rtracklayer::import.bed(query_bed_file)
+#' bam_files = dir(system.file(package = "chiptsne", "extdata"), pattern = "bam$", full.names = TRUE)
+#' qc_config_features = QcConfigFeatures.GRanges(query_gr)
+#' qc_config_signal = QcConfigSignal.files(bam_files)
+#' qc_config_signal$flip_signal_mode = SQC_FLIP_SIGNAL_MODES$high_on_left
+#' qc_config_signal$center_signal_at_max = TRUE
+#' sts = ssvTSNE(qc_config_features, qc_config_signal)
+#' sts = ssvTSNE.runTSNE(sts)
 ssvTSNE.runTSNE = function(sts){
-    ssvQC.plotSignal(sts)
+    sts = ssvQC.plotSignal(sts)
 }

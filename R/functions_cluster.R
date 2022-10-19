@@ -81,7 +81,7 @@ stsPlotClusterProfiles = function (profile_dt,
                                    levels = as.character(sort(unique(ch_dt[[cluster_]]))))
     }
 
-    set(glyph_dt, j = "group", value = paste(glyph_dt$gid, glyph_dt[[wide_var]]))
+    set(glyph_dt, j = "group__", value = paste(glyph_dt$gid, glyph_dt[[wide_var]]))
 
     p_clust_big = ggplot() +
         geom_polygon(data = ch_dt,
@@ -99,7 +99,7 @@ stsPlotClusterProfiles = function (profile_dt,
         geom_path(data = glyph_dt,
                   aes_string(x = "gx",
                              y = "gy",
-                             group = "group",
+                             group = "group__",
                              color = wide_var)) +
         labs(x = "tx", y = "ty") +
         coord_fixed()
