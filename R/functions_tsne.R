@@ -49,7 +49,7 @@ run_tsne = function (profile_dt,
         warning("zero variance columns detected in tsne matrix input.",
                 "\n", round(sum(bad_col)/length(bad_col) * 100,
                             2), "% of columns removed.")
-        tsne_mat = tsne_mat[, bad_col, drop = FALSE]
+        tsne_mat = tsne_mat[, !bad_col, drop = FALSE]
     }
     if (is.data.table(Y_init)) {
         if(tall_var != "tall_none"){
@@ -126,18 +126,6 @@ dt2mat = function (prof_dt,
         }
     }
     stopifnot(c(id_var, wide_var_, tall_var_, x_var, y_var) %in% colnames(prof_dt))
-    # for (m in wide_values) {
-        # if (m == wide_values[1]) {
-        #     dt = reshape2::dcast(prof_dt[get(wide_var_) == m], paste0(id_var, "+", tall_var_, "~", x_var), value.var = y_var, fun.aggregate = fun.aggregate)
-        #     wide_mat = as.matrix(dt[, -seq_len(2)])
-        #     rn = paste(dt[[id_var]], dt[[tall_var_]])
-        # }
-        # else {
-        #     dt = reshape2::dcast(prof_dt[get(wide_var_) == m], paste(id_var, "+", tall_var_, "~", x_var), value.var = y_var)
-        #     stopifnot(all(paste(dt[[id_var]], dt[[tall_var_]]) == rn))
-        #     wide_mat = cbind(wide_mat, as.matrix(dt[, -seq_len(2)]))
-        # }
-    # }
     dt = reshape2::dcast(data = prof_dt[get(wide_var_) %in% wide_values],
                     formula = paste0(id_var, "+", tall_var_, "~", x_var, "+", wide_var_),
                     value.var = y_var,

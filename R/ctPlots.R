@@ -144,7 +144,8 @@ ctPlotSummaryProfiles = function(sts,
                                  N_floor = 0,
                                  N_ceiling = NULL,
                                  min_fraction = 0.2,
-                                 return_data = FALSE
+                                 return_data = FALSE,
+                                 extra_vars = character()
 ){
     q_tall_values = NULL
     q_wide_values = NULL
@@ -161,12 +162,16 @@ ctPlotSummaryProfiles = function(sts,
         signal_name = signal_name
     )
 
-    extra_vars =  c(
-        sts$signal_config$run_by,
-        sts$signal_config$color_by,
-        "name",
-        "name_split"
+    extra_vars =  union(
+        extra_vars,
+        c(
+            sts$signal_config$run_by,
+            sts$signal_config$color_by,
+            "name",
+            "name_split"
+        )
     )
+
     extra_vars = extra_vars[extra_vars %in% colnames(prof_dt)]
 
     p = stsPlotSummaryProfiles(
