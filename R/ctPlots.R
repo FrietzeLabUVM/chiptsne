@@ -29,7 +29,7 @@
 #' @export
 #'
 #' @examples
-#' data(sts.test)
+#' data(ex_sts)
 #' ctPlotBinAggregates(sts)
 ctPlotBinAggregates = function(sts,
                                feature_name = NULL,
@@ -60,7 +60,8 @@ ctPlotBinAggregates = function(sts,
         xmin = xmin,
         xmax = xmax)
     agg_dt = merge(agg_dt, tsne_dt, by = "id")
-    agg_dt = as.data.table(merge(sts$signal_config$meta_data, agg_dt, by.y = "wide_var", by.x = "name"))
+    m_vars = setdiff(colnames(sts$signal_config$meta_data), colnames(agg_dt))
+    agg_dt = as.data.table(merge(sts$signal_config$meta_data[, m_vars], agg_dt, by.y = "wide_var", by.x = "name"))
     facet_str = paste0(sts$signal_config$color_by, "~", sts$signal_config$run_by)
 
     extra_vars =  c(
@@ -125,7 +126,7 @@ ctPlotBinAggregates = function(sts,
 #' @export
 #'
 #' @examples
-#' data(sts.test)
+#' data(ex_sts)
 #' ctPlotSummaryProfiles(sts)
 ctPlotSummaryProfiles = function(sts,
                                  feature_name = NULL,
@@ -232,7 +233,7 @@ ctPlotSummaryProfiles = function(sts,
 #' @export
 #'
 #' @examples
-#' data(sts.test)
+#' data(ex_sts)
 #' ctPlotPoints(sts)
 #'
 ctPlotPoints = function(
@@ -256,7 +257,8 @@ ctPlotPoints = function(
         xmin = xmin,
         xmax = xmax)
     agg_dt = merge(agg_dt, tsne_dt, by = "id")
-    agg_dt = as.data.table(merge(sts$signal_config$meta_data, agg_dt, by.y = "wide_var", by.x = "name"))
+    m_vars = setdiff(colnames(sts$signal_config$meta_data), colnames(agg_dt))
+    agg_dt = as.data.table(merge(sts$signal_config$meta_data[, m_vars], agg_dt, by.y = "wide_var", by.x = "name"))
     facet_str = paste0(sts$signal_config$color_by, "~", sts$signal_config$run_by)
 
     ggplot(agg_dt, aes_string(x = "tx", y = "ty", color = profile_value)) +
@@ -286,13 +288,13 @@ ctPlotPoints = function(
 #' @export
 #'
 #' @examples
-#' data(sts.test)
+#' data(ex_sts)
 #' ctPlotPointsAnnotation(sts)
 #'
 #' #example using peak call
-#' query_gr = sts$features_config$assessment_features$CTCF_features
-#' meta_data = data.table(id = names(query_gr), MCF10CA1_CTCF_rep1 = query_gr$`MCF10CA1\nCTCF\nrep1`)
-#' ctPlotPointsAnnotation(sts, meta_data = meta_data, anno_var = "MCF10CA1_CTCF_rep1")
+#' query_gr = sts$features_config$assessment_features[[1]]
+#' meta_data = data.table(id = names(query_gr), chromosome = as.character(seqnames(query_gr)))
+#' ctPlotPointsAnnotation(sts, meta_data = meta_data, anno_var = "chromosome")
 ctPlotPointsAnnotation = function(
         sts,
         meta_data = NULL,
@@ -392,7 +394,7 @@ ctPlotPointsAnnotation = function(
 #' @export
 #'
 #' @examples
-#' data(sts.test)
+#' data(ex_sts)
 #' clust_dt =ctClusterPoints(sts, n_clust = 3)
 #'
 #' ctPlotPointsAnnotation(sts, meta_data = clust_dt, anno_var = "cluster_id")

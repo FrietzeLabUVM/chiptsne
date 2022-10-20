@@ -283,6 +283,10 @@ plot_summary_glyph = function (summary_dt,
 {
     group_size = gx = gy = gid = NULL
     summary_dt = set_size(summary_dt, N_floor, N_ceiling, size.name = "group_size")
+    if(nrow(summary_dt[group_size >= min_size]) == 0){
+        "All summary groups would have been removed based on min_size. Relaxing min_size to 0."
+        min_size = 0
+    }
     summary_dt = summary_dt[group_size >= min_size]
     if (is.null(ylim)) {
         ylim = range(summary_dt[[y_var]])

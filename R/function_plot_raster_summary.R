@@ -92,8 +92,13 @@ plot_binned_aggregates = function(agg_dt,
     if(return_data){
         return(bin_dt)
     }
+    if(nrow(bin_dt[N >= min_size]) == 0){
+            "All bins would have been removed based on min_size. Relaxing min_size to 0."
+            min_size = 0
+    }
     ggplot(bin_dt[N >= min_size], aes(x = tx, y = ty, fill = y)) +
-        geom_tile(width = w, height = h) + facet_wrap(facet_) +
+        geom_tile(width = w, height = h) +
+        facet_wrap(facet_) +
         scale_fill_viridis_c() +
         coord_cartesian(xlim = xrng, ylim = yrng)
 }

@@ -33,36 +33,30 @@ setClass("ssvTSNE",
 #' @export
 #'
 #' @examples
-#' options(mc.cores = 1)
-#' set.seed(0)
-#' features_config_file = system.file(package = "ssvQC", "extdata/ssvQC_peak_config.csv")
-#' features_config = QcConfigFeatures.parse(features_config_file)
-#'
-#' bam_config_file = system.file(package = "ssvQC", "extdata/ssvQC_bam_config.csv")
-#' bam_config = QcConfigSignal.parse(bam_config_file)
-#' bam_config$view_size = 600
-#'
-#' # TSNE plot paramters can be controlled at ssvTSNE object creation or set later
-#' # if the y settings aren't specified they are the same as x
-#' sts = ssvTSNE(
-#'   features_config,
-#'   bam_config,
-#'   n_glyphs_x = 3,
-#'   n_heatmap_pixels_x = 5)
-#' sts = ssvQC.plotFeatures(sts)
-#' sts$perplexity = 10
-#' sts = ssvQC.prepFetch(sts)
-#' sts = ssvQC.referenceUsesSameScale(sts)
-#' sts = ssvQC.prepSignal(sts)
-#' sts = ssvQC.plotSignal(sts)
-#' sts$plots$TSNE
+#' library(chiptsne)
+#' library(ssvQC)
+#' query_bed_file = system.file(package = "chiptsne", "extdata/query_gr.bed")
+#' query_gr = rtracklayer::import.bed(query_bed_file)
+#' bam_files = dir(system.file(package = "chiptsne", "extdata"), pattern = "bam$", full.names = TRUE)
+#' qc_config_features = QcConfigFeatures.GRanges(query_gr)
+#' qc_config_signal = QcConfigSignal.files(bam_files)
+#' qc_config_signal$flip_signal_mode = SQC_FLIP_SIGNAL_MODES$high_on_left
+#' qc_config_signal$center_signal_at_max = TRUE
+#' sts = ssvTSNE(qc_config_features, qc_config_signal)
+#' sts = ssvTSNE.runTSNE(sts)
 #'
 #' sts$n_glyphs_x = 7
 #' sts$n_glyphs_y = 5
 #'
-#' sts$n_heatmap_pixels_x = 30
-#' sts$n_heatmap_pixels_y = 60
+#' sts$n_heatmap_pixels_x = 5
+#' sts$n_heatmap_pixels_y = 9
 #' sts.replot = ssvQC.plotSignal(sts)
+#'
+#' sts$plots$TSNE$regional_glyphs$query_features$All_signal
+#' sts.replot$plots$TSNE$regional_glyphs$query_features$All_signal
+#'
+#' sts$plots$TSNE$regional_heatmap$query_features$All_signal
+#' sts.replot$plots$TSNE$regional_heatmap$query_features$All_signal
 #'
 ssvTSNE = function(features_config = NULL,
                    signal_config = NULL,
