@@ -25,3 +25,7 @@ auth.log.trouble.txt
 figures_*
 output_*
 dev_object.ssvQC.plotSignal.Rds
+IkarosChip_QcConfigFeatures.csv
+IkarosChip_QcConfigSignal.csv
+selected_ids.bed
+dev_object.ssvQC.plotSignal.Rds

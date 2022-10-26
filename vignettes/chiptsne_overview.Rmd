@@ -26,20 +26,19 @@ chip - tee - snee
 
 `r if(FALSE){Githubpkg("jrboyd/chiptsne")}`
 
-This package is in active development.  *Expect changes in function and
-parameter names!*
+This package is in active development.  
+
+Future updates will be focused on decreasing RAM usage.
 
 # Features
 
-* tsne on ChIP-seq data
+* t-SNE on ChIP-seq data
 
 # Functions
 
-*Eventually*
-
-* `sts*` - most primary user facing functions are prefixed by sts
-
-
+* `ssvTSNE` - create to primary object used to run t-SNE and control configuration.
+* `ssvTSNE.runTSNE` - runs t-SNE and prepares data for analysis and plots.
+* `ct*` - secondary functions to create plots are all prefixed with ct.
 
 # Installation and Loading
 

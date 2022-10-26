@@ -69,19 +69,12 @@ ctPlotBinAggregates(sts, xbins = 5, xmin = .3, xmax = Inf) +
 
 ctPlotSummaryProfiles(sts)
 ctPlotSummaryProfiles(sts, N_floor = 0, N_ceiling = 1)
-ctPlotSummaryProfiles(sts, plot_type = "raster")
-ctPlotSummaryProfiles(sts, N_floor = 0, N_ceiling = 1, plot_type = "raster")
 
-# undebug(chiptsne:::stsPlotSummaryProfiles)
-ctPlotSummaryProfiles(sts, N_floor = 0, N_ceiling = 1, plot_type = "raster")
 
 # debug(chiptsne:::stsPlotSummaryProfiles)
 # undebug(chiptsne:::prep_summary)
 ctPlotSummaryProfiles(sts, N_floor = 0, N_ceiling = 1) +
     facet_wrap(~cell+mark)
-
-ctPlotSummaryProfiles(sts, N_floor = 0, N_ceiling = 1, plot_type = "raster") +
-    facet_wrap(~mark)
 
 ctPlotPoints(sts)
 ctPlotPoints(sts) +
@@ -89,16 +82,7 @@ ctPlotPoints(sts) +
 ctPlotPoints(sts) +
     facet_wrap(~name_split)
 
-chiptsne:::stsPlotSummaryProfiles(profile_dt = )
-chiptsne:::prep_summary
-chiptsne:::plot_summary_glyph
-
 #tsne clustering and plots
-nn_clust
-combine_most_similar
-ctPlotClusterProfiles
-stsPlotClusterProfiles
-
 #save the test ssvTSNE object
 if(FALSE){
     save(sts, file = "data/sts.test.rda")

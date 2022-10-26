@@ -42,7 +42,8 @@ ctPlotBinAggregates = function(sts,
                                xbins = 50,
                                ybins = xbins,
                                bg_color = "gray60",
-                               min_size = 5){
+                               min_size = 5,
+                               extra_vars = character()){
     .prepare_plot_inputs(
         sts,
         feature_name,
@@ -63,7 +64,8 @@ ctPlotBinAggregates = function(sts,
     m_vars = setdiff(colnames(sts$signal_config$meta_data), colnames(agg_dt))
     agg_dt = as.data.table(merge(sts$signal_config$meta_data[, m_vars], agg_dt, by.y = "wide_var", by.x = "name"))
     facet_str = paste0(sts$signal_config$color_by, "~", sts$signal_config$run_by)
-
+#TODO add extra vars
+    #TODO add ssvQC win_size
     extra_vars =  c(
         sts$signal_config$run_by,
         sts$signal_config$color_by,
@@ -71,7 +73,6 @@ ctPlotBinAggregates = function(sts,
         "name_split"
     )
     extra_vars = extra_vars[extra_vars %in% colnames(agg_dt)]
-
     plot_binned_aggregates(
         agg_dt = agg_dt,
         xbins = xbins,
@@ -146,7 +147,7 @@ ctPlotSummaryProfiles = function(sts,
                                  N_ceiling = NULL,
                                  min_fraction = 0.2,
                                  return_data = FALSE,
-                                 extra_vars = character()
+                                 extra_vars = c("name", "name_split")
 ){
     q_tall_values = NULL
     q_wide_values = NULL
@@ -167,9 +168,7 @@ ctPlotSummaryProfiles = function(sts,
         extra_vars,
         c(
             sts$signal_config$run_by,
-            sts$signal_config$color_by,
-            "name",
-            "name_split"
+            sts$signal_config$color_by
         )
     )
 
@@ -303,7 +302,8 @@ ctPlotPointsAnnotation = function(
         anno_var = NULL,
         anno_var_label = anno_var,
         bg_color = "gray60",
-        return_data = FALSE
+        return_data = FALSE,
+        point_size = 1
 ){
     .prepare_plot_inputs(sts, feature_name = feature_name, signal_name = signal_name)
     if(is.null(meta_data)){
@@ -335,7 +335,7 @@ ctPlotPointsAnnotation = function(
     }
 
     ggplot(tsne_dt, aes_string(x = "tx", y = "ty", color = anno_var)) +
-        geom_point() +
+        geom_point(size = point_size) +
         # facet_grid(facet_str) +
         # scale_color_viridis_c() +
         theme(
