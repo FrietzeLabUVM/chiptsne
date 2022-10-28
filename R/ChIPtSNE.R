@@ -1,6 +1,6 @@
 #' @importClassesFrom ssvQC ssvQC.complete
 #' @importMethodsFrom ssvQC ssvQC.runAll ssvQC.prepSignal ssvQC.plotSignal
-setClass("ssvTSNE",
+setClass("ChIPtSNE",
          representation = list(
              perplexity = "numeric",
              n_glyphs_x = "numeric",
@@ -10,7 +10,7 @@ setClass("ssvTSNE",
          ),
          contains = "ssvQC.complete")
 
-#' ssvTSNE
+#' ChIPtSNE
 #'
 #' @param features_config Controls features configuration.  May be a:
 #'   QcConfigFeatures object, path to a file defining configuration via
@@ -29,7 +29,7 @@ setClass("ssvTSNE",
 #' @param n_heatmap_pixels_x number of pixels to use in heatmap across x-axis in t-SNE space. Default is 25.
 #' @param n_heatmap_pixels_y number of pixels to use in heatmap across y-axis in t-SNE space. Default is same as n_heatmap_pixels_x.
 #'
-#' @return a valid ssvTSNE object.
+#' @return a valid ChIPtSNE object.
 #' @export
 #'
 #' @examples
@@ -42,8 +42,8 @@ setClass("ssvTSNE",
 #' qc_config_signal = QcConfigSignal.files(bam_files)
 #' qc_config_signal$flip_signal_mode = SQC_FLIP_SIGNAL_MODES$high_on_left
 #' qc_config_signal$center_signal_at_max = TRUE
-#' sts = ssvTSNE(qc_config_features, qc_config_signal)
-#' sts = ssvTSNE.runTSNE(sts)
+#' sts = ChIPtSNE(qc_config_features, qc_config_signal)
+#' sts = ChIPtSNE.runTSNE(sts)
 #'
 #' sts$n_glyphs_x = 7
 #' sts$n_glyphs_y = 5
@@ -58,7 +58,7 @@ setClass("ssvTSNE",
 #' sts$plots$TSNE$regional_heatmap$query_features$All_signal
 #' sts.replot$plots$TSNE$regional_heatmap$query_features$All_signal
 #'
-ssvTSNE = function(features_config = NULL,
+ChIPtSNE = function(features_config = NULL,
                    signal_config = NULL,
                    out_dir = getwd(),
                    bfc = NULL,
@@ -85,7 +85,7 @@ ssvTSNE = function(features_config = NULL,
 
     dir.create(out_dir, showWarnings = FALSE)
 
-    new("ssvTSNE",
+    new("ChIPtSNE",
         features_config = features_config,
         signal_config = signal_config,
         signal_data = list(),
@@ -102,14 +102,14 @@ ssvTSNE = function(features_config = NULL,
 }
 
 # ssvQC.runAll = ssvQC::ssvQC.runAll
-setMethod("ssvQC.runAll", "ssvTSNE", function(object){
+setMethod("ssvQC.runAll", "ChIPtSNE", function(object){
     object = callNextMethod()
     message("NYI")
     object
 })
 
 # ssvQC.prepSignal = ssvQC::ssvQC.prepSignal
-setMethod("ssvQC.prepSignal", "ssvTSNE", function(object){
+setMethod("ssvQC.prepSignal", "ChIPtSNE", function(object){
     object = callNextMethod()
     object@signal_data = lapply(object@signal_data, function(signal_clust_objs){
         lapply(signal_clust_objs, function(clust_obj){
@@ -121,7 +121,7 @@ setMethod("ssvQC.prepSignal", "ssvTSNE", function(object){
 
 
 # ssvQC.plotSignal = ssvQC::ssvQC.plotSignal
-setMethod("ssvQC.plotSignal", "ssvTSNE", function(object){
+setMethod("ssvQC.plotSignal", "ChIPtSNE", function(object){
     object = callNextMethod()
 
     n_glyphs_x = object@n_glyphs_x
@@ -220,7 +220,7 @@ setMethod("ssvQC.plotSignal", "ssvTSNE", function(object){
 
 
 ### $ Accessor
-setMethod("names", "ssvTSNE",
+setMethod("names", "ChIPtSNE",
           function(x)
           {
               c("plots", "signal_data", "signal_config", "features_config", "SCC", "FRIP", "correlation",
@@ -233,7 +233,7 @@ setMethod("names", "ssvTSNE",
           })
 
 
-setMethod("$", "ssvTSNE",
+setMethod("$", "ChIPtSNE",
           function(x, name)
           {
               switch (name,
@@ -254,7 +254,7 @@ setMethod("$", "ssvTSNE",
               )
           })
 
-setReplaceMethod("$", "ssvTSNE",
+setReplaceMethod("$", "ChIPtSNE",
                  function(x, name, value)
                  {
                      warn_msg = "This assignment is not supported.  No effect."
@@ -288,11 +288,11 @@ setReplaceMethod("$", "ssvTSNE",
                      x
                  })
 
-#' ssvTSNE.runTSNE
+#' ChIPtSNE.runTSNE
 #'
-#' @param sts A valid ssvTSNE object, needs ssvQC.prepSignal to be called.
+#' @param sts A valid ChIPtSNE object, needs ssvQC.prepSignal to be called.
 #'
-#' @return A valid ssvTSNE object with t-SNE called and ready for plots.
+#' @return A valid ChIPtSNE object with t-SNE called and ready for plots.
 #' @export
 #'
 #' @examples
@@ -305,8 +305,44 @@ setReplaceMethod("$", "ssvTSNE",
 #' qc_config_signal = QcConfigSignal.files(bam_files)
 #' qc_config_signal$flip_signal_mode = SQC_FLIP_SIGNAL_MODES$high_on_left
 #' qc_config_signal$center_signal_at_max = TRUE
-#' sts = ssvTSNE(qc_config_features, qc_config_signal)
-#' sts = ssvTSNE.runTSNE(sts)
-ssvTSNE.runTSNE = function(sts){
+#' sts = ChIPtSNE(qc_config_features, qc_config_signal)
+#' sts = ChIPtSNE.runTSNE(sts)
+ChIPtSNE.runTSNE = function(sts){
     sts = ssvQC.plotSignal(sts)
 }
+
+#### QcConfigFeatures ####
+
+#' @export
+#' @inherit ssvQC::QcConfigFeatures
+ConfigFeatures = ssvQC::QcConfigFeatures
+
+#' @export
+#' @inherit ssvQC::QcConfigFeatures.GRanges
+ConfigFeatures.GRanges = ssvQC::QcConfigFeatures.GRanges
+
+#' @export
+#' @inherit ssvQC::QcConfigFeatures.files
+ConfigFeatures.files = ssvQC::QcConfigFeatures.files
+
+#' @export
+#' @inherit ssvQC::QcConfigFeatures.parse
+ConfigFeatures.parse = ssvQC::QcConfigFeatures.parse
+
+#' @export
+#' @inherit ssvQC::QcConfigFeatures.save_config
+ConfigFeatures.save_config = ssvQC::QcConfigFeatures.save_config
+
+#### QcConfigSignal ####
+
+#' @export
+#' @inherit ssvQC::QcConfigSignal
+ConfigSignal = ssvQC::QcConfigSignal
+
+#' @export
+#' @inherit ssvQC::QcConfigSignal.files
+ConfigSignal.files = ssvQC::QcConfigSignal.files
+
+#' @export
+#' @inherit ssvQC::sampleCap
+sampleCap = ssvQC::sampleCap

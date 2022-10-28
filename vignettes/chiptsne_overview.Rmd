@@ -36,16 +36,19 @@ Future updates will be focused on decreasing RAM usage.
 
 # Functions
 
-* `ssvTSNE` - create to primary object used to run t-SNE and control configuration.
-* `ssvTSNE.runTSNE` - runs t-SNE and prepares data for analysis and plots.
-* `ct*` - secondary functions to create plots are all prefixed with ct.
+* `ChIPtSNE` - create the primary object used to run t-SNE and controls configuration.
+* `ChIPtSNE.runTSNE` - runs t-SNE using ChIPtSNE and prepares data for analysis and plots.
+* `ct*` - All functions to create plots are prefixed with ct.
 
 # Installation and Loading
 
 ## From github
 
 ```{r bioc install, eval=FALSE}
-devtools::install_github("FrietzeLabUVM/chiptsne")
+dir.create("~/test_chipstne_install")
+.libPaths("~/test_chipstne_install", include.site = FALSE)
+if(!require("ssvQC")) devtools::install_github("FrietzeLabUVM/ssvQC")
+if(!require("chiptsne")) devtools::install_github("FrietzeLabUVM/chiptsne")
 ```
 
 ## Load the library
@@ -65,9 +68,12 @@ theme_set(theme_classic())
 These parameters will determine how multiple functions behave
 
 ```{r parameters}
-n_points = 6
+options("mc.cores" = 20)
 color_mapping = c("H3K4me3" = "forestgreen",
                   "H3K27me3" = "firebrick1")
+
+QcConf  
+
 options("mc.cores" = 2)
 perplexity = 15
 ```

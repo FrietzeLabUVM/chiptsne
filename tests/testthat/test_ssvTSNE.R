@@ -1,4 +1,4 @@
-testthat::context("ssvTSNE")
+testthat::context("ChIPtSNE")
 library(ssvQC)
 library(chiptsne)
 library(testthat)
@@ -20,9 +20,9 @@ bam_config$color_by
 bam_config$run_by
 bam_config$meta_data
 
-# TSNE plot paramters can be controlled at ssvTSNE object creation or set later
+# TSNE plot paramters can be controlled at ChIPtSNE object creation or set later
 # if the y settings aren't specified they are the same as x
-sts = ssvTSNE(
+sts = ChIPtSNE(
     features_config,
     bam_config,
     n_glyphs_x = 3,
@@ -83,7 +83,7 @@ ctPlotPoints(sts) +
     facet_wrap(~name_split)
 
 #tsne clustering and plots
-#save the test ssvTSNE object
+#save the test ChIPtSNE object
 if(FALSE){
     save(sts, file = "data/sts.test.rda")
 }

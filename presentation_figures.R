@@ -1,5 +1,4 @@
 #### setup ####
-library(ssvQC)
 library(chiptsne)
 library(seqsetvis)
 library(ggplot2)
@@ -45,8 +44,8 @@ set.seed(0)
 query_gr = sampleCap(np_grs[[1]], 1e4)
 query_gr = resize(query_gr, width = 3e3, fix = "center")
 
-qc_config_feat = QcConfigFeatures.GRanges(query_gr, n_peaks = Inf)
-qc_config_signal = QcConfigSignal(bam_cfg_dt.sel,
+qc_config_feat = ConfigFeatures.GRanges(query_gr, n_peaks = Inf)
+qc_config_signal = ConfigSignal(bam_cfg_dt.sel,
                                   heatmap_limit_values = c(0, 3),
                                   flip_signal_mode = SQC_FLIP_SIGNAL_MODES$high_on_left,
                                   center_signal_at_max = TRUE,
@@ -57,9 +56,9 @@ qc_config_signal = QcConfigSignal(bam_cfg_dt.sel,
                                   color_by = "mark",
                                   color_mapping = col_map.sel)
 
-sts = ssvTSNE(features_config = qc_config_feat, signal_config = qc_config_signal)
+sts = ChIPtSNE(features_config = qc_config_feat, signal_config = qc_config_signal)
 set.seed(0)
-sts = ssvTSNE.runTSNE(sts)
+sts = ChIPtSNE.runTSNE(sts)
 sts$signal_config$plot_value = SQC_SIGNAL_VALUES$RPM
 sts$signal_config$cluster_value = SQC_SIGNAL_VALUES$RPM
 sts$signal_config$sort_value = SQC_SIGNAL_VALUES$RPM
@@ -115,8 +114,8 @@ set.seed(0)
 query_gr = sampleCap(olap_grs, 1e4)
 query_gr = resize(query_gr, width = 3e3, fix = "center")
 
-qc_config_feat = QcConfigFeatures.GRanges(query_gr, n_peaks = Inf)
-qc_config_signal = QcConfigSignal(bam_cfg_dt.sel,
+qc_config_feat = ConfigFeatures.GRanges(query_gr, n_peaks = Inf)
+qc_config_signal = ConfigSignal(bam_cfg_dt.sel,
                                   heatmap_limit_values = c(0, 3),
                                   flip_signal_mode = SQC_FLIP_SIGNAL_MODES$high_on_left,
                                   center_signal_at_max = TRUE,
@@ -127,9 +126,9 @@ qc_config_signal = QcConfigSignal(bam_cfg_dt.sel,
                                   color_by = "rep",
                                   color_mapping = col_map.sel)
 
-sts = ssvTSNE(features_config = qc_config_feat, signal_config = qc_config_signal)
+sts = ChIPtSNE(features_config = qc_config_feat, signal_config = qc_config_signal)
 set.seed(0)
-sts = ssvTSNE.runTSNE(sts)
+sts = ChIPtSNE.runTSNE(sts)
 
 t_dt = sts$signal_data$query_features$all_signal$xy_data
 p = ggplot(t_dt, aes(x = tx, y = ty)) +
@@ -185,8 +184,8 @@ set.seed(0)
 query_gr = sampleCap(olap_grs, 1e4)
 query_gr = resize(query_gr, width = 3e3, fix = "center")
 
-qc_config_feat = QcConfigFeatures.GRanges(query_gr, n_peaks = Inf)
-qc_config_signal = QcConfigSignal(bam_cfg_dt.sel,
+qc_config_feat = ConfigFeatures.GRanges(query_gr, n_peaks = Inf)
+qc_config_signal = ConfigSignal(bam_cfg_dt.sel,
                                   heatmap_limit_values = c(0, 3),
                                   flip_signal_mode = SQC_FLIP_SIGNAL_MODES$high_on_left,
                                   center_signal_at_max = TRUE,
@@ -197,9 +196,9 @@ qc_config_signal = QcConfigSignal(bam_cfg_dt.sel,
                                   color_by = "treatment",
                                   color_mapping = col_map.sel)
 
-sts = ssvTSNE(features_config = qc_config_feat, signal_config = qc_config_signal)
+sts = ChIPtSNE(features_config = qc_config_feat, signal_config = qc_config_signal)
 set.seed(0)
-sts = ssvTSNE.runTSNE(sts)
+sts = ChIPtSNE.runTSNE(sts)
 
 t_dt = sts$signal_data$query_features$all_signal$xy_data
 p = ggplot(t_dt, aes(x = tx, y = ty)) +
@@ -348,11 +347,11 @@ set.seed(0)
 query_gr = sampleCap(olap_grs.enriched, 1e4)
 query_gr = resize(query_gr, width = 3e3, fix = "center")
 
-qc_config_feat = QcConfigFeatures.GRanges(query_gr, n_peaks = Inf)
+qc_config_feat = ConfigFeatures.GRanges(query_gr, n_peaks = Inf)
 
 bam_cfg_dt.sel[, group := paste(mark, treatment)]
 col_map.sel = safeBrew(bam_cfg_dt.sel$group)
-qc_config_signal = QcConfigSignal(bam_cfg_dt.sel,
+qc_config_signal = ConfigSignal(bam_cfg_dt.sel,
                                   heatmap_limit_values = c(0, 3),
                                   flip_signal_mode = SQC_FLIP_SIGNAL_MODES$high_on_left,
                                   center_signal_at_max = TRUE,
@@ -363,9 +362,9 @@ qc_config_signal = QcConfigSignal(bam_cfg_dt.sel,
                                   color_by = "group",
                                   color_mapping = col_map.sel)
 
-sts = ssvTSNE(features_config = qc_config_feat, signal_config = qc_config_signal)
+sts = ChIPtSNE(features_config = qc_config_feat, signal_config = qc_config_signal)
 set.seed(0)
-sts = ssvTSNE.runTSNE(sts)
+sts = ChIPtSNE.runTSNE(sts)
 sts$signal_config$plot_value = SQC_SIGNAL_VALUES$linearQuantile
 sts$signal_config$cluster_value = SQC_SIGNAL_VALUES$linearQuantile
 sts$signal_config$sort_value = SQC_SIGNAL_VALUES$linearQuantile

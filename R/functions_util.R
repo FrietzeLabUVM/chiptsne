@@ -1,26 +1,3 @@
-#' sampleCap
-#'
-#' Handy wrapper to sample() that avoid having to check against exceeding size
-#' of x.
-#'
-#' @param x vector to sample from
-#' @param n number of items to sample.  automatically reduced to length of x if
-#'   too high.
-#'
-#' @return x sampled down to n items.
-#'
-#' @examples
-#' x = seq(10)
-#' sampleCap(x, 5)
-#' #avoid having to check number of items being sampled
-#' sampleCap(x, 15)
-sampleCap = function(x, n = 500){
-    n = min(n, length(unique(x)))
-    out = sample(unique(x), n)
-    if(is.factor(out)) out = as.character(out)
-    out
-}
-
 #' wraps scales::rescale to enforce range of \code{to} on output
 #'
 #' @param x continuous vector of values to manipulate.

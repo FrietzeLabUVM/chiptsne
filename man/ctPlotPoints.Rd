@@ -18,7 +18,7 @@ ctPlotPoints(
 )
 }
 \arguments{
-\item{sts}{A ssvTSNE object with ssvQC.prepSignal already called.}
+\item{sts}{A ChIPtSNE object with ssvQC.prepSignal already called.}
 
 \item{feature_name}{Feature name present in sts.  With default of NULL, first
 feature name will be used.}
@@ -50,7 +50,7 @@ ggplot where each profile is summarized by a single point in t-SNE space.
 ctPlotPoints
 }
 \examples{
-data(sts.test)
+data(ex_sts)
 ctPlotPoints(sts)
 
 }

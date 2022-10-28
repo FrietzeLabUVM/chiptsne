@@ -12,11 +12,12 @@ ctPlotPointsAnnotation(
   anno_var = NULL,
   anno_var_label = anno_var,
   bg_color = "gray60",
-  return_data = FALSE
+  return_data = FALSE,
+  point_size = 1
 )
 }
 \arguments{
-\item{sts}{A ssvTSNE object with ssvQC.prepSignal already called.}
+\item{sts}{A ChIPtSNE object with ssvQC.prepSignal already called.}
 
 \item{meta_data}{A data.frame containing "id" and anno_var. Will use cluster assignment if not set.}
 
@@ -41,11 +42,11 @@ ggplot with color of t-SNE points determined by annotation in meta_data.
 ctPlotPointsAnnotation
 }
 \examples{
-data(sts.test)
+data(ex_sts)
 ctPlotPointsAnnotation(sts)
 
 #example using peak call
-query_gr = sts$features_config$assessment_features$CTCF_features
-meta_data = data.table(id = names(query_gr), MCF10CA1_CTCF_rep1 = query_gr$`MCF10CA1\nCTCF\nrep1`)
-ctPlotPointsAnnotation(sts, meta_data = meta_data, anno_var = "MCF10CA1_CTCF_rep1")
+query_gr = sts$features_config$assessment_features[[1]]
+meta_data = data.table(id = names(query_gr), chromosome = as.character(seqnames(query_gr)))
+ctPlotPointsAnnotation(sts, meta_data = meta_data, anno_var = "chromosome")
 }

@@ -7,7 +7,7 @@
 ctClusterPoints(sts, feature_name = NULL, signal_name = NULL, n_clust = 6)
 }
 \arguments{
-\item{sts}{A ssvTSNE object with ssvQC.prepSignal already called.}
+\item{sts}{A ChIPtSNE object with ssvQC.prepSignal already called.}
 
 \item{n_clust}{number of nearest neighbor clusters to calculate.  Reached to calling too many clusters and iteratively combining most similar clusters.}
 }
@@ -18,7 +18,7 @@ A data.table containing id and cluster_id information. Suitable for ctPlotPoints
 ctClusterPoints
 }
 \examples{
-data(sts.test)
+data(ex_sts)
 clust_dt =ctClusterPoints(sts, n_clust = 3)
 
 ctPlotPointsAnnotation(sts, meta_data = clust_dt, anno_var = "cluster_id")

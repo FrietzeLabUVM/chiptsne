@@ -5,7 +5,7 @@
 #' Divide t-SNE space into xbins*ybins and summarize signal in each bean as the
 #' mean value results from agg_FUN on xmin:xmax of signal profiles present.
 #'
-#' @param sts A ssvTSNE object with ssvQC.prepSignal already called.
+#' @param sts A ChIPtSNE object with ssvQC.prepSignal already called.
 #' @param feature_name Feature name present in sts.  With default of NULL, first
 #'   feature name will be used.
 #' @param signal_name Signal name present in sts.  With default of NULL, first
@@ -94,7 +94,7 @@ ctPlotBinAggregates = function(sts,
 #' ctPlotSummaryProfiles
 #'
 #'
-#' @param sts A ssvTSNE object with ssvQC.prepSignal already called.
+#' @param sts A ChIPtSNE object with ssvQC.prepSignal already called.
 #' @param feature_name Feature name present in sts.  With default of NULL, first
 #'   feature name will be used.
 #' @param signal_name Signal name present in sts.  With default of NULL, first
@@ -212,7 +212,7 @@ ctPlotSummaryProfiles = function(sts,
 #' ctPlotPoints
 #'
 #'
-#' @param sts A ssvTSNE object with ssvQC.prepSignal already called.
+#' @param sts A ChIPtSNE object with ssvQC.prepSignal already called.
 #' @param feature_name Feature name present in sts.  With default of NULL, first
 #'   feature name will be used.
 #' @param signal_name Signal name present in sts.  With default of NULL, first
@@ -272,7 +272,7 @@ ctPlotPoints = function(
 
 #' ctPlotPointsAnnotation
 #'
-#' @param sts A ssvTSNE object with ssvQC.prepSignal already called.
+#' @param sts A ChIPtSNE object with ssvQC.prepSignal already called.
 #' @param feature_name Feature name present in sts.  With default of NULL, first
 #'   feature name will be used.
 #' @param signal_name Signal name present in sts.  With default of NULL, first
@@ -387,7 +387,7 @@ ctPlotPointsAnnotation = function(
 
 #' ctClusterPoints
 #'
-#' @param sts A ssvTSNE object with ssvQC.prepSignal already called.
+#' @param sts A ChIPtSNE object with ssvQC.prepSignal already called.
 #' @param n_clust number of nearest neighbor clusters to calculate.  Reached to calling too many clusters and iteratively combining most similar clusters.
 #'
 #' @return A data.table containing id and cluster_id information. Suitable for ctPlotPointsAnnotation.

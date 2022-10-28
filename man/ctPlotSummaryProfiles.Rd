@@ -21,11 +21,12 @@ ctPlotSummaryProfiles(
   N_floor = 0,
   N_ceiling = NULL,
   min_fraction = 0.2,
-  return_data = FALSE
+  return_data = FALSE,
+  extra_vars = c("name", "name_split")
 )
 }
 \arguments{
-\item{sts}{A ssvTSNE object with ssvQC.prepSignal already called.}
+\item{sts}{A ChIPtSNE object with ssvQC.prepSignal already called.}
 
 \item{feature_name}{Feature name present in sts.  With default of NULL, first
 feature name will be used.}
@@ -77,6 +78,6 @@ ggplot where profiles present in bins are summarized by glyphs.
 ctPlotSummaryProfiles
 }
 \examples{
-data(sts.test)
+data(ex_sts)
 ctPlotSummaryProfiles(sts)
 }

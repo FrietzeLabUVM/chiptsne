@@ -16,11 +16,12 @@ ctPlotBinAggregates(
   xbins = 50,
   ybins = xbins,
   bg_color = "gray60",
-  min_size = 5
+  min_size = 5,
+  extra_vars = character()
 )
 }
 \arguments{
-\item{sts}{A ssvTSNE object with ssvQC.prepSignal already called.}
+\item{sts}{A ChIPtSNE object with ssvQC.prepSignal already called.}
 
 \item{feature_name}{Feature name present in sts.  With default of NULL, first
 feature name will be used.}
@@ -59,6 +60,6 @@ Divide t-SNE space into xbins*ybins and summarize signal in each bean as the
 mean value results from agg_FUN on xmin:xmax of signal profiles present.
 }
 \examples{
-data(sts.test)
+data(ex_sts)
 ctPlotBinAggregates(sts)
 }
