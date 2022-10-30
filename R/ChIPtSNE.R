@@ -42,21 +42,21 @@ setClass("ChIPtSNE",
 #' qc_config_signal = QcConfigSignal.files(bam_files)
 #' qc_config_signal$flip_signal_mode = SQC_FLIP_SIGNAL_MODES$high_on_left
 #' qc_config_signal$center_signal_at_max = TRUE
-#' sts = ChIPtSNE(qc_config_features, qc_config_signal)
-#' sts = ChIPtSNE.runTSNE(sts)
+#' ct = ChIPtSNE(qc_config_features, qc_config_signal)
+#' ct = ChIPtSNE.runTSNE(ct)
 #'
-#' sts$n_glyphs_x = 7
-#' sts$n_glyphs_y = 5
+#' ct$n_glyphs_x = 7
+#' ct$n_glyphs_y = 5
 #'
-#' sts$n_heatmap_pixels_x = 5
-#' sts$n_heatmap_pixels_y = 9
-#' sts.replot = ssvQC.plotSignal(sts)
+#' ct$n_heatmap_pixels_x = 5
+#' ct$n_heatmap_pixels_y = 9
+#' ct.replot = ssvQC.plotSignal(ct)
 #'
-#' sts$plots$TSNE$regional_glyphs$query_features$All_signal
-#' sts.replot$plots$TSNE$regional_glyphs$query_features$All_signal
+#' ct$plots$TSNE$regional_glyphs$query_features$All_signal
+#' ct.replot$plots$TSNE$regional_glyphs$query_features$All_signal
 #'
-#' sts$plots$TSNE$regional_heatmap$query_features$All_signal
-#' sts.replot$plots$TSNE$regional_heatmap$query_features$All_signal
+#' ct$plots$TSNE$regional_heatmap$query_features$All_signal
+#' ct.replot$plots$TSNE$regional_heatmap$query_features$All_signal
 #'
 ChIPtSNE = function(features_config = NULL,
                    signal_config = NULL,
@@ -74,10 +74,6 @@ ChIPtSNE = function(features_config = NULL,
 
     features_config = ssvQC:::.prep_features_config(features_config)
     signal_config = ssvQC:::.prep_signal_config(signal_config)
-
-    signal_config@cluster_value = SQC_SIGNAL_VALUES$linearQuantile
-    signal_config@sort_value = SQC_SIGNAL_VALUES$linearQuantile
-    signal_config@plot_value = SQC_SIGNAL_VALUES$linearQuantile
 
     if(is.null(bfc)){
         bfc = ssvQC:::new_cache()
@@ -136,8 +132,8 @@ setMethod("ssvQC.plotSignal", "ChIPtSNE", function(object){
                 stop("Stored signal data is not of class ClusteredSignal_TSNE.")
             }
             extra_vars =  c(
-                sts$signal_config$run_by,
-                sts$signal_config$color_by,
+                object$signal_config$run_by,
+                object$signal_config$color_by,
                 "name",
                 "name_split"
             )
@@ -150,8 +146,8 @@ setMethod("ssvQC.plotSignal", "ChIPtSNE", function(object){
                 y_points = n_glyphs_y,
                 y_var = ssvQC:::val2var[object@signal_config@plot_value],
                 extra_vars = extra_vars,
-                wide_var = sts$signal_config$color_by,
-                line_color_mapping = unlist(sts$signal_config$color_mapping)
+                wide_var = object$signal_config$color_by,
+                line_color_mapping = unlist(object$signal_config$color_mapping)
             )
             p_summary_profiles
         })
@@ -290,7 +286,7 @@ setReplaceMethod("$", "ChIPtSNE",
 
 #' ChIPtSNE.runTSNE
 #'
-#' @param sts A valid ChIPtSNE object, needs ssvQC.prepSignal to be called.
+#' @param ct A valid ChIPtSNE object, needs ssvQC.prepSignal to be called.
 #'
 #' @return A valid ChIPtSNE object with t-SNE called and ready for plots.
 #' @export
@@ -305,10 +301,10 @@ setReplaceMethod("$", "ChIPtSNE",
 #' qc_config_signal = QcConfigSignal.files(bam_files)
 #' qc_config_signal$flip_signal_mode = SQC_FLIP_SIGNAL_MODES$high_on_left
 #' qc_config_signal$center_signal_at_max = TRUE
-#' sts = ChIPtSNE(qc_config_features, qc_config_signal)
-#' sts = ChIPtSNE.runTSNE(sts)
-ChIPtSNE.runTSNE = function(sts){
-    sts = ssvQC.plotSignal(sts)
+#' ct = ChIPtSNE(qc_config_features, qc_config_signal)
+#' ct = ChIPtSNE.runTSNE(ct)
+ChIPtSNE.runTSNE = function(ct){
+    ct = ssvQC.plotSignal(ct)
 }
 
 #### QcConfigFeatures ####

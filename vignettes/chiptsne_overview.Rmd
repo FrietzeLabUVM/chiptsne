@@ -74,7 +74,9 @@ theme_set(theme_classic())
 
 ## Set parameters
 
-These parameters will determine how multiple functions behave
+These parameters will determine how multiple functions behave.
+
+"Signal" means a read pileup profile froma a bam file or score from a bigwig file.
 
 ```{r config signal}
 options("mc.cores" = 20)
@@ -102,42 +104,20 @@ cfg_signal = ConfigSignal(bam_cfg_df,
                           flip_signal_mode = "high_on_left")
 ```
 
+"Features" are intervals provided in one of several ways. In this example we load a bed file to a GRanges and use that.  Other alterntives are various peak call files.
+
 ```{r config features}
 query_file = system.file("extdata/query_gr.bed", package = "chiptsne") 
 query_gr = rtracklayer::import.bed(query_file)
-ConfigFeatures.GRanges(query_gr = query_gr, n_peaks = length(query-gr))
+debug(ssvQC:::QcConfigFeatures.GRanges)
+cfg_features = ConfigFeatures.GRanges(query_gr = query_gr, n_peaks = length(query_gr))
 ```
 
-The two critical inputs are:
+With valid configuration object for signal and features we can call ChIPtSNE.
 
-1. data.table containing bigWig files and
-cell and mark metadata.
-2. GRanges of regions to retrieve data for and perform t-sne on.
-
-```{r setup files and configure}
-# input_dirs = c(
-#     dir("/slipstream/galaxy/uploads/working/qc_framework/output/", 
-#         pattern = "K4.+_pooled$", full.names = TRUE),
-#     dir("/slipstream/galaxy/uploads/working/qc_framework/output/", 
-#         pattern = "K27.+_pooled$", full.names = TRUE)
-# )
-# #assemble peak calls and sample
-# peaks = dir(input_dirs, pattern = "pooled_peaks.narrowPeak", full.names = TRUE)
-# olaps = ssvOverlapIntervalSets(easyLoad_narrowPeak(peaks), ext = 100)
-# olaps = olaps[rowSums(as.data.frame(mcols(olaps))) > 3] 
-# length(olaps)
-# set.seed(0)
-# # query_gr = sample(olaps, 100)
-# query_gr = olaps
-# query_gr = resize(query_gr, 5000, fix = "center")
-# query_gr$id = names(query_gr)
-# #create config from bws
-# bws = dir(input_dirs, pattern = "pooled_FE.bw", full.names = TRUE)
-data("query_gr")
-bw_files = dir(system.file('extdata', package = "chiptsne"), 
-               full.names = TRUE, pattern = ".bw$")
-cfg_dt = data.table(file = bw_files)
-cfg_dt[, c("cell", "mark") := tstrsplit(basename(file), "_", keep = 1:2)]
+```{r call chiptsne}
+ct = ChIPtSNE(features_config = cfg_features, signal_config = cfg_signal)
+ct = ChIPtSNE.runTSNE(ct)
 ```
 
 t-sne requires a wide-matrix view where each row is a point (observation) and 
