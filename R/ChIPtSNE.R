@@ -346,3 +346,4 @@ ConfigSignal.files = ssvQC::QcConfigSignal.files
 #' @export
 #' @inherit ssvQC::sampleCap
 sampleCap = ssvQC::sampleCap
+

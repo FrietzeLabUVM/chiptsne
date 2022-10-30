@@ -47,13 +47,22 @@ Future updates will be focused on decreasing RAM usage.
 ```{r bioc install, eval=FALSE}
 dir.create("~/test_chipstne_install")
 .libPaths("~/test_chipstne_install", include.site = FALSE)
+.libPaths()
+if(!require("devtools")) install.packages("devtools")
 if(!require("ssvQC")) devtools::install_github("FrietzeLabUVM/ssvQC")
 if(!require("chiptsne")) devtools::install_github("FrietzeLabUVM/chiptsne")
+
+if(!require("magrittr")) install.packages("magrittr")
+if(!require("tidyverse")) install.packages("tidyverse")
 ```
 
 ## Load the library
 ```{r load chiptsne, message=FALSE}
-library(chiptsne)
+suppressPackageStartupMessages({
+    library(chiptsne)
+    library(magrittr)
+    library(tidyverse)    
+})
 ```
 
 ## Load optional useful libraries
@@ -67,15 +76,36 @@ theme_set(theme_classic())
 
 These parameters will determine how multiple functions behave
 
-```{r parameters}
+```{r config signal}
 options("mc.cores" = 20)
 color_mapping = c("H3K4me3" = "forestgreen",
-                  "H3K27me3" = "firebrick1")
+                  "H3K27me3" = "firebrick1",
+                  "input" = "gray")
 
-QcConf  
+bam_files = system.file("extdata", package = "chiptsne") %>%
+    dir(pattern = "bam$", full.names = TRUE)
+bam_cfg_df = data.frame(file = bam_files)
+bam_cfg_df = bam_cfg_df %>% 
+    mutate(name = sub("_pooled.+", "", basename(file))) %>%
+    separate(name, sep = "_", into = c("cell", "mark"), remove = FALSE)
+bam_cfg_df = arrange(bam_cfg_df, mark, cell)
+bam_cfg_df$name = factor(bam_cfg_df$name, levels = bam_cfg_df$name)
+bam_cfg_df$name_split = bam_cfg_df$name
+levels(bam_cfg_df$name_split) = gsub("_", "\n", bam_cfg_df$name_split)
+cfg_signal = ConfigSignal(bam_cfg_df, 
+                          run_by = "All", 
+                          color_by = "mark", 
+                          color_mapping = color_mapping, 
+                          window_size = 200, 
+                          view_size = 1.6e3, 
+                          center_signal_at_max = TRUE, 
+                          flip_signal_mode = "high_on_left")
+```
 
-options("mc.cores" = 2)
-perplexity = 15
+```{r config features}
+query_file = system.file("extdata/query_gr.bed", package = "chiptsne") 
+query_gr = rtracklayer::import.bed(query_file)
+ConfigFeatures.GRanges(query_gr = query_gr, n_peaks = length(query-gr))
 ```
 
 The two critical inputs are:
@@ -151,7 +181,7 @@ it maps both broad trends and finer relationships effectively.
 ```{r, fig.width=5, fig.height=5}
 summary_dt = prep_summary(tsne_input$bw_dt, tsne_res, x_points = n_points)
 img = prep_images(summary_dt, x_points = n_points,
-                    line_color_mapping = color_mapping)
+                  line_color_mapping = color_mapping)
 img_res = plot_summary_raster(img$image_dt, x_points = n_points, min_size = 0)
 img_res
 ```
