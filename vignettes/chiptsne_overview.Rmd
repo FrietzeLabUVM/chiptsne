@@ -30,6 +30,13 @@ This package is in active development.
 
 Future updates will be focused on decreasing RAM usage and providing direct support for more analysis tasks.
 
+For now I recommend reducing RAM usage by decreasing signal profile resolution, view size, and the number of regions analyzed.
+
+The following should be workable on most people's computers.
+
+- ConfigSignal(window_size = 200, view_size = 1e3)
+- ConfigFeatures.GRanges(n_peaks = 5e3)
+
 For a better understanding of considerations running and interpreting t-SNE, see this 
 [hands-on explanation](https://distill.pub/2016/misread-tsne/) to get oriented.
 
