@@ -3,8 +3,14 @@ library(chiptsne)
 library(seqsetvis)
 library(ggplot2)
 library(magrittr)
+library(GenomicRanges)
+library(ssvQC)
 
 base_point_size = .3
+my_cluster_value = SQC_SIGNAL_VALUES$linearQuantile
+my_plot_value = SQC_SIGNAL_VALUES$linearQuantile
+# treat_cols = c("GFP" = "black", "IK" = "chartreuse2")
+treat_cols = c("GFP" = "#5aae61", "IK" = "#762a83")
 
 odir = "output_presentation_figures"
 dir.create(odir, showWarnings = FALSE, recursive = TRUE)
@@ -30,7 +36,23 @@ col_map["H3K4me1"] = safeBrew(8, "set1")[4]
 col_map["input"] = "gray80"
 theme_update(panel.background = element_blank(), panel.grid = element_blank())
 
-#### single k27ac rep ####
+get_bed_files = function(d){
+    bed_files = d %>%
+        dir(., full.names = TRUE) %>%
+        dir(., pattern = "csv$", full.names = TRUE)
+    if(length(bed_files) < 1){
+        message("skipping no csaw results found.")
+        next
+    }
+    comparisons = sub(".csaw_regions.csv", "", basename(bed_files))
+    marks = basename(dirname(bed_files))
+    names(bed_files) = paste(marks, comparisons, sep = ".")
+
+    bed_files
+}
+bed_files.chipseq = get_bed_files("figures_ALL/output_csaw.chipseq/")
+
+#### 1 - single k27ac rep ####
 sel_marks = c("H3K27ac", "input")
 bam_cfg_dt.sel = chip_bam_cfg_dt[mark %in% sel_marks & treatment == "GFP" & rep == "rep1"]
 bam_cfg_dt.sel$All = "all"
@@ -46,21 +68,21 @@ query_gr = resize(query_gr, width = 3e3, fix = "center")
 
 qc_config_feat = ConfigFeatures.GRanges(query_gr, n_peaks = Inf)
 qc_config_signal = ConfigSignal(bam_cfg_dt.sel,
-                                  heatmap_limit_values = c(0, 3),
-                                  flip_signal_mode = SQC_FLIP_SIGNAL_MODES$high_on_left,
-                                  center_signal_at_max = TRUE,
-                                  plot_value = SQC_SIGNAL_VALUES$RPM,
-                                  cluster_value = SQC_SIGNAL_VALUES$RPM,
-                                  sort_value = SQC_SIGNAL_VALUES$RPM,
-                                  run_by = "All",
-                                  color_by = "mark",
-                                  color_mapping = col_map.sel)
+                                heatmap_limit_values = c(0, 3),
+                                flip_signal_mode = SQC_FLIP_SIGNAL_MODES$high_on_left,
+                                center_signal_at_max = TRUE,
+                                plot_value = my_plot_value,
+                                cluster_value = my_cluster_value,
+                                sort_value = SQC_SIGNAL_VALUES$RPM,
+                                run_by = "All",
+                                color_by = "mark",
+                                color_mapping = col_map.sel)
 
 sts = ChIPtSNE(features_config = qc_config_feat, signal_config = qc_config_signal)
 set.seed(0)
 sts = ChIPtSNE.runTSNE(sts)
-sts$signal_config$plot_value = SQC_SIGNAL_VALUES$RPM
-sts$signal_config$cluster_value = SQC_SIGNAL_VALUES$RPM
+sts$signal_config$plot_value = my_plot_value
+sts$signal_config$cluster_value = my_cluster_value
 sts$signal_config$sort_value = SQC_SIGNAL_VALUES$RPM
 
 
@@ -96,7 +118,7 @@ p
 my_ggsave("1_peak_eval_tsne_summary_profiles", p)
 
 
-#### k27ac rep comparison ####
+#### 2 - k27ac rep comparison ####
 sel_marks = c("H3K27ac")
 bam_cfg_dt.sel = chip_bam_cfg_dt[mark %in% sel_marks & treatment == "GFP" ]
 bam_cfg_dt.sel$All = "all"
@@ -116,15 +138,15 @@ query_gr = resize(query_gr, width = 3e3, fix = "center")
 
 qc_config_feat = ConfigFeatures.GRanges(query_gr, n_peaks = Inf)
 qc_config_signal = ConfigSignal(bam_cfg_dt.sel,
-                                  heatmap_limit_values = c(0, 3),
-                                  flip_signal_mode = SQC_FLIP_SIGNAL_MODES$high_on_left,
-                                  center_signal_at_max = TRUE,
-                                  plot_value = SQC_SIGNAL_VALUES$RPM,
-                                  cluster_value = SQC_SIGNAL_VALUES$RPM,
-                                  sort_value = SQC_SIGNAL_VALUES$RPM,
-                                  run_by = "All",
-                                  color_by = "rep",
-                                  color_mapping = col_map.sel)
+                                heatmap_limit_values = c(0, 3),
+                                flip_signal_mode = SQC_FLIP_SIGNAL_MODES$high_on_left,
+                                center_signal_at_max = TRUE,
+                                plot_value = my_plot_value,
+                                cluster_value = my_cluster_value,
+                                sort_value = SQC_SIGNAL_VALUES$RPM,
+                                run_by = "All",
+                                color_by = "rep",
+                                color_mapping = col_map.sel)
 
 sts = ChIPtSNE(features_config = qc_config_feat, signal_config = qc_config_signal)
 set.seed(0)
@@ -167,7 +189,7 @@ p = ctPlotSummaryProfiles(sts, N_floor = 0, N_ceiling = 150, min_fraction = .25)
     scale_color_manual(values = rep_colors.simple)
 my_ggsave("2_rep_eval_tsne_summary_profiles", p)
 
-#### k27ac differential ####
+#### 3 - k27ac differential ####
 sel_marks = c("H3K27ac")
 bam_cfg_dt.sel = chip_bam_cfg_dt[mark %in% sel_marks]
 bam_cfg_dt.sel$All = "all"
@@ -186,15 +208,15 @@ query_gr = resize(query_gr, width = 3e3, fix = "center")
 
 qc_config_feat = ConfigFeatures.GRanges(query_gr, n_peaks = Inf)
 qc_config_signal = ConfigSignal(bam_cfg_dt.sel,
-                                  heatmap_limit_values = c(0, 3),
-                                  flip_signal_mode = SQC_FLIP_SIGNAL_MODES$high_on_left,
-                                  center_signal_at_max = TRUE,
-                                  plot_value = SQC_SIGNAL_VALUES$RPM,
-                                  cluster_value = SQC_SIGNAL_VALUES$RPM,
-                                  sort_value = SQC_SIGNAL_VALUES$RPM,
-                                  run_by = "All",
-                                  color_by = "treatment",
-                                  color_mapping = col_map.sel)
+                                heatmap_limit_values = c(0, 3),
+                                flip_signal_mode = SQC_FLIP_SIGNAL_MODES$high_on_left,
+                                center_signal_at_max = TRUE,
+                                plot_value = my_plot_value,
+                                cluster_value = my_cluster_value,
+                                sort_value = SQC_SIGNAL_VALUES$RPM,
+                                run_by = "All",
+                                color_by = "treatment",
+                                color_mapping = treat_cols)
 
 sts = ChIPtSNE(features_config = qc_config_feat, signal_config = qc_config_signal)
 set.seed(0)
@@ -210,23 +232,6 @@ p = ctPlotPoints(sts, xmin = -100, xmax = 100, point_size = base_point_size) +
     # facet_wrap(~mark) +
     coord_fixed()
 my_ggsave("3_diff_eval_tsne_points", p)
-
-get_bed_files = function(d){
-    bed_files = d %>%
-        dir(., full.names = TRUE) %>%
-        dir(., pattern = "csv$", full.names = TRUE)
-    if(length(bed_files) < 1){
-        message("skipping no csaw results found.")
-        next
-    }
-    comparisons = sub(".csaw_regions.csv", "", basename(bed_files))
-    marks = basename(dirname(bed_files))
-    names(bed_files) = paste(marks, comparisons, sep = ".")
-
-    bed_files
-}
-bed_files.chipseq = get_bed_files("figures_ALL/output_csaw.chipseq/")
-bed_files.chipseq[1]
 
 csaw_grs = pbmcapply::pbmclapply(bed_files.chipseq, function(f){
     dt = fread(f)
@@ -272,7 +277,7 @@ p_summary.diff = p_summary +
 my_ggsave("3_diff_eval_tsne_summary_profiles_with_diff_points", p_summary.diff)
 
 
-#### dev diff plot ####
+#### 3 - dev diff plot ####
 .prepare_plot_inputs = chiptsne:::.prepare_plot_inputs
 aggregate_signals = chiptsne:::aggregate_signals
 feature_name = NULL
@@ -308,7 +313,7 @@ p = ggplot(diff_dt, aes(x = tx, y = ty, color = diff)) +
     labs(color = "IK - GFP")
 my_ggsave("3_diff_eval_tsne_points_FC", p_summary.diff)
 
-#### k27ac with k4me1, Ikaros, ATAC ####
+#### 4 - k27ac with k4me1, Ikaros, ATAC ####
 sel_marks = c("H3K27ac", "H3K4me1", "IKAROS", "input", "ATAC")
 atac_bam_cfg_dt = IKdata::atac.setup_bam_files()[cell == "MXP5"]
 atac_bam_cfg_dt$mark = "ATAC"
@@ -324,6 +329,11 @@ plot(1:2, col = col_map.sel, pch = 16, cex = 4)
 atac_dar = IKdata::atac.DAR_results_load()
 atac_dar = subset(atac_dar, DA_group != "ns")
 
+
+csaw_grs = pbmcapply::pbmclapply(bed_files.chipseq, function(f){
+    dt = fread(f)
+    GRanges(dt[FDR < .1 & width > 100])
+})
 diff_grs = c(csaw_grs, list(ATAC = GRanges(atac_dar)))
 diff_olap_grs = ssvOverlapIntervalSets(diff_grs)
 
@@ -352,30 +362,30 @@ qc_config_feat = ConfigFeatures.GRanges(query_gr, n_peaks = Inf)
 bam_cfg_dt.sel[, group := paste(mark, treatment)]
 col_map.sel = safeBrew(bam_cfg_dt.sel$group)
 qc_config_signal = ConfigSignal(bam_cfg_dt.sel,
-                                  heatmap_limit_values = c(0, 3),
-                                  flip_signal_mode = SQC_FLIP_SIGNAL_MODES$high_on_left,
-                                  center_signal_at_max = TRUE,
-                                  plot_value = SQC_SIGNAL_VALUES$RPM,
-                                  cluster_value = SQC_SIGNAL_VALUES$RPM,
-                                  sort_value = SQC_SIGNAL_VALUES$RPM,
-                                  run_by = "All",
-                                  color_by = "group",
-                                  color_mapping = col_map.sel)
+                                heatmap_limit_values = c(0, 3),
+                                flip_signal_mode = SQC_FLIP_SIGNAL_MODES$high_on_left,
+                                center_signal_at_max = TRUE,
+                                plot_value = my_plot_value,
+                                cluster_value = my_cluster_value,
+                                sort_value = SQC_SIGNAL_VALUES$RPM,
+                                run_by = "All",
+                                color_by = "group",
+                                color_mapping = col_map.sel)
 
 sts = ChIPtSNE(features_config = qc_config_feat, signal_config = qc_config_signal)
 set.seed(0)
 sts = ChIPtSNE.runTSNE(sts)
-sts$signal_config$plot_value = SQC_SIGNAL_VALUES$linearQuantile
-sts$signal_config$cluster_value = SQC_SIGNAL_VALUES$linearQuantile
+sts$signal_config$plot_value = my_plot_value
+sts$signal_config$cluster_value = my_cluster_value
 sts$signal_config$sort_value = SQC_SIGNAL_VALUES$linearQuantile
 
-p = ctPlotPoints(sts, point_size = base_point_size / 2) +
+p = ctPlotPoints(sts, point_size = base_point_size / 5) +
     facet_grid(mark~treatment) +
     coord_fixed() +
     scale_color_viridis_c(limits = c(0, 3), na.value = "yellow")
 my_ggsave("4_combinatorial_tsne_points", p)
 
-#### diff ####
+#### 4 - diff ####
 .prepare_plot_inputs = chiptsne:::.prepare_plot_inputs
 aggregate_signals = chiptsne:::aggregate_signals
 feature_name = NULL
@@ -407,14 +417,25 @@ diff_dt$diff = diff_dt$`IK` - diff_dt$`GFP`
 lim = quantile(abs(diff_dt$diff), .99)
 diff_dt[diff > lim, diff := lim]
 diff_dt[diff < -lim, diff := -lim]
-p = ggplot(diff_dt, aes(x = tx, y = ty, color = diff)) +
-    geom_point(size = base_point_size) +
+p_combo_diff = ggplot(diff_dt, aes(x = tx, y = ty, color = diff)) +
+    geom_point(size = base_point_size/10) +
     scale_color_gradientn(colours = c("blue", "gray90", "red"), limits = c(-lim, lim)) +
     coord_fixed() +
     facet_grid(mark~.) +
-    labs(color = "IK - GFP")
-my_ggsave("4_combinatorial_tsne_points_FC", p)
+    labs(color = "IK - GFP") +
+    theme(panel.background = element_blank(), panel.grid = element_blank())
+my_ggsave("4_combinatorial_tsne_points_FC", p_combo_diff)
 
+p_combo_diff.wide = ggplot(diff_dt, aes(x = tx, y = ty, color = diff)) +
+    geom_point(size = base_point_size/10) +
+    scale_color_gradientn(colours = c("blue", "gray90", "red"), limits = c(-lim, lim)) +
+    coord_fixed() +
+    facet_grid(.~mark) +
+    labs(color = "IK - GFP") +
+    theme(panel.background = element_blank(),
+          panel.grid = element_blank(),
+          axis.text = element_text(size = 6))
+my_ggsave("4_combinatorial_tsne_points_FC.wide", p_combo_diff.wide, width = 9, height = 3.2)
 
 sts$signal_config$run_by = "treatment"
 sts$signal_config$color_by = "mark"
@@ -427,50 +448,101 @@ p = ctPlotSummaryProfiles(sts, extra_vars = "group")+
     coord_fixed()
 my_ggsave("4_combinatorial_tsne_summary_profiles_colorBy_mark", p)
 
-sts$signal_config@run_by = "mark"
-sts@signal_config@color_by = "treatment"
-
-p_summary = ctPlotSummaryProfiles(sts, extra_vars = "group") +
-    coord_fixed()
-
-my_ggsave("4_combinatorial_tsne_summary_profiles_colorBy_treatment", p_summary)
-
-p_summary.rect = p_summary + annotate("rect", xmin = -.15, xmax = .2, ymin = -.1, ymax = .25, fill = NA, color = "black")
-my_ggsave("4_combinatorial_tsne_summary_profiles_colorBy_treatment.rect", p_summary.rect)
-
-p = ctPlotSummaryProfiles(sts, extra_vars = "group", xrng = c(-.15, .2), yrng = c(-.1, .25))+
-    coord_fixed()
-my_ggsave("4_combinatorial_tsne_summary_profiles_colorBy_treatment.detail", p)
-
-sts$signal_config$run_by = "treatment"
-sts$signal_config$color_by = "mark"
-sts@signal_data$query_features$all_signal@signal_data = sts$signal_data$query_features$all_signal$signal_data[mark != "input"]
-
-p = ctPlotSummaryProfiles(sts, extra_vars = "group", xrng = c(-.15, .2), yrng = c(-.1, .25))+
-    coord_fixed()
-
-my_ggsave("4_combinatorial_tsne_summary_profiles_colorBy_mark.detail", p)
-
-
 sts@signal_config@run_by = "mark"
 sts@signal_config@color_by = "treatment"
 sts@signal_config@color_mapping = IKdata:::treatment_colors
 
-p = ctPlotSummaryProfiles(sts, extra_vars = "group", xrng = c(-.15, .2), yrng = c(-.1, .25))+
-    coord_fixed()
 
-my_ggsave("4_combinatorial_tsne_summary_profiles_colorBy_treatment.detail2", p)
+sts@signal_config@color_mapping = treat_cols
 
-sel_id = sts$signal_data$query_features$all_signal$xy_data[tx > -.05 & tx < .08 & ty > 0 & ty < .15]$id
 
-ctPlotSummaryProfiles(sts, xbins = 5, extra_vars = "group", xrng = c(-.05, .08), yrng = c(0, .15)) +
-    coord_fixed()
+roi = list(
+    xmin = .125, xmax = .225, ymin = .075, ymax = .175
+)
+roi = list(
+    xmin = -.15, xmax = 0, ymin = .2, ymax = .4
+)
+if(my_cluster_value == "linearQuantile"){
+    roi = list(xmin = .02, xmax = .13, ymin = -.04, ymax = .05)
+}else if(my_cluster_value == "RPM"){
+    roi = list(xmin = 0, xmax = .2, ymin = -.08, ymax = .05)
+}else{
+    stop()
+}
 
-# ctPlotPoints(sts, point_size = 1) +
-#     facet_grid(mark~treatment) +
-#     coord_fixed(xlim = c(-.05, .08), ylim = c(0, .15)) +
-#     scale_color_viridis_c(limits = c(0, 1), na.value = "yellow")
 
+p_summary = ctPlotSummaryProfiles(sts, extra_vars = "group", xbins = 15) +
+    coord_fixed() +
+    theme(panel.background = element_blank(), panel.grid = element_blank())
+p_summary
+my_ggsave("4_combinatorial_tsne_summary_profiles_colorBy_treatment", p_summary, width = 9, height = 6)
+
+# .exp = .01
+#
+# roi = lapply(roi, function(x)x-.exp)
+
+p_summary.rect = p_summary + annotate("rect",
+                                      xmin = roi$xmin, xmax = roi$xmax,
+                                      ymin = roi$ymin, ymax = roi$ymax,
+                                      fill = NA, color = "black")
+p_summary.rect
+my_ggsave("4_combinatorial_tsne_summary_profiles_colorBy_treatment.rect", p_summary.rect, width = 9, height = 6)
+
+p_combo_diff.rect = p_combo_diff + annotate("rect",
+                                            xmin = roi$xmin, xmax = roi$xmax,
+                                            ymin = roi$ymin, ymax = roi$ymax,
+                                            fill = NA, color = "black")
+p_combo_diff.rect
+my_ggsave("4_combinatorial_tsne_points_FC.rect", p_combo_diff.rect, width = 4, height = 9)
+
+p_combo_diff.wide.rect = p_combo_diff.wide + annotate("rect",
+                                                 xmin = roi$xmin, xmax = roi$xmax,
+                                                 ymin = roi$ymin, ymax = roi$ymax,
+                                                 fill = NA, color = "black")
+my_ggsave("4_combinatorial_tsne_points_FC.wide.rect", p_combo_diff.wide.rect, width = 9, height = 3.2)
+
+exp = .02
+sts$signal_config$to_run = unique(as.character(sts$signal_config$meta_data$mark))
+sts$signal_config$plot_value = ssvQC:::sqc_signal_values$linearQuantile#"RPM"
+sts@signal_data$query_features$all_signal@signal_data =
+    sts$signal_data$query_features$all_signal$signal_data[mark != "input"]
+p = ctPlotSummaryProfiles(
+    sts,
+    extra_vars = "group",
+    xrng = c(roi$xmin-exp, roi$xmax+exp),
+    yrng = c(roi$ymin-exp, roi$ymax+exp),
+    N_floor = 1,
+    N_ceiling = 10,
+    xbins = 5,
+    min_fraction = .2)+
+    coord_fixed() #+
+    # annotate("rect",
+    #          xmin = roi$xmin, xmax = roi$xmax,
+    #          ymin = roi$ymin, ymax = roi$ymax,
+    #          fill = NA, color = "black")
+p = p +
+    theme(panel.background = element_blank(), panel.grid = element_blank())
+# p + scale_y_continuous(breaks = seq(-.5, .5, .01))
+p = p + facet_grid(.~mark)
+p
+my_ggsave("4_combinatorial_tsne_summary_profiles_colorBy_treatment.detail", p, width = 9, height = 3.2)
+
+p = ctPlotPoints(sts) +
+    coord_fixed(xlim = c(roi$xmin-exp, roi$xmax+exp),
+                ylim = c(roi$ymin-exp, roi$ymax+exp)) +
+    annotate("rect",
+             xmin = roi$xmin, xmax = roi$xmax,
+             ymin = roi$ymin, ymax = roi$ymax,
+             fill = NA, color = "black")
+my_ggsave("4_combinatorial_tsne_points.detail", p)
+
+sel_id = sts$signal_data$query_features$all_signal$xy_data[tx >= roi$xmin & tx <= roi$xmax & ty > roi$ymin & ty < roi$ymax]$id
+
+ctPlotSummaryProfiles(sts, xbins = 5, extra_vars = "group",
+                      xrng = c(roi$xmin, roi$xmax),
+                      yrng = c(roi$ymin, roi$ymax)) +
+    coord_fixed() +
+    theme(panel.background = element_rect(fill = "gray60"))
 
 sel_dt = sts$signal_data$query_features$all_signal$signal_data[id %in% sel_id]
 sel_dt$cluster_id = NULL
@@ -482,7 +554,8 @@ ggplot(sel_dt.agg, aes(x = x, y = y_linQ, color = treatment)) +
     scale_color_manual(values = IKdata:::treatment_colors) +
     facet_grid(cluster_id~mark)
 
-ssvSignalHeatmap(sel_dt.clust, facet_ = "group", fill_ = "y_linQ")
+ssvSignalHeatmap(sel_dt.clust, facet_ = "group", fill_ = "y_linQ") +
+    scale_fill_viridis_c()
 
 sel_dt.assign = unique(sel_dt.clust[, .(id, cluster_id)])
 
@@ -494,3 +567,73 @@ fwrite(tmp[, .(seqnames, start, end)], res_file("selected_ids.bed"), sep = "\t",
 #     scale_color_manual(values = IKdata:::treatment_colors) +
 #     facet_grid(.~mark)
 dev.off()
+
+nice_result_gr = rtracklayer::import.bed("output_presentation_figures.102622/selected_ids.bed")
+nice_hits = subsetByOverlaps(sts$signal_data$query_features$all_signal$query_gr,
+                             nice_result_gr) %>% names
+
+p_gr = sts$signal_data$query_features$all_signal$query_gr
+olaps = findOverlaps(query = resize(p_gr, 50, fix = "center"), subject = nice_result_gr)
+
+p_df = as.data.table(p_gr)
+p_df$id = names(p_gr)
+p_df[, nice_hit := id %in% nice_hits]
+
+
+
+p_nice_hit = ctPlotPointsAnnotation(sts, meta_data = p_df, anno_var = "nice_hit", point_size = base_point_size / 5) +
+    annotate("rect",
+             xmin = roi$xmin, xmax = roi$xmax,
+             ymin = roi$ymin, ymax = roi$ymax,
+             fill = NA, color = "black")
+
+my_ggsave("4_combinatorial_nice_hit", p_nice_hit)
+
+library(ssvTracks)
+qc_config_signal$meta_data
+
+ex_gr =rtracklayer::import.gff("~/gencode.v36.annotation.gtf", feature.type = "exon")
+
+goi = "FFAR2"
+goi = "ERG"
+goi_query_gr = range(subset(ex_gr, gene_name == goi))
+goi_query_gr = resize(goi_query_gr, width = width(goi_query_gr)+1e5, fix = "center")
+goi_query_gr = shift(goi_query_gr, -3e4)
+# goi_query_gr = GRanges("chr19", IRanges(35435e3, 35470e3))
+goi_query_gr = GRanges("chr21", IRanges(38350e3, 38450e3), strand = "-")
+query_meta_df = qc_config_signal$meta_data
+t_chip = track_chip(subset(qc_config_signal$meta_data, mark != "input"),
+                    query_gr = goi_query_gr,
+                    color_VAR = "treatment",
+                    color_VAR_VAR = "treatment", fill_VAR = NULL,
+                    facet_VAR = "mark", color_mapping = treat_cols) #+
+    #theme(panel.background = element_rect(fill = "gray60"))
+
+t_chip + facet_grid(mark~., scales = "free_y")
+
+all_gr = sts$signal_data$query_features$all_signal$query_gr
+strand(all_gr) = "*"
+sel_gr = all_gr[sel_id]
+distanceToNearest(sel_gr, goi_query_gr)
+# sel_gr[257]
+undebug(track_features)
+.check_query_gr = ssvTracks:::.check_query_gr
+.apply_x_scale = ssvTracks:::.apply_x_scale
+.apply_x_lim = ssvTracks:::.apply_x_lim
+t_features = track_features(list(All = all_gr, Selected = sel_gr), query_gr = goi_query_gr)
+
+
+relevant_goi = union(goi, c("TAB1", "SYNGR1", "CACNA1I"))
+# track_gene_reference(ex_gr, goi_query_gr)
+t_ref = track_gene_reference(subset(ex_gr, gene_name %in% relevant_goi), goi_query_gr, show_tss = TRUE)
+
+
+sel_gir.hit = subsetByOverlaps(sel_gr, goi_query_gr)
+
+pg = assemble_tracks(
+    list(t_chip, t_features, t_ref),
+    query_gr = goi_query_gr, rel_heights = c(3, 1, 1)
+)
+pg
+
+ggsave(res_file(paste0("track_", goi, ".pdf")), pg, width = 9.1, height = 8.5)
