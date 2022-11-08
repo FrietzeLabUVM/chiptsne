@@ -59,9 +59,6 @@ For a better understanding of considerations running and interpreting t-SNE, see
 These installation instructions have been verified for R 4.2.0 and Bioconductor version 3.15.
 
 ```{r bioc install, eval=FALSE}
-dir.create("~/test_chipstne_install")
-.libPaths("~/test_chipstne_install", include.site = FALSE)
-.libPaths()
 if(!require("devtools")) install.packages("devtools")
 if(!require("ssvQC")) devtools::install_github("FrietzeLabUVM/ssvQC")
 if(!require("chiptsne")) devtools::install_github("FrietzeLabUVM/chiptsne")

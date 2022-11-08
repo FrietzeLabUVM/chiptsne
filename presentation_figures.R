@@ -24,7 +24,7 @@ my_ggsave = function(filename, plot = last_plot(), width = 6, height = 6){
     ggsave(filename = res_file(paste0(filename, ".png")), plot = plot, width = width, height = height, dpi = "print")
 }
 
-pdf("presentation_figures.pdf")
+# pdf("presentation_figures.pdf")
 
 options(mc.cores = 20)
 chip_bam_cfg_dt = IKdata::chipseq.setup_bam_files()
@@ -536,7 +536,17 @@ p = ctPlotPoints(sts) +
              fill = NA, color = "black")
 my_ggsave("4_combinatorial_tsne_points.detail", p)
 
-sel_id = sts$signal_data$query_features$all_signal$xy_data[tx >= roi$xmin & tx <= roi$xmax & ty > roi$ymin & ty < roi$ymax]$id
+
+sel_id = sts$signal_data$query_features$all_signal$xy_data[tx >= roi$xmin &
+                                                               tx <= roi$xmax &
+                                                               ty > roi$ymin &
+                                                               ty < roi$ymax]$id
+
+shrink = .02
+sel_id = sts$signal_data$query_features$all_signal$xy_data[tx >= roi$xmin + shrink &
+                                                               tx <= roi$xmax - shrink &
+                                                               ty > roi$ymin + shrink &
+                                                               ty < roi$ymax - shrink]$id
 
 ctPlotSummaryProfiles(sts, xbins = 5, extra_vars = "group",
                       xrng = c(roi$xmin, roi$xmax),
@@ -566,7 +576,7 @@ fwrite(tmp[, .(seqnames, start, end)], res_file("selected_ids.bed"), sep = "\t",
 #     geom_path() +
 #     scale_color_manual(values = IKdata:::treatment_colors) +
 #     facet_grid(.~mark)
-dev.off()
+# dev.off()
 
 nice_result_gr = rtracklayer::import.bed("output_presentation_figures.102622/selected_ids.bed")
 nice_hits = subsetByOverlaps(sts$signal_data$query_features$all_signal$query_gr,
@@ -589,6 +599,8 @@ p_nice_hit = ctPlotPointsAnnotation(sts, meta_data = p_df, anno_var = "nice_hit"
 
 my_ggsave("4_combinatorial_nice_hit", p_nice_hit)
 
+#### 5 tracks ####
+
 library(ssvTracks)
 qc_config_signal$meta_data
 
@@ -596,20 +608,37 @@ ex_gr =rtracklayer::import.gff("~/gencode.v36.annotation.gtf", feature.type = "e
 
 goi = "FFAR2"
 goi = "ERG"
+goi = "MYC"
+goi = "TGFB1"
+goi = "CD5"
+goi = "S1PR4"
+goi = "ADGRG3"
+goi = "KMT2E"
 goi_query_gr = range(subset(ex_gr, gene_name == goi))
 goi_query_gr = resize(goi_query_gr, width = width(goi_query_gr)+1e5, fix = "center")
 goi_query_gr = shift(goi_query_gr, -3e4)
+
+goi = sel_id[2]
+goi_query_gr = sts$signal_data$query_features$all_signal$query_gr[goi]
+
+goi_query_gr = resize(goi_query_gr, width = 2.3e4, fix = "center")
 # goi_query_gr = GRanges("chr19", IRanges(35435e3, 35470e3))
-goi_query_gr = GRanges("chr21", IRanges(38350e3, 38450e3), strand = "-")
+# goi_query_gr = GRanges("chr21", IRanges(38350e3, 38450e3), strand = "-")
+# goi_query_gr = GRanges("chr11", IRanges(61080e3, 61150e3), strand = "+")
 query_meta_df = qc_config_signal$meta_data
-t_chip = track_chip(subset(qc_config_signal$meta_data, mark != "input"),
+# undebug(track_chip)
+
+# save(qc_config_signal, goi_query_gr, treat_cols, file = "tmp.save")
+# load("tmp.save")
+t_chip = track_chip(subset(qc_config_signal$meta_data, mark != "input"), nwin = 80, nspline = 5,
                     query_gr = goi_query_gr,
                     color_VAR = "treatment",
                     color_VAR_VAR = "treatment", fill_VAR = NULL,
                     facet_VAR = "mark", color_mapping = treat_cols) #+
     #theme(panel.background = element_rect(fill = "gray60"))
 
-t_chip + facet_grid(mark~., scales = "free_y")
+t_chip = t_chip + facet_grid(mark~., scales = "free_y")
+t_chip
 
 all_gr = sts$signal_data$query_features$all_signal$query_gr
 strand(all_gr) = "*"
@@ -626,14 +655,18 @@ t_features = track_features(list(All = all_gr, Selected = sel_gr), query_gr = go
 relevant_goi = union(goi, c("TAB1", "SYNGR1", "CACNA1I"))
 # track_gene_reference(ex_gr, goi_query_gr)
 t_ref = track_gene_reference(subset(ex_gr, gene_name %in% relevant_goi), goi_query_gr, show_tss = TRUE)
+t_ref = track_gene_reference(ex_gr, goi_query_gr, show_tss = TRUE)
 
 
 sel_gir.hit = subsetByOverlaps(sel_gr, goi_query_gr)
 
 pg = assemble_tracks(
-    list(t_chip, t_features, t_ref),
+    list(t_chip+labs(title = goi), t_ref, t_features),
     query_gr = goi_query_gr, rel_heights = c(3, 1, 1)
 )
+
+
 pg
 
 ggsave(res_file(paste0("track_", goi, ".pdf")), pg, width = 9.1, height = 8.5)
+
