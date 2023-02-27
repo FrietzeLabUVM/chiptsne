@@ -30,6 +30,7 @@ Imports:
     Matrix,
     methods,
     RANN,
+    reshape2,
     Rtsne,
     scales,
     shiny,
