@@ -59,6 +59,8 @@ qc_config_features = QcConfigFeatures.GRanges(query_gr)
 qc_config_signal = QcConfigSignal.files(bam_files)
 qc_config_signal$flip_signal_mode = SQC_FLIP_SIGNAL_MODES$high_on_left
 qc_config_signal$center_signal_at_max = TRUE
+qc_config_signal$
+
 ct = ChIPtSNE(qc_config_features, qc_config_signal)
 ct = ChIPtSNE.runTSNE(ct)
 

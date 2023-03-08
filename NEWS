@@ -1,3 +1,8 @@
+# seqtsne 0.0.4
+
+* summary profiles use ylim of 0,1 for linearQuartile, but adaptive for other plot_value
+* added support for UMAP via @dimreduce_method on ChIPtSNE
+
 # seqtsne 0.0.0
 
 * velocity?

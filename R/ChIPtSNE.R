@@ -43,9 +43,9 @@ setClass("ChIPtSNE",
 #' qc_config_signal = QcConfigSignal.files(bam_files)
 #' qc_config_signal$flip_signal_mode = SQC_FLIP_SIGNAL_MODES$high_on_left
 #' qc_config_signal$center_signal_at_max = TRUE
-#' qc_config_signal$
 #'
 #' ct = ChIPtSNE(qc_config_features, qc_config_signal)
+#' ct$dimreduce_method = CT_DIMREDUCE_METHODS$umap
 #' ct = ChIPtSNE.runTSNE(ct)
 #'
 #' ct$n_glyphs_x = 7
@@ -144,6 +144,10 @@ setMethod("ssvQC.plotSignal", "ChIPtSNE", function(object){
             )
             extra_vars = extra_vars[extra_vars %in% colnames(signal_data@signal_data)]
 
+            summary_ylim = NULL
+            if(object@signal_config@plot_value %in% c(SQC_SIGNAL_VALUES$linearQuantile, SQC_SIGNAL_VALUES$RPM_linearQuantile)){
+                summary_ylim = c(0, 1)
+            }
             p_summary_profiles = stsPlotSummaryProfiles(
                 signal_data@signal_data,
                 signal_data@xy_data,
@@ -152,7 +156,8 @@ setMethod("ssvQC.plotSignal", "ChIPtSNE", function(object){
                 y_var = ssvQC:::val2var[object@signal_config@plot_value],
                 extra_vars = extra_vars,
                 wide_var = object$signal_config$color_by,
-                line_color_mapping = unlist(object$signal_config$color_mapping)
+                line_color_mapping = unlist(object$signal_config$color_mapping),
+                ylim = summary_ylim
             )
             p_summary_profiles
         })
@@ -229,7 +234,8 @@ setMethod("names", "ChIPtSNE",
                 "n_glyphs_x",
                 "n_glyphs_y",
                 "n_heatmap_pixels_x",
-                "n_heatmap_pixels_y")
+                "n_heatmap_pixels_y",
+                "dimreduce_method")
 
           })
 
@@ -250,7 +256,8 @@ setMethod("$", "ChIPtSNE",
                       n_glyphs_x = x@n_glyphs_x,
                       n_glyphs_y = x@n_glyphs_y,
                       n_heatmap_pixels_x = x@n_heatmap_pixels_x,
-                      n_heatmap_pixels_y = x@n_heatmap_pixels_y
+                      n_heatmap_pixels_y = x@n_heatmap_pixels_y,
+                      dimreduce_method = x@dimreduce_method
 
               )
           })
@@ -280,6 +287,12 @@ setReplaceMethod("$", "ChIPtSNE",
                              },
                              n_heatmap_pixels_y = {
                                  x@n_heatmap_pixels_y = value
+                             },
+                             dimreduce_method = {
+                                 if(!value %in% unlist(valid_dimreduce_methods)){
+                                     stop("dimreduce_method must be one of: ", paste(unlist(valid_dimreduce_methods), collapse = ", "))
+                                 }
+                                 x@dimreduce_method = value
                              },
                              {warning(warn_msg)}
 
