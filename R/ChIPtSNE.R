@@ -6,7 +6,8 @@ setClass("ChIPtSNE",
              n_glyphs_x = "numeric",
              n_glyphs_y = "numeric",
              n_heatmap_pixels_x = "numeric",
-             n_heatmap_pixels_y = "numeric"
+             n_heatmap_pixels_y = "numeric",
+             dimreduce_method = "character"
          ),
          contains = "ssvQC.complete")
 
@@ -42,6 +43,8 @@ setClass("ChIPtSNE",
 #' qc_config_signal = QcConfigSignal.files(bam_files)
 #' qc_config_signal$flip_signal_mode = SQC_FLIP_SIGNAL_MODES$high_on_left
 #' qc_config_signal$center_signal_at_max = TRUE
+#' qc_config_signal$
+#'
 #' ct = ChIPtSNE(qc_config_features, qc_config_signal)
 #' ct = ChIPtSNE.runTSNE(ct)
 #'
@@ -66,7 +69,8 @@ ChIPtSNE = function(features_config = NULL,
                    n_glyphs_x = 8,
                    n_glyphs_y = n_glyphs_x,
                    n_heatmap_pixels_x = 25,
-                   n_heatmap_pixels_y = n_heatmap_pixels_x){
+                   n_heatmap_pixels_y = n_heatmap_pixels_x,
+                   dimreduce_method = valid_dimreduce_methods$tsne){
     matched_only = FALSE
     if(is.null(features_config) & is.null(signal_config)){
         stop("At least one of features_config or signal_config must be specified.")
@@ -94,7 +98,8 @@ ChIPtSNE = function(features_config = NULL,
         n_glyphs_y = n_glyphs_y,
         n_heatmap_pixels_x = n_heatmap_pixels_x,
         n_heatmap_pixels_y = n_heatmap_pixels_y,
-        matched_only = matched_only)
+        matched_only = matched_only,
+        dimreduce_method = dimreduce_method)
 }
 
 # ssvQC.runAll = ssvQC::ssvQC.runAll

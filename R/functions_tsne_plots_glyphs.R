@@ -395,6 +395,7 @@ set_size = function (dt, N_floor, N_ceiling, size.name = "img_size")
 #' @importFrom seqsetvis applySpline
 #' @importFrom stats quantile
 #'
+#' @export
 #' @examples
 #' data("profile_dt")
 #' data("tsne_dt")
@@ -556,15 +557,17 @@ prep_images = function (summary_dt,
 #'                       tsne_dt,
 #'                       x_points = 4)
 #' img_res = prep_images(summary_dt, 4)
-#' img_rect = set_image_rects(img_res$image_dt,
+#' img_rect = chiptsne:::set_image_rects(img_res$image_dt,
 #'                            x_points = img_res$x_points,
 #'                            y_points = img_res$y_points,
 #'                            xrng = img_res$xrng,
 #'                            yrng = img_res$yrng)
 #' ggplot(img_rect, aes(xmin = xmin, xmax = xmax,
-#'     ymin = ymin, ymax = ymax)) + geom_rect()
+#'     ymin = ymin, ymax = ymax)) +
+#'     geom_rect()
 #' ggplot(img_rect, aes(xmin = xmin, xmax = xmax,
-#'     ymin = ymin, ymax = ymax, image = png_file)) + geom_image.rect()
+#'     ymin = ymin, ymax = ymax, image = png_file)) +
+#'     chiptsne:::geom_image.rect()
 set_image_rects = function(image_dt,
                            x_points,
                            y_points,

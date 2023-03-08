@@ -13,7 +13,8 @@ ChIPtSNE(
   n_glyphs_x = 8,
   n_glyphs_y = n_glyphs_x,
   n_heatmap_pixels_x = 25,
-  n_heatmap_pixels_y = n_heatmap_pixels_x
+  n_heatmap_pixels_y = n_heatmap_pixels_x,
+  dimreduce_method = valid_dimreduce_methods$tsne
 )
 }
 \arguments{
@@ -58,20 +59,20 @@ qc_config_features = QcConfigFeatures.GRanges(query_gr)
 qc_config_signal = QcConfigSignal.files(bam_files)
 qc_config_signal$flip_signal_mode = SQC_FLIP_SIGNAL_MODES$high_on_left
 qc_config_signal$center_signal_at_max = TRUE
-sts = ChIPtSNE(qc_config_features, qc_config_signal)
-sts = ChIPtSNE.runTSNE(sts)
+ct = ChIPtSNE(qc_config_features, qc_config_signal)
+ct = ChIPtSNE.runTSNE(ct)
 
-sts$n_glyphs_x = 7
-sts$n_glyphs_y = 5
+ct$n_glyphs_x = 7
+ct$n_glyphs_y = 5
 
-sts$n_heatmap_pixels_x = 5
-sts$n_heatmap_pixels_y = 9
-sts.replot = ssvQC.plotSignal(sts)
+ct$n_heatmap_pixels_x = 5
+ct$n_heatmap_pixels_y = 9
+ct.replot = ssvQC.plotSignal(ct)
 
-sts$plots$TSNE$regional_glyphs$query_features$All_signal
-sts.replot$plots$TSNE$regional_glyphs$query_features$All_signal
+ct$plots$TSNE$regional_glyphs$query_features$All_signal
+ct.replot$plots$TSNE$regional_glyphs$query_features$All_signal
 
-sts$plots$TSNE$regional_heatmap$query_features$All_signal
-sts.replot$plots$TSNE$regional_heatmap$query_features$All_signal
+ct$plots$TSNE$regional_heatmap$query_features$All_signal
+ct.replot$plots$TSNE$regional_heatmap$query_features$All_signal
 
 }
