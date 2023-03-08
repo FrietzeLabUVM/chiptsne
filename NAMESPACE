@@ -2,8 +2,6 @@
 
 export(ChIPtSNE)
 export(ChIPtSNE.runTSNE)
-export(ClusteredSignal_TSNE)
-export(ClusteredSignal_TSNE.fromConfig)
 export(ClusteredSignal_TSNE.null)
 export(ConfigFeatures)
 export(ConfigFeatures.GRanges)
