@@ -16,7 +16,7 @@ prep_summary(
   y_var = "y",
   id_var = "id",
   wide_var = "name",
-  tall_var = "tall_none",
+  tall_var = "tall_var",
   extra_vars = character()
 )
 }

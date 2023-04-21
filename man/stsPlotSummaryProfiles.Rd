@@ -25,7 +25,7 @@ stsPlotSummaryProfiles(
   force_rewrite = FALSE,
   n_cores = getOption("mc.cores", 1),
   apply_norm = TRUE,
-  ylim = c(0, 1),
+  ylim = NULL,
   ma_size = 2,
   n_splines = 10,
   p = NULL,

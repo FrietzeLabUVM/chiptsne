@@ -13,7 +13,8 @@ ChIPtSNE(
   n_glyphs_x = 8,
   n_glyphs_y = n_glyphs_x,
   n_heatmap_pixels_x = 25,
-  n_heatmap_pixels_y = n_heatmap_pixels_x
+  n_heatmap_pixels_y = n_heatmap_pixels_x,
+  dimreduce_method = valid_dimreduce_methods$tsne
 )
 }
 \arguments{
@@ -58,7 +59,9 @@ qc_config_features = QcConfigFeatures.GRanges(query_gr)
 qc_config_signal = QcConfigSignal.files(bam_files)
 qc_config_signal$flip_signal_mode = SQC_FLIP_SIGNAL_MODES$high_on_left
 qc_config_signal$center_signal_at_max = TRUE
+
 ct = ChIPtSNE(qc_config_features, qc_config_signal)
+ct$dimreduce_method = CT_DIMREDUCE_METHODS$umap
 ct = ChIPtSNE.runTSNE(ct)
 
 ct$n_glyphs_x = 7

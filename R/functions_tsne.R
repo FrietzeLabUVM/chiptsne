@@ -1,35 +1,91 @@
 
-#' run_tsne
+#' run_umap
 #'
 #' @param profile_dt Tidy data.table of profile information. As returned by seqsetvis::ssvFetchBam.
-#' @param perplexity perplexity value for t-SNE. Passed to Rtsne::Rtsne.
-#' @param n_cores Number of threads for running t-SNE.
+#' @param config A umap.config object. Generate default config with umap::umap.defaults.
 #' @param high_topright If TRUE, flip tx/ty as needed such that most points are in the top-right quadrant.
 #' @param norm1 If TRUE, rescale tx and ty to be centered at 0,0 with total size of 1.
 #' @param Y_init Optional initial coordinates for tx and ty.
-#' @param wide_var Wide variable.  Spreads matrix into columns. Each regions tSNE position will be based on one profile for every value of wide_var.
-#' @param tall_var Tall variable. Repeats matrix entries down rows. Each region will appear once per value of tall_var in final tSNE.
+#' @param x_var Genomic positional variable name in profile_dt, default is "x".
+#' @param y_var Signal strength variable name in profile_dt, default is "y".
+#' @param id_var Region ID variable name in profile_dt, default is "id".
+#' @param wide_var Wide variable.  Spreads matrix into columns. Each regions tSNE position will be based on one profile for every value of wide_var. Dfeault is "name".
+#' @param tall_var Tall variable. Repeats matrix entries down rows. Each region will appear once per value of tall_var in final tSNE. Default is "tall_none", this dummies out tall varaible.
+#' @param fun.aggregate Aggregation function to apply to y_var when combinations of id_var, x_var, wide_var, and tall_var have multiple entries.
+#' @param ... extra arguments passed to umap::umap.
 #'
-#' @return Return data.table mapping each id_var entry to tSNE space: defined by tx and ty
-#' @import Rtsne
+#' @return Return data.table mapping each id_var entry to UMAP space: defined by tx and ty
 #' @export
+#' @import umap
 #'
 #' @examples
+#' library(ggplot2)
 #' data("profile_dt")
-#' setalloccol(profile_dt)
-#' chiptsne:::run_tsne(profile_dt, wide_var = "wide_var", tall_var = "tall_var")
-run_tsne = function (profile_dt,
-                     perplexity = 100,
-                     n_cores = getOption("mc.cores", 1),
-                     high_topright = TRUE,
-                     norm1 = TRUE,
-                     Y_init = NULL,
-                     x_var = "x",
-                     y_var = "y",
-                     id_var = "id",
-                     wide_var = "name",
-                     tall_var = "tall_none",
-                     fun.aggregate = mean) {
+#' data.table::setalloccol(profile_dt)
+#' tsne_dt = chiptsne:::run_umap(profile_dt, wide_var = "wide_var", tall_var = "tall_var")
+#' chiptsne:::run_umap(profile_dt, wide_var = "wide_var", tall_var = "tall_none")
+#' chiptsne:::run_umap(profile_dt, wide_var = "wide_var", tall_var = NA)
+#' tsne_dt
+#' ggplot(tsne_dt, aes(x = tx, y = ty, color = tall_var)) + geom_point()
+run_umap = function(profile_dt,
+                    config = umap::umap.defaults,
+                    high_topright = TRUE,
+                    norm1 = TRUE,
+                    Y_init = NULL,
+                    x_var = "x",
+                    y_var = "y",
+                    id_var = "id",
+                    wide_var = "name",
+                    tall_var = "tall_none",
+                    fun.aggregate = mean,
+                    ...){
+    if(is.na(tall_var) | is.null(tall_var)){
+        tall_var = "tall_none"
+    }
+    tsne_mat = .prep_dim_reduce(profile_dt,
+                                x_var,
+                                y_var,
+                                id_var,
+                                wide_var,
+                                tall_var,
+                                fun.aggregate)
+    tsne_res = umap::umap(tsne_mat, config = config, ...)
+    tsne_dt = as.data.table(tsne_res$layout)
+    setnames(tsne_dt, c("tx", "ty"))
+    tsne_dt$rn = rownames(tsne_res$data)
+
+    tsne_dt[, `:=`(c(id_var, tall_var), tstrsplit(rn, " ", keep = seq(2)))]
+
+    if (norm1) {
+        tsne_dt$tx = rescale_capped(tsne_dt$tx) - 0.5
+        tsne_dt$ty = rescale_capped(tsne_dt$ty) - 0.5
+    }
+    if (high_topright) {#flip tx/ty if needed so that
+        rs = rowSums(tsne_mat)
+        tsne_dt$rs = rs[tsne_dt$rn]
+        x_cutoff = mean(range(tsne_dt$tx))
+        x_flip = sum(tsne_dt[tx > x_cutoff]$rs) < sum(tsne_dt[tx < x_cutoff]$rs)
+        if (x_flip) {
+            tsne_dt[, `:=`(tx, max(tx) - tx + min(tx))]
+        }
+        y_cutoff = mean(range(tsne_dt$ty))
+        y_flip = sum(tsne_dt[ty > y_cutoff]$rs) < sum(tsne_dt[ty < y_cutoff]$rs)
+        if (y_flip) {
+            tsne_dt[, `:=`(ty, max(ty) - ty + min(ty))]
+        }
+        tsne_dt$rs = NULL
+    }
+    tsne_dt$rn = NULL
+    tsne_dt[]
+}
+
+.prep_dim_reduce = function(profile_dt,
+                           x_var = "x",
+                           y_var = "y",
+                           id_var = "id",
+                           wide_var = "name",
+                           tall_var = "tall_none",
+                           fun.aggregate = mean){
     valid_vars = c(ifelse(tall_var == "tall_none", character(), tall_var), wide_var, x_var, y_var, id_var)
     valid_vars = valid_vars[!is.na(valid_vars)]
     stopifnot(valid_vars %in% colnames(profile_dt))
@@ -52,6 +108,50 @@ run_tsne = function (profile_dt,
                             2), "% of columns removed.")
         tsne_mat = tsne_mat[, !bad_col, drop = FALSE]
     }
+    tsne_mat
+}
+
+#' run_tsne
+#'
+#' @param profile_dt Tidy data.table of profile information. As returned by seqsetvis::ssvFetchBam.
+#' @param perplexity perplexity value for t-SNE. Passed to Rtsne::Rtsne.
+#' @param n_cores Number of threads for running t-SNE.
+#' @param high_topright If TRUE, flip tx/ty as needed such that most points are in the top-right quadrant.
+#' @param norm1 If TRUE, rescale tx and ty to be centered at 0,0 with total size of 1.
+#' @param Y_init Optional initial coordinates for tx and ty.
+#' @param x_var Genomic positional variable name in profile_dt, default is "x".
+#' @param y_var Signal strength variable name in profile_dt, default is "y".
+#' @param id_var Region ID variable name in profile_dt, default is "id".
+#' @param wide_var Wide variable.  Spreads matrix into columns. Each regions tSNE position will be based on one profile for every value of wide_var. Dfeault is "name".
+#' @param tall_var Tall variable. Repeats matrix entries down rows. Each region will appear once per value of tall_var in final tSNE. Default is "tall_none", this dummies out tall varaible.
+#' @param fun.aggregate Aggregation function to apply to y_var when combinations of id_var, x_var, wide_var, and tall_var have multiple entries.
+#'
+#' @return Return data.table mapping each id_var entry to tSNE space: defined by tx and ty
+#' @import Rtsne
+#'
+#' @examples
+#' data("profile_dt")
+#' setalloccol(profile_dt)
+#' chiptsne:::run_tsne(profile_dt, wide_var = "wide_var", tall_var = "tall_var")
+run_tsne = function (profile_dt,
+                     perplexity = 100,
+                     n_cores = getOption("mc.cores", 1),
+                     high_topright = TRUE,
+                     norm1 = TRUE,
+                     Y_init = NULL,
+                     x_var = "x",
+                     y_var = "y",
+                     id_var = "id",
+                     wide_var = "name",
+                     tall_var = "tall_none",
+                     fun.aggregate = mean) {
+    tsne_mat = .prep_dim_reduce(profile_dt,
+                                x_var,
+                                y_var,
+                                id_var,
+                                wide_var,
+                                tall_var,
+                                fun.aggregate)
     if (is.data.table(Y_init)) {
         if(tall_var != "tall_none"){
             Y_init = as.matrix(Y_init[, .(tx, ty)], rownames.value = paste(Y_init[[id_var]],
@@ -128,9 +228,9 @@ dt2mat = function (prof_dt,
     }
     stopifnot(c(id_var, wide_var_, tall_var_, x_var, y_var) %in% colnames(prof_dt))
     dt = reshape2::dcast(data = prof_dt[get(wide_var_) %in% wide_values],
-                    formula = paste0(id_var, "+", tall_var_, "~", x_var, "+", wide_var_),
-                    value.var = y_var,
-                    fun.aggregate = fun.aggregate)
+                         formula = paste0(id_var, "+", tall_var_, "~", x_var, "+", wide_var_),
+                         value.var = y_var,
+                         fun.aggregate = fun.aggregate)
     wide_mat = as.matrix(dt[, -seq_len(2)])
     rownames(wide_mat) = paste(dt[[id_var]], dt[[tall_var_]])
     if(!all(table(colnames(wide_mat)) == 1)){
@@ -213,7 +313,7 @@ stsPlotSummaryProfiles = function (profile_dt,
                                    force_rewrite = FALSE,
                                    n_cores = getOption("mc.cores", 1),
                                    apply_norm = TRUE,
-                                   ylim = c(0, 1),
+                                   ylim = NULL,
                                    ma_size = 2,
                                    n_splines = 10,
                                    p = NULL,
@@ -495,6 +595,7 @@ stsPlotSummaryProfiles = function (profile_dt,
 #' @return summary of profiles binned across tsne space according to x_points,
 #'   y_points, and within xrng and yrng
 #'
+#' @export
 #' @examples
 #' data("profile_dt")
 #' data("tsne_dt")
@@ -516,7 +617,7 @@ prep_summary = function (profile_dt,
                          y_var = "y",
                          id_var = "id",
                          wide_var = "name",
-                         tall_var = "tall_none",
+                         tall_var = "tall_var",
                          extra_vars = character()){
     position_dt = copy(position_dt[tx >= min(xrng) & tx <= max(xrng) &
                                        ty >= min(yrng) & ty <= max(yrng)])
@@ -527,6 +628,26 @@ prep_summary = function (profile_dt,
     if (is.null(position_dt$by))
         position_dt[, `:=`(by, bin_values(ty, y_points,
                                           xrng = yrng))]
+
+    if(is.null(profile_dt[[tall_var]]) | is.null(position_dt[[tall_var]])){
+        if(is.null(profile_dt[[tall_var]]) & is.null(position_dt[[tall_var]])){
+            profile_dt[[tall_var]] = "none"
+            position_dt[[tall_var]] = "none"
+        }else if(!is.null(profile_dt[[tall_var]])){
+            if(length(profile_dt[[tall_var]]) > 1){
+                stop("tall_var ", tall_var, " missing from position_dt and has more than 1 value in profile_dt")
+            }else{
+                position_dt[[tall_var]] = profile_dt[[tall_var]]
+            }
+        }else if(!is.null(position_dt[[tall_var]])){
+            if(length(position_dt[[tall_var]]) > 1){
+                stop("tall_var ", tall_var, " missing from profile_dt and has more than 1 value in position_dt")
+            }else{
+                profile_dt[[tall_var]] = position_dt[[tall_var]]
+            }
+        }
+    }
+
     summary_dt = merge(profile_dt, position_dt[, c("bx", "by", tall_var, id_var), with = FALSE],
                        allow.cartesian = TRUE,
                        by = intersect(colnames(profile_dt), c(tall_var, id_var)))
