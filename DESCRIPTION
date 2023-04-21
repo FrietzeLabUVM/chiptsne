@@ -33,6 +33,7 @@ Imports:
     Rtsne,
     scales,
     shiny,
+    shinyjs,
     ssvQC (>= 1.0.21),
     stats,
     tools,
@@ -42,7 +43,7 @@ Suggests:
     covr,
     knitr,
     testthat
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
 VignetteBuilder: knitr
 biocViews: 
     Software, 

@@ -4,10 +4,10 @@
 \alias{ChIPtSNE.runTSNE}
 \title{ChIPtSNE.runTSNE}
 \usage{
-ChIPtSNE.runTSNE(sts)
+ChIPtSNE.runTSNE(ct)
 }
 \arguments{
-\item{sts}{A valid ChIPtSNE object, needs ssvQC.prepSignal to be called.}
+\item{ct}{A valid ChIPtSNE object, needs ssvQC.prepSignal to be called.}
 }
 \value{
 A valid ChIPtSNE object with t-SNE called and ready for plots.
@@ -25,6 +25,6 @@ qc_config_features = QcConfigFeatures.GRanges(query_gr)
 qc_config_signal = QcConfigSignal.files(bam_files)
 qc_config_signal$flip_signal_mode = SQC_FLIP_SIGNAL_MODES$high_on_left
 qc_config_signal$center_signal_at_max = TRUE
-sts = ChIPtSNE(qc_config_features, qc_config_signal)
-sts = ChIPtSNE.runTSNE(sts)
+ct = ChIPtSNE(qc_config_features, qc_config_signal)
+ct = ChIPtSNE.runTSNE(ct)
 }

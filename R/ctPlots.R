@@ -64,14 +64,15 @@ ctPlotBinAggregates = function(sts,
     m_vars = setdiff(colnames(sts$signal_config$meta_data), colnames(agg_dt))
     agg_dt = as.data.table(merge(sts$signal_config$meta_data[, m_vars], agg_dt, by.y = "wide_var", by.x = "name"))
     facet_str = paste0(sts$signal_config$color_by, "~", sts$signal_config$run_by)
-#TODO add extra vars
+    #TODO add extra vars
     #TODO add ssvQC win_size
-    extra_vars =  c(
+    extra_vars =  unique(c(
         sts$signal_config$run_by,
         sts$signal_config$color_by,
         "name",
-        "name_split"
-    )
+        "name_split",
+        extra_vars
+    ))
     extra_vars = extra_vars[extra_vars %in% colnames(agg_dt)]
     plot_binned_aggregates(
         agg_dt = agg_dt,
@@ -205,8 +206,13 @@ ctPlotSummaryProfiles = function(sts,
         min_size = min_fraction,
         return_data = return_data
     )
-    facet_str = paste0("~", sts$signal_config$run_by)
-    p +  facet_wrap(facet_str)
+    if(return_data){
+        p
+    }else{
+        facet_str = paste0("~", sts$signal_config$run_by)
+        p +  facet_wrap(facet_str)
+    }
+
 }
 
 #' ctPlotPoints
@@ -245,7 +251,9 @@ ctPlotPoints = function(
         profile_value_label = ssvQC:::val2lab[sts$signal_config$plot_value],
         bg_color = "gray60",
         agg_FUN = max,
-        point_size = 1
+        point_size = 1,
+        extra_vars = character(),
+        return_data = FALSE
 ){
     .prepare_plot_inputs(sts, feature_name = feature_name, signal_name = signal_name)
     agg_dt = aggregate_signals(
@@ -260,14 +268,27 @@ ctPlotPoints = function(
     agg_dt = as.data.table(merge(sts$signal_config$meta_data[, m_vars], agg_dt, by.y = "wide_var", by.x = "name"))
     facet_str = paste0(sts$signal_config$color_by, "~", sts$signal_config$run_by)
 
-    ggplot(agg_dt, aes_string(x = "tx", y = "ty", color = profile_value)) +
-        geom_point(size = point_size) +
-        facet_grid(facet_str) +
-        scale_color_viridis_c() +
-        theme(
-            panel.background = element_rect(fill = bg_color),
-            panel.grid = element_blank()) +
-        labs(color = profile_value_label)
+    extra_vars =  unique(c(
+        sts$signal_config$run_by,
+        sts$signal_config$color_by,
+        "name",
+        "name_split",
+        extra_vars
+    ))
+    extra_vars = extra_vars[extra_vars %in% colnames(agg_dt)]
+
+    if(return_data){
+        agg_dt
+    }else{
+        ggplot(agg_dt, aes_string(x = "tx", y = "ty", color = profile_value)) +
+            geom_point(size = point_size) +
+            facet_grid(facet_str) +
+            scale_color_viridis_c() +
+            theme(
+                panel.background = element_rect(fill = bg_color),
+                panel.grid = element_blank()) +
+            labs(color = profile_value_label)
+    }
 }
 
 #' ctPlotPointsAnnotation

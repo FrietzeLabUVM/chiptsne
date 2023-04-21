@@ -12,6 +12,7 @@
 #'
 #' @return Return data.table mapping each id_var entry to tSNE space: defined by tx and ty
 #' @import Rtsne
+#' @export
 #'
 #' @examples
 #' data("profile_dt")

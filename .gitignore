@@ -29,3 +29,5 @@ IkarosChip_QcConfigFeatures.csv
 IkarosChip_QcConfigSignal.csv
 selected_ids.bed
 dev_object.ssvQC.plotSignal.Rds
+presentation_ChIPtSNE_objects
+tests/testthat/dev_object.ssvQC.plotSignal.Rds

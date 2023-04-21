@@ -14,7 +14,9 @@ ctPlotPoints(
   profile_value_label = ssvQC:::val2lab[sts$signal_config$plot_value],
   bg_color = "gray60",
   agg_FUN = max,
-  point_size = 1
+  point_size = 1,
+  extra_vars = character(),
+  return_data = FALSE
 )
 }
 \arguments{
